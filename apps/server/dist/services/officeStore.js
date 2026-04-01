@@ -43,7 +43,7 @@ const seedMembers = [
         slackStatusText: "집중 근무",
         seatKey: "A-01",
         zoneId: "main-office",
-        x: 9.4,
+        x: 8.33,
         y: 32.8,
         isOnline: true
     },

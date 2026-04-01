@@ -1,3 +1,20 @@
+const mainDeskRows = [
+    { rowKey: "A", y: 32.8 },
+    { rowKey: "B", y: 38.8 },
+    { rowKey: "C", y: 51.8 },
+    { rowKey: "D", y: 57.8 },
+    { rowKey: "E", y: 70.8 },
+    { rowKey: "F", y: 76.8 }
+];
+const mainDeskSeatCenters = [8.33, 19, 29.67, 40.33, 51, 61.67];
+function createMainDeskSeatDefinitions() {
+    return mainDeskRows.flatMap((row) => mainDeskSeatCenters.map((x, index) => ({
+        key: `${row.rowKey}-${String(index + 1).padStart(2, "0")}`,
+        label: `자리${index + 1}`,
+        x,
+        y: row.y
+    })));
+}
 // Temporary seat assignment map.
 // Edit the Slack user ID on the left and assign a seat key on the right.
 // Replace `U_DEMO_1` with a real Slack user ID such as `U08ABC12345`.
@@ -5,42 +22,7 @@ export const seatAssignmentsBySlackUserId = {
     U_DEMO_1: "F-04"
 };
 export const seatDefinitions = [
-    { key: "A-01", label: "자리1", x: 8.6, y: 32.8 },
-    { key: "A-02", label: "자리2", x: 18.9, y: 32.8 },
-    { key: "A-03", label: "자리3", x: 29.2, y: 32.8 },
-    { key: "A-04", label: "자리4", x: 39.5, y: 32.8 },
-    { key: "A-05", label: "자리5", x: 49.8, y: 32.8 },
-    { key: "A-06", label: "자리6", x: 60.1, y: 32.8 },
-    { key: "B-01", label: "자리1", x: 8.6, y: 38.8 },
-    { key: "B-02", label: "자리2", x: 18.9, y: 38.8 },
-    { key: "B-03", label: "자리3", x: 29.2, y: 38.8 },
-    { key: "B-04", label: "자리4", x: 39.5, y: 38.8 },
-    { key: "B-05", label: "자리5", x: 49.8, y: 38.8 },
-    { key: "B-06", label: "자리6", x: 60.1, y: 38.8 },
-    { key: "C-01", label: "자리1", x: 8.6, y: 51.8 },
-    { key: "C-02", label: "자리2", x: 18.9, y: 51.8 },
-    { key: "C-03", label: "자리3", x: 29.2, y: 51.8 },
-    { key: "C-04", label: "자리4", x: 39.5, y: 51.8 },
-    { key: "C-05", label: "자리5", x: 49.8, y: 51.8 },
-    { key: "C-06", label: "자리6", x: 60.1, y: 51.8 },
-    { key: "D-01", label: "자리1", x: 8.6, y: 57.8 },
-    { key: "D-02", label: "자리2", x: 18.9, y: 57.8 },
-    { key: "D-03", label: "자리3", x: 29.2, y: 57.8 },
-    { key: "D-04", label: "자리4", x: 39.5, y: 57.8 },
-    { key: "D-05", label: "자리5", x: 49.8, y: 57.8 },
-    { key: "D-06", label: "자리6", x: 60.1, y: 57.8 },
-    { key: "E-01", label: "자리1", x: 8.6, y: 70.8 },
-    { key: "E-02", label: "자리2", x: 18.9, y: 70.8 },
-    { key: "E-03", label: "자리3", x: 29.2, y: 70.8 },
-    { key: "E-04", label: "자리4", x: 39.5, y: 70.8 },
-    { key: "E-05", label: "자리5", x: 49.8, y: 70.8 },
-    { key: "E-06", label: "자리6", x: 60.1, y: 70.8 },
-    { key: "F-01", label: "자리1", x: 8.6, y: 76.8 },
-    { key: "F-02", label: "자리2", x: 18.9, y: 76.8 },
-    { key: "F-03", label: "자리3", x: 29.2, y: 76.8 },
-    { key: "F-04", label: "자리4", x: 39.5, y: 76.8 },
-    { key: "F-05", label: "자리5", x: 49.8, y: 76.8 },
-    { key: "F-06", label: "자리6", x: 60.1, y: 76.8 },
+    ...createMainDeskSeatDefinitions(),
     { key: "R-01", label: "자리1", x: 82.25, y: 64.6 },
     { key: "R-02", label: "자리2", x: 92.75, y: 64.6 },
     { key: "S-01", label: "자리1", x: 82.25, y: 72.6 },
