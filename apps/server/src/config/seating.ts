@@ -9,7 +9,7 @@ const mainDeskSeatCenters = [8.33, 19, 29.67, 40.33, 51, 61.67] as const;
 
 const mainDeskRows = [
   { rowKey: "A", y: 32.8, seatCenters: mainDeskSeatCenters },
-  { rowKey: "B", y: 38.8, seatCenters: mainDeskSeatCenters },
+  { rowKey: "B", y: 38.8, seatCenters: mainDeskSeatCenters.slice(1) },
   { rowKey: "C", y: 51.8, seatCenters: mainDeskSeatCenters },
   { rowKey: "D", y: 57.8, seatCenters: mainDeskSeatCenters },
   { rowKey: "E", y: 70.8, seatCenters: mainDeskSeatCenters.slice(1) },
@@ -33,10 +33,9 @@ function createMainDeskSeatDefinitions(): SeatDefinition[] {
 export const seatAssignmentsBySlackUserId: Record<string, string> = {
   U07Q6TXGLS3: "A-01",
   U09HVUZEYF5: "A-06",
-  U07FFFAP6QJ: "B-01",
-  U099HL53CSH: "B-04",
-  U0914RS1YJX: "B-05",
-  U097C9FKX4Y: "B-06",
+  U099HL53CSH: "B-03",
+  U0914RS1YJX: "B-04",
+  U097C9FKX4Y: "B-05",
   U080MK7NWPK: "C-01",
   U09BYQWJF0R: "C-02",
   U0300SNM5R8: "C-03",

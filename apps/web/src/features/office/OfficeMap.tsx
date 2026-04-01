@@ -21,7 +21,7 @@ const roomZones = [
 
 const deskBands = [
   { rowKey: "A", x: 3, y: 30, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
-  { rowKey: "B", x: 3, y: 36, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
+  { rowKey: "B", x: 13.67, y: 36, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 53.33, height: 5.6 },
   { rowKey: "C", x: 3, y: 49, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
   { rowKey: "D", x: 3, y: 55, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
   { rowKey: "E", x: 13.67, y: 68, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 53.33, height: 5.6 },
