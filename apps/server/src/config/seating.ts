@@ -32,7 +32,12 @@ function createMainDeskSeatDefinitions(): SeatDefinition[] {
 // Replace `U_DEMO_1` with a real Slack user ID such as `U08ABC12345`.
 export const seatAssignmentsBySlackUserId: Record<string, string> = {
   U07Q6TXGLS3: "A-01",
+  U04M47N64R2: "A-02",
+  U094YK75WLF: "A-03",
+  U05V185MM1Q: "A-04",
   U09HVUZEYF5: "A-06",
+  U07FFFAP6QJ: "B-01",
+  U06U5KMC6UV: "B-02",
   U099HL53CSH: "B-03",
   U0914RS1YJX: "B-04",
   U097C9FKX4Y: "B-05",
@@ -48,6 +53,22 @@ export const seatAssignmentsBySlackUserId: Record<string, string> = {
   U048Q7QS2FQ: "D-04",
   U06A4SHGPU7: "D-05",
   U0AGJ4P3HBK: "D-06",
+  U099H4WRW5U: "E-01",
+  U096LL7N3HC: "E-02",
+  U09F3NXHQ3X: "E-03",
+  U07J0KS0CPR: "E-04",
+  U09A6ERAQ8K: "E-05",
+  U08L0KRHZ5E: "F-01",
+  U0936D6GPRS: "F-02",
+  U09FL29S89F: "F-03",
+  U098H1ZTJSW: "F-04",
+  U0APCLAHH8C: "F-05",
+  U04QB45PCF4: "R-01",
+  U09RR09V3S9: "R-02",
+  U0AQZ2T9GG0: "S-01",
+  U0875GX0Q78: "S-02",
+  U07J9D2LVNU: "T-01",
+  U0AENJJ19J9: "T-02",
 };
 
 export const seatDefinitions: SeatDefinition[] = [
