@@ -1,4 +1,4 @@
-import { FormEvent } from "react";
+import { FormEvent, PointerEvent, useRef } from "react";
 
 import { useMessages, useSendMessage } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
@@ -7,9 +7,14 @@ import type { WorkspaceInfo } from "../../types/domain";
 export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
   const selectedChannelId = useUIStore((state) => state.selectedChannelId);
   const messageDraft = useUIStore((state) => state.messageDraft);
+  const chatOpacity = useUIStore((state) => state.chatOpacity);
+  const chatOffset = useUIStore((state) => state.chatOffset);
   const setMessageDraft = useUIStore((state) => state.setMessageDraft);
+  const setChatOpacity = useUIStore((state) => state.setChatOpacity);
+  const setChatOffset = useUIStore((state) => state.setChatOffset);
   const { data, isLoading } = useMessages(selectedChannelId);
   const sendMessage = useSendMessage();
+  const dragState = useRef<{ x: number; y: number; pointerId: number } | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,15 +30,71 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
     setMessageDraft("");
   };
 
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    dragState.current = {
+      x: event.clientX,
+      y: event.clientY,
+      pointerId: event.pointerId
+    };
+
+    const handlePointerMove = (moveEvent: globalThis.PointerEvent) => {
+      if (!dragState.current || moveEvent.pointerId !== dragState.current.pointerId) {
+        return;
+      }
+
+      const deltaX = moveEvent.clientX - dragState.current.x;
+      const deltaY = moveEvent.clientY - dragState.current.y;
+      dragState.current = {
+        x: moveEvent.clientX,
+        y: moveEvent.clientY,
+        pointerId: moveEvent.pointerId
+      };
+
+      const currentOffset = useUIStore.getState().chatOffset;
+      setChatOffset({
+        x: currentOffset.x + deltaX,
+        y: currentOffset.y + deltaY
+      });
+    };
+
+    const handlePointerUp = () => {
+      dragState.current = null;
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  };
+
   return (
-    <section className="panel chat-panel">
-      <div className="panel-header">
+    <section
+      className="floating-panel chat-panel"
+      style={{
+        opacity: chatOpacity,
+        transform: `translate(${chatOffset.x}px, ${chatOffset.y}px)`
+      }}
+    >
+      <div className="floating-header draggable-header" onPointerDown={handlePointerDown}>
         <div>
           <span className="eyebrow">Slack Sync</span>
           <h2>#{workspace.defaultChannelId}</h2>
         </div>
+        <span className="drag-hint">drag</span>
       </div>
-      <div className="message-list">
+      <label className="opacity-control">
+        <span>투명도</span>
+        <input
+          max="1"
+          min="0.35"
+          onChange={(event) => setChatOpacity(Number(event.target.value))}
+          step="0.05"
+          type="range"
+          value={chatOpacity}
+        />
+        <strong>{Math.round(chatOpacity * 100)}%</strong>
+      </label>
+      <div className="message-list popup-message-list">
         {isLoading ? (
           <p>메시지를 불러오는 중...</p>
         ) : (

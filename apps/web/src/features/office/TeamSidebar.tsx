@@ -12,16 +12,16 @@ const statusLabel = {
 
 export function TeamSidebar({ snapshot }: { snapshot: OfficeSnapshot }) {
   return (
-    <aside className="panel sidebar-panel">
-      <div className="panel-header">
+    <aside className="floating-panel status-panel">
+      <div className="floating-header">
         <div>
           <span className="eyebrow">Team Presence</span>
-          <h2>구성원 상태</h2>
+          <h2>상태</h2>
         </div>
       </div>
-      <div className="member-list">
+      <div className="member-list compact-list">
         {snapshot.members.map((member) => (
-          <article className="member-card" key={member.id}>
+          <article className={`member-card compact-card ${member.id === snapshot.currentUserId ? "is-current" : ""}`} key={member.id}>
             <img alt={member.displayName} className="member-avatar" src={member.avatarUrl} />
             <div>
               <strong>{member.displayName}</strong>
