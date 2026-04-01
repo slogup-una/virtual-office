@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { isSeatAdminEmail } from "../config/admin.js";
 import { isSlackConfigured } from "../config/env.js";
 import { addMessage, assignSeat, clearSeatAssignment, getMemberById, getSnapshot, listMessages } from "../services/officeStore.js";
 import { postSlackMessage } from "../slack/client.js";
@@ -32,6 +33,11 @@ router.put("/seats/:seatKey", (request, response) => {
         response.status(400).json({ message: "Invalid payload" });
         return;
     }
+    const currentMember = getMemberById(request.sessionUser.id);
+    if (!currentMember || !isSeatAdminEmail(currentMember.email)) {
+        response.status(403).json({ message: "Forbidden" });
+        return;
+    }
     const result = assignSeat(request.sessionUser.workspaceId, request.params.seatKey, parsed.data.slackUserId);
     if (!result) {
         response.status(404).json({ message: "Seat not found" });
@@ -42,6 +48,11 @@ router.put("/seats/:seatKey", (request, response) => {
 router.delete("/seats/:seatKey", (request, response) => {
     if (!request.sessionUser) {
         response.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+    const currentMember = getMemberById(request.sessionUser.id);
+    if (!currentMember || !isSeatAdminEmail(currentMember.email)) {
+        response.status(403).json({ message: "Forbidden" });
         return;
     }
     const result = clearSeatAssignment(request.sessionUser.workspaceId, request.params.seatKey);

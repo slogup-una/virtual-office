@@ -68,17 +68,38 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const assignSeat = useAssignSeat();
   const clearSeat = useClearSeat();
   const [selectedSeatKey, setSelectedSeatKey] = useState<string | null>(null);
+  const [seatSearch, setSeatSearch] = useState("");
 
   const selectedSeat = snapshot.seats.find((seat) => seat.key === selectedSeatKey) ?? null;
   const selectedSeatMember = selectedSeat?.assignedSlackUserId
     ? snapshot.members.find((member) => member.slackUserId === selectedSeat.assignedSlackUserId) ?? null
     : null;
+  const currentUser = snapshot.members.find((member) => member.id === snapshot.currentUserId) ?? null;
+  const canManageSeats =
+    currentUser?.email?.toLowerCase() === "una@slogup.com" ||
+    currentUser?.email?.toLowerCase() === "una@example.com";
+  const normalizedSeatSearch = seatSearch.trim().toLowerCase();
+  const filteredMembers = snapshot.members.filter((member) => {
+    if (!normalizedSeatSearch) {
+      return true;
+    }
+
+    return (
+      member.displayName.toLowerCase().includes(normalizedSeatSearch) ||
+      member.slackUserId.toLowerCase().includes(normalizedSeatSearch)
+    );
+  });
   const handleSeatClick = (seatKey: string) => {
+    if (!canManageSeats) {
+      return;
+    }
+
     console.log("[seat-click]", {
       seatKey,
       seat: snapshot.seats.find((seat) => seat.key === seatKey) ?? null
     });
     setSelectedSeatKey(seatKey);
+    setSeatSearch("");
   };
 
   return (
@@ -171,6 +192,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               {Array.from({ length: band.seats }).map((_, index) => (
                 <button
                   className={`seat-chip ${snapshot.seats.find((seat) => seat.key === `${band.rowKey}-${String(index + 1).padStart(2, "0")}`)?.assignedSlackUserId ? "is-assigned" : ""}`}
+                  disabled={!canManageSeats}
                   key={index}
                   onClick={() => handleSeatClick(`${band.rowKey}-${String(index + 1).padStart(2, "0")}`)}
                   type="button"
@@ -190,6 +212,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               {Array.from({ length: band.seats }).map((_, index) => (
                 <button
                   className={`seat-chip ${snapshot.seats.find((seat) => seat.key === `${band.rowKey}-${String(index + 1).padStart(2, "0")}`)?.assignedSlackUserId ? "is-assigned" : ""}`}
+                  disabled={!canManageSeats}
                   key={index}
                   onClick={() => handleSeatClick(`${band.rowKey}-${String(index + 1).padStart(2, "0")}`)}
                   type="button"
@@ -216,7 +239,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             </div>
           ))}
         </div>
-        {selectedSeat ? (
+        {selectedSeat && canManageSeats ? (
           <aside className="seat-assignment-panel">
             <div className="floating-header">
               <div>
@@ -230,8 +253,17 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             <p className="seat-assignment-copy">
               현재 배정: {selectedSeatMember ? `${selectedSeatMember.displayName} (${selectedSeatMember.slackUserId})` : "없음"}
             </p>
+            <label className="seat-search-field">
+              <span>유저 검색</span>
+              <input
+                onChange={(event) => setSeatSearch(event.target.value)}
+                placeholder="닉네임 또는 Slack ID"
+                type="text"
+                value={seatSearch}
+              />
+            </label>
             <div className="seat-member-list">
-              {snapshot.members.map((member) => (
+              {filteredMembers.map((member) => (
                 <button
                   className={`seat-member-option ${selectedSeat.assignedSlackUserId === member.slackUserId ? "is-selected" : ""}`}
                   key={member.id}
@@ -244,6 +276,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                   <small>{member.slackUserId}</small>
                 </button>
               ))}
+              {filteredMembers.length === 0 ? <p className="seat-empty-state">검색 결과가 없습니다.</p> : null}
             </div>
             <div className="seat-assignment-actions">
               <button
@@ -259,7 +292,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
         ) : null}
       </div>
       <div className="seat-debug-indicator">
-        선택된 좌석: {selectedSeatKey ?? "없음"}
+        선택된 좌석: {selectedSeatKey ?? "없음"} · 권한: {canManageSeats ? "관리자" : "읽기 전용"}
       </div>
     </section>
   );
