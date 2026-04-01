@@ -73,6 +73,13 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const selectedSeatMember = selectedSeat?.assignedSlackUserId
     ? snapshot.members.find((member) => member.slackUserId === selectedSeat.assignedSlackUserId) ?? null
     : null;
+  const handleSeatClick = (seatKey: string) => {
+    console.log("[seat-click]", {
+      seatKey,
+      seat: snapshot.seats.find((seat) => seat.key === seatKey) ?? null
+    });
+    setSelectedSeatKey(seatKey);
+  };
 
   return (
     <section className="office-scene">
@@ -165,7 +172,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 <button
                   className={`seat-chip ${snapshot.seats.find((seat) => seat.key === `${band.rowKey}-${String(index + 1).padStart(2, "0")}`)?.assignedSlackUserId ? "is-assigned" : ""}`}
                   key={index}
-                  onClick={() => setSelectedSeatKey(`${band.rowKey}-${String(index + 1).padStart(2, "0")}`)}
+                  onClick={() => handleSeatClick(`${band.rowKey}-${String(index + 1).padStart(2, "0")}`)}
                   type="button"
                 >
                   <strong>{`${band.rowKey}-${String(index + 1).padStart(2, "0")}`}</strong>
@@ -184,7 +191,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 <button
                   className={`seat-chip ${snapshot.seats.find((seat) => seat.key === `${band.rowKey}-${String(index + 1).padStart(2, "0")}`)?.assignedSlackUserId ? "is-assigned" : ""}`}
                   key={index}
-                  onClick={() => setSelectedSeatKey(`${band.rowKey}-${String(index + 1).padStart(2, "0")}`)}
+                  onClick={() => handleSeatClick(`${band.rowKey}-${String(index + 1).padStart(2, "0")}`)}
                   type="button"
                 >
                   <strong>{`${band.rowKey}-${String(index + 1).padStart(2, "0")}`}</strong>
@@ -250,6 +257,9 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             </div>
           </aside>
         ) : null}
+      </div>
+      <div className="seat-debug-indicator">
+        선택된 좌석: {selectedSeatKey ?? "없음"}
       </div>
     </section>
   );
