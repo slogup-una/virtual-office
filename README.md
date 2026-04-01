@@ -1,70 +1,92 @@
-# Getting Started with Create React App
+# Virtual Office
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Slack 상태 기반 버추얼 오피스 MVP 예제입니다. 기획안의 Phase 1 범위를 기준으로 아래 기능을 구현했습니다.
 
-## Available Scripts
+- Slack OAuth 로그인 또는 데모 로그인
+- Slack 사용자/상태 동기화
+- Slack 메시지 전송
+- Slack Events API 기반 메시지 수신
+- React 기반 오피스 맵, 팀 상태 패널, 채팅 패널
+- Zustand 로컬 UI 상태 + TanStack Query 서버 상태 관리
 
-In the project directory, you can run:
+## 폴더 구조
 
-### `npm start`
+```text
+.
+├── apps
+│   ├── server
+│   │   ├── src
+│   │   │   ├── middleware
+│   │   │   ├── routes
+│   │   │   ├── services
+│   │   │   ├── slack
+│   │   │   └── types
+│   │   ├── .env.example
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── web
+│       ├── src
+│       │   ├── api
+│       │   ├── features
+│       │   ├── hooks
+│       │   ├── stores
+│       │   └── types
+│       ├── .env.example
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── vite.config.ts
+└── package.json
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 실행 방법
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+npm install
+cp apps/server/.env.example apps/server/.env
+cp apps/web/.env.example apps/web/.env
+npm run dev
+```
 
-### `npm test`
+Slack 실연동 시 `apps/server/.env` 에 아래 값을 채우면 됩니다.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- `SLACK_CLIENT_ID`
+- `SLACK_CLIENT_SECRET`
+- `SLACK_SIGNING_SECRET`
+- `SLACK_BOT_TOKEN`
+- `SLACK_REDIRECT_URI`
 
-### `npm run build`
+## Render / Vercel 배포
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Render: 루트의 `render.yaml` 사용
+- Vercel: 루트의 `vercel.json` 사용
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+배포 순서는 아래가 안전합니다.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Render에 서버 배포
+2. Render 서버 URL 확인
+3. Vercel에 `VITE_API_BASE_URL` 을 Render URL로 설정 후 프론트 배포
+4. Render의 `CLIENT_ORIGIN` 을 Vercel URL로 설정
+5. Slack App의 Redirect URL을 `https://<render-domain>/auth/slack/callback` 으로 등록
 
-### `npm run eject`
+필수 환경 변수 예시:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- Render
+  - `CLIENT_ORIGIN=https://<your-vercel-domain>`
+  - `SLACK_REDIRECT_URI=https://<your-render-domain>/auth/slack/callback`
+- Vercel
+  - `VITE_API_BASE_URL=https://<your-render-domain>`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 상태 관리
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- TanStack Query: 세션, 오피스 스냅샷, 메시지 목록
+- Zustand: 선택 구역, 채널, 메시지 draft 같은 UI 상태
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 주요 서버 엔드포인트
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- `GET /auth/slack/start`
+- `GET /auth/slack/callback`
+- `POST /auth/demo-login`
+- `GET /api/office`
+- `GET /api/messages`
+- `POST /api/messages`
+- `POST /slack/events`

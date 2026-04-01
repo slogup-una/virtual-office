@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/api/client.ts","./src/features/auth/authgate.tsx","./src/features/chat/chatpanel.tsx","./src/features/layout/appshell.tsx","./src/features/office/officemap.tsx","./src/features/office/teamsidebar.tsx","./src/hooks/useofficedata.ts","./src/stores/uistore.ts","./src/types/domain.ts"],"version":"5.9.3"}
