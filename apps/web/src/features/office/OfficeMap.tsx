@@ -74,10 +74,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const selectedSeatMember = selectedSeat?.assignedSlackUserId
     ? snapshot.members.find((member) => member.slackUserId === selectedSeat.assignedSlackUserId) ?? null
     : null;
-  const currentUser = snapshot.members.find((member) => member.id === snapshot.currentUserId) ?? null;
-  const canManageSeats =
-    currentUser?.email?.toLowerCase() === "una@slogup.com" ||
-    currentUser?.email?.toLowerCase() === "una@example.com";
+  const canManageSeats = snapshot.canManageSeats;
   const normalizedSeatSearch = seatSearch.trim().toLowerCase();
   const filteredMembers = snapshot.members.filter((member) => {
     if (!normalizedSeatSearch) {

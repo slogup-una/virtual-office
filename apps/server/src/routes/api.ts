@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 
-import { isSeatAdminEmail } from "../config/admin.js";
+import { isSeatAdminSlackUserId } from "../config/admin.js";
 import { isSlackConfigured } from "../config/env.js";
 import {
   addMessage,
@@ -31,7 +31,13 @@ router.get("/office", (request, response) => {
     return;
   }
 
-  response.json(getSnapshot(request.sessionUser.id, request.sessionUser.workspaceId));
+  response.json(
+    getSnapshot(
+      request.sessionUser.id,
+      request.sessionUser.workspaceId,
+      isSeatAdminSlackUserId(request.sessionUser.slackUserId)
+    )
+  );
 });
 
 router.get("/messages", (request, response) => {
@@ -50,8 +56,7 @@ router.put("/seats/:seatKey", (request, response) => {
     return;
   }
 
-  const currentMember = getMemberById(request.sessionUser.id);
-  if (!currentMember || !isSeatAdminEmail(currentMember.email)) {
+  if (!isSeatAdminSlackUserId(request.sessionUser.slackUserId)) {
     response.status(403).json({ message: "Forbidden" });
     return;
   }
@@ -71,8 +76,7 @@ router.delete("/seats/:seatKey", (request, response) => {
     return;
   }
 
-  const currentMember = getMemberById(request.sessionUser.id);
-  if (!currentMember || !isSeatAdminEmail(currentMember.email)) {
+  if (!isSeatAdminSlackUserId(request.sessionUser.slackUserId)) {
     response.status(403).json({ message: "Forbidden" });
     return;
   }

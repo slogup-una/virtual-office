@@ -1,10 +1,10 @@
-export const seatAdminEmails = new Set([
-    "una@slogup.com",
-    "una@example.com"
+export const seatAdminSlackUserIds = new Set([
+    "U_DEMO_1"
+    // Replace with your real Slack user ID, e.g. "U08ABC12345"
 ]);
-export function isSeatAdminEmail(email) {
-    if (!email) {
+export function isSeatAdminSlackUserId(slackUserId) {
+    if (!slackUserId) {
         return false;
     }
-    return seatAdminEmails.has(email.toLowerCase());
+    return seatAdminSlackUserIds.has(slackUserId);
 }

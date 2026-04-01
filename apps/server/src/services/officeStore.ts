@@ -222,10 +222,11 @@ export function listMessages(channelId = "general") {
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }
 
-export function getSnapshot(currentUserId: string, workspaceId: string): OfficeSnapshot {
+export function getSnapshot(currentUserId: string, workspaceId: string, canManageSeats = false): OfficeSnapshot {
   return {
     workspace: getWorkspace(workspaceId),
     currentUserId,
+    canManageSeats,
     members: listMembers().filter((member) => member.workspaceId === workspaceId),
     seats: listSeats(workspaceId),
     messages: listMessages()

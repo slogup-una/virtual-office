@@ -58,6 +58,7 @@ export interface OfficeSeat {
 export interface OfficeSnapshot {
   workspace: WorkspaceInfo;
   currentUserId: string;
+  canManageSeats: boolean;
   members: OfficeMember[];
   seats: OfficeSeat[];
   messages: OfficeMessage[];

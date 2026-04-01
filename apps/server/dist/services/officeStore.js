@@ -179,10 +179,11 @@ export function listMessages(channelId = "general") {
         .filter((message) => message.channelId === channelId)
         .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }
-export function getSnapshot(currentUserId, workspaceId) {
+export function getSnapshot(currentUserId, workspaceId, canManageSeats = false) {
     return {
         workspace: getWorkspace(workspaceId),
         currentUserId,
+        canManageSeats,
         members: listMembers().filter((member) => member.workspaceId === workspaceId),
         seats: listSeats(workspaceId),
         messages: listMessages()
