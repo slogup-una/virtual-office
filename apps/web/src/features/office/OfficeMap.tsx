@@ -104,8 +104,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             style={{ left: `${member.x}%`, top: `${member.y}%` }}
             title={`${member.displayName} · ${member.slackStatusText ?? member.officeStatus}`}
           >
+            {member.id === snapshot.currentUserId ? <em className="you-badge">YOU</em> : null}
             <img alt={member.displayName} src={member.avatarUrl} />
-            {member.id === snapshot.currentUserId ? <em>YOU</em> : null}
             <span>{member.displayName}</span>
           </div>
         ))}

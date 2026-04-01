@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { apiClient, clearStoredSession } from "../../api/client";
 import { useOfficeSnapshot } from "../../hooks/useOfficeData";
@@ -14,17 +14,15 @@ export function AppShell() {
   const setCurrentUserPosition = useUIStore((state) => state.setCurrentUserPosition);
   const moveCurrentUserPosition = useUIStore((state) => state.moveCurrentUserPosition);
   const currentUser = data?.members.find((member) => member.id === data.currentUserId) ?? null;
+  const initializedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!currentUser) {
       return;
     }
 
-    if (
-      !currentUserPosition ||
-      currentUserPosition.x !== currentUser.x ||
-      currentUserPosition.y !== currentUser.y
-    ) {
+    if (initializedUserIdRef.current !== currentUser.id || !currentUserPosition) {
+      initializedUserIdRef.current = currentUser.id;
       setCurrentUserPosition({ x: currentUser.x, y: currentUser.y });
     }
   }, [currentUser, currentUserPosition, setCurrentUserPosition]);
