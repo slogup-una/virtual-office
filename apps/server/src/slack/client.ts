@@ -4,12 +4,93 @@ import { env } from "../config/env.js";
 import type { SlackProfile } from "../types/domain.js";
 
 const slackApiBase = "https://slack.com/api";
+const refreshLeewayMs = 60 * 1000;
 
-async function slackFetch<T>(path: string, init?: RequestInit) {
+interface SlackWorkspaceToken {
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: number;
+}
+
+const workspaceTokens = new Map<string, SlackWorkspaceToken>();
+
+function getFallbackWorkspaceToken(): SlackWorkspaceToken | null {
+  return env.SLACK_BOT_TOKEN
+    ? {
+        accessToken: env.SLACK_BOT_TOKEN
+      }
+    : null;
+}
+
+function getStoredWorkspaceToken(workspaceId?: string) {
+  if (workspaceId) {
+    return workspaceTokens.get(workspaceId) ?? getFallbackWorkspaceToken();
+  }
+
+  return workspaceTokens.values().next().value ?? getFallbackWorkspaceToken();
+}
+
+function shouldRefreshToken(token: SlackWorkspaceToken) {
+  return Boolean(token.refreshToken && token.expiresAt && Date.now() >= token.expiresAt - refreshLeewayMs);
+}
+
+async function refreshWorkspaceAccessToken(workspaceId: string, refreshToken: string) {
+  const params = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: env.SLACK_CLIENT_ID,
+    client_secret: env.SLACK_CLIENT_SECRET
+  });
+
+  const response = await fetch(`${slackApiBase}/oauth.v2.access`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params.toString()
+  });
+
+  const data = (await response.json()) as {
+    ok: boolean;
+    error?: string;
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+  };
+
+  if (!data.ok || !data.access_token) {
+    throw new Error(data.error ?? "Slack token refresh failed");
+  }
+
+  const nextToken: SlackWorkspaceToken = {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token ?? refreshToken,
+    expiresAt: typeof data.expires_in === "number" ? Date.now() + data.expires_in * 1000 : undefined
+  };
+
+  workspaceTokens.set(workspaceId, nextToken);
+  return nextToken;
+}
+
+async function getSlackAccessToken(workspaceId?: string) {
+  const token = getStoredWorkspaceToken(workspaceId);
+  if (!token) {
+    throw new Error("Slack token is not configured");
+  }
+
+  if (workspaceId && shouldRefreshToken(token)) {
+    return refreshWorkspaceAccessToken(workspaceId, token.refreshToken!);
+  }
+
+  return token;
+}
+
+async function slackFetch<T>(path: string, workspaceId?: string, init?: RequestInit) {
+  const token = await getSlackAccessToken(workspaceId);
   const response = await fetch(`${slackApiBase}${path}`, {
     ...init,
     headers: {
-      Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+      Authorization: `Bearer ${token.accessToken}`,
       "Content-Type": "application/json; charset=utf-8",
       ...(init?.headers ?? {})
     }
@@ -46,22 +127,32 @@ export async function exchangeCodeForToken(code: string) {
   const data = (await response.json()) as {
     ok: boolean;
     error?: string;
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
     authed_user?: { id: string };
     team?: { id: string; name?: string };
   };
 
-  if (!data.ok || !data.authed_user?.id || !data.team?.id) {
+  if (!data.ok || !data.authed_user?.id || !data.team?.id || !data.access_token) {
     throw new Error(data.error ?? "Slack OAuth failed");
   }
 
   return {
     slackUserId: data.authed_user.id,
     workspaceId: data.team.id,
-    workspaceName: data.team.name ?? "Slack Workspace"
+    workspaceName: data.team.name ?? "Slack Workspace",
+    botAccessToken: data.access_token,
+    botRefreshToken: data.refresh_token,
+    botTokenExpiresAt: typeof data.expires_in === "number" ? Date.now() + data.expires_in * 1000 : undefined
   };
 }
 
-export async function fetchSlackUserProfile(slackUserId: string) {
+export function storeSlackWorkspaceToken(workspaceId: string, token: SlackWorkspaceToken) {
+  workspaceTokens.set(workspaceId, token);
+}
+
+export async function fetchSlackUserProfile(workspaceId: string, slackUserId: string) {
   const data = await slackFetch<{
     user: {
       id: string;
@@ -73,9 +164,9 @@ export async function fetchSlackUserProfile(slackUserId: string) {
         status_text?: string;
         status_emoji?: string;
       };
-      presence?: "active" | "away";
+        presence?: "active" | "away";
     };
-  }>(`/users.info?user=${encodeURIComponent(slackUserId)}`);
+  }>(`/users.info?user=${encodeURIComponent(slackUserId)}`, workspaceId);
 
   const profile = data.user.profile;
   const result: SlackProfile = {
@@ -91,7 +182,7 @@ export async function fetchSlackUserProfile(slackUserId: string) {
   return result;
 }
 
-export async function fetchWorkspaceMembers() {
+export async function fetchWorkspaceMembers(workspaceId: string) {
   const data = await slackFetch<{
     members: Array<{
       id: string;
@@ -107,7 +198,7 @@ export async function fetchWorkspaceMembers() {
         status_emoji?: string;
       };
     }>;
-  }>("/users.list");
+  }>("/users.list", workspaceId);
 
   const activeMembers = data.members.filter(
     (member) => !member.deleted && !member.is_bot && member.id !== "USLACKBOT"
@@ -119,7 +210,8 @@ export async function fetchWorkspaceMembers() {
 
       try {
         const presenceData = await slackFetch<{ presence: "active" | "away" }>(
-          `/users.getPresence?user=${encodeURIComponent(member.id)}`
+          `/users.getPresence?user=${encodeURIComponent(member.id)}`,
+          workspaceId
         );
         presence = presenceData.presence;
       } catch {
@@ -141,8 +233,8 @@ export async function fetchWorkspaceMembers() {
   return profiles;
 }
 
-export async function postSlackMessage(channelId: string, text: string) {
-  return slackFetch<{ ts: string; channel: string }>("/chat.postMessage", {
+export async function postSlackMessage(workspaceId: string, channelId: string, text: string) {
+  return slackFetch<{ ts: string; channel: string }>("/chat.postMessage", workspaceId, {
     method: "POST",
     body: JSON.stringify({
       channel: channelId,

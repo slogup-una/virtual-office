@@ -58,7 +58,9 @@ const entrancePosition = {
   y: 5
 } as const;
 
-const motionDurationMs = 1200;
+const motionStepDelayMs = 48;
+const motionStepDistance = 1.1;
+const corridorY = 10;
 
 type SnapshotMember = OfficeSnapshot["members"][number];
 
@@ -103,6 +105,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const [motionAvatars, setMotionAvatars] = useState<MotionAvatar[]>([]);
   const previousMembersRef = useRef<Map<string, SnapshotMember>>(new Map());
   const timeoutIdsRef = useRef<Map<string, number>>(new Map());
+  const currentUser = snapshot.members.find((member) => member.id === snapshot.currentUserId) ?? null;
+  const isDemoWorkspace = snapshot.workspace.id === "demo-workspace";
 
   const selectedSeat = snapshot.seats.find((seat) => seat.key === selectedSeatKey) ?? null;
   const selectedSeatMember = selectedSeat?.assignedSlackUserId
@@ -144,6 +148,141 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     URL.revokeObjectURL(url);
   };
 
+  const runMotion = ({
+    member,
+    startX,
+    startY,
+    endX,
+    endY,
+    startOpacity,
+    endOpacity,
+    motionStatus
+  }: {
+    member: SnapshotMember;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    startOpacity: number;
+    endOpacity: number;
+    motionStatus: SnapshotMember["officeStatus"];
+  }) => {
+    const clearExistingMotion = () => {
+      const existingTimeoutId = timeoutIdsRef.current.get(member.id);
+      if (existingTimeoutId) {
+        window.clearTimeout(existingTimeoutId);
+      }
+    };
+
+    clearExistingMotion();
+
+    const routePoints = [
+      { x: startX, y: startY },
+      { x: startX, y: corridorY },
+      { x: endX, y: corridorY },
+      { x: endX, y: endY }
+    ];
+
+    const totalDistance = routePoints.slice(1).reduce((distance, point, index) => {
+      const previousPoint = routePoints[index];
+      return distance + Math.abs(point.x - previousPoint.x) + Math.abs(point.y - previousPoint.y);
+    }, 0);
+
+    setMotionAvatars((current) => [
+      ...current.filter((item) => item.id !== member.id),
+      {
+        id: member.id,
+        member: {
+          ...member,
+          officeStatus: motionStatus
+        },
+        x: startX,
+        y: startY,
+        opacity: startOpacity
+      }
+    ]);
+
+    let travelledDistance = 0;
+    let segmentIndex = 0;
+    let currentX = startX;
+    let currentY = startY;
+
+    const stepMotion = () => {
+      const nextPoint = routePoints[segmentIndex + 1];
+      if (!nextPoint) {
+        setMotionAvatars((current) => current.filter((item) => item.id !== member.id));
+        timeoutIdsRef.current.delete(member.id);
+        return;
+      }
+
+      const deltaX = nextPoint.x - currentX;
+      const deltaY = nextPoint.y - currentY;
+
+      if (Math.abs(deltaX) <= motionStepDistance && Math.abs(deltaY) <= motionStepDistance) {
+        travelledDistance += Math.abs(deltaX) + Math.abs(deltaY);
+        currentX = nextPoint.x;
+        currentY = nextPoint.y;
+        segmentIndex += 1;
+      } else if (Math.abs(deltaX) > 0) {
+        const stepX = Math.sign(deltaX) * Math.min(Math.abs(deltaX), motionStepDistance);
+        currentX += stepX;
+        travelledDistance += Math.abs(stepX);
+      } else if (Math.abs(deltaY) > 0) {
+        const stepY = Math.sign(deltaY) * Math.min(Math.abs(deltaY), motionStepDistance);
+        currentY += stepY;
+        travelledDistance += Math.abs(stepY);
+      }
+
+      const progress = totalDistance === 0 ? 1 : Math.min(1, travelledDistance / totalDistance);
+      const nextOpacity = startOpacity + (endOpacity - startOpacity) * progress;
+
+      setMotionAvatars((current) =>
+        current.map((item) =>
+          item.id === member.id
+            ? {
+                ...item,
+                x: currentX,
+                y: currentY,
+                opacity: nextOpacity
+              }
+            : item
+        )
+      );
+
+      const timeoutId = window.setTimeout(stepMotion, motionStepDelayMs);
+      timeoutIdsRef.current.set(member.id, timeoutId);
+    };
+
+    const timeoutId = window.setTimeout(stepMotion, motionStepDelayMs);
+    timeoutIdsRef.current.set(member.id, timeoutId);
+  };
+
+  const triggerDepartureMotion = (member: SnapshotMember) => {
+    runMotion({
+      member,
+      startX: member.x,
+      startY: member.y,
+      endX: entrancePosition.x,
+      endY: entrancePosition.y,
+      startOpacity: 1,
+      endOpacity: 0,
+      motionStatus: "away"
+    });
+  };
+
+  const triggerArrivalMotion = (member: SnapshotMember) => {
+    runMotion({
+      member,
+      startX: entrancePosition.x,
+      startY: entrancePosition.y,
+      endX: member.x,
+      endY: member.y,
+      startOpacity: 0.3,
+      endOpacity: 1,
+      motionStatus: "active"
+    });
+  };
+
   useEffect(() => {
     const previousMembers = previousMembersRef.current;
     const nextMembers = new Map(snapshot.members.map((member) => [member.id, member]));
@@ -159,88 +298,11 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
       const isUnavailable = member.officeStatus === "away" || member.officeStatus === "offline";
 
       if (!wasUnavailable && isUnavailable) {
-        const motionMember = {
-          ...previousMember,
-          officeStatus: "away" as const
-        };
-
-        setMotionAvatars((current) => [
-          ...current.filter((item) => item.id !== member.id),
-          {
-            id: member.id,
-            member: motionMember,
-            x: previousMember.x,
-            y: previousMember.y,
-            opacity: 1
-          }
-        ]);
-
-        window.requestAnimationFrame(() => {
-          setMotionAvatars((current) =>
-            current.map((item) =>
-              item.id === member.id
-                ? {
-                    ...item,
-                    x: entrancePosition.x,
-                    y: entrancePosition.y,
-                    opacity: 0
-                  }
-                : item
-            )
-          );
-        });
-
-        const existingTimeoutId = timeoutIdsRef.current.get(member.id);
-        if (existingTimeoutId) {
-          window.clearTimeout(existingTimeoutId);
-        }
-
-        const timeoutId = window.setTimeout(() => {
-          setMotionAvatars((current) => current.filter((item) => item.id !== member.id));
-          timeoutIdsRef.current.delete(member.id);
-        }, motionDurationMs);
-
-        timeoutIdsRef.current.set(member.id, timeoutId);
+        triggerDepartureMotion(previousMember);
       }
 
       if (wasUnavailable && !isUnavailable && member.officeStatus === "active") {
-        setMotionAvatars((current) => [
-          ...current.filter((item) => item.id !== member.id),
-          {
-            id: member.id,
-            member,
-            x: entrancePosition.x,
-            y: entrancePosition.y,
-            opacity: 0.3
-          }
-        ]);
-
-        window.requestAnimationFrame(() => {
-          setMotionAvatars((current) =>
-            current.map((item) =>
-              item.id === member.id
-                ? {
-                    ...item,
-                    x: member.x,
-                    y: member.y,
-                    opacity: 1
-                  }
-                : item
-            )
-          );
-        });
-
-        const existingTimeoutId = timeoutIdsRef.current.get(member.id);
-        if (existingTimeoutId) {
-          window.clearTimeout(existingTimeoutId);
-        }
-
-        const timeoutId = window.setTimeout(() => {
-          setMotionAvatars((current) => current.filter((item) => item.id !== member.id));
-          timeoutIdsRef.current.delete(member.id);
-        }, motionDurationMs);
-
-        timeoutIdsRef.current.set(member.id, timeoutId);
+        triggerArrivalMotion(member);
       }
     });
 
@@ -385,6 +447,20 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             })
           )}
         </div>
+        {isDemoWorkspace && currentUser ? (
+          <aside className="demo-motion-panel">
+            <span className="eyebrow">Demo Motion</span>
+            <strong>{currentUser.displayName}</strong>
+            <div className="demo-motion-actions">
+              <button className="ghost-button" onClick={() => triggerDepartureMotion(currentUser)} type="button">
+                퇴장 테스트
+              </button>
+              <button className="ghost-button" onClick={() => triggerArrivalMotion(currentUser)} type="button">
+                입장 테스트
+              </button>
+            </div>
+          </aside>
+        ) : null}
         {selectedSeat && canManageSeats ? (
           <aside className="seat-assignment-panel">
             <div className="floating-header">

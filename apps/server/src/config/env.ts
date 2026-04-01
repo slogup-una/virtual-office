@@ -23,6 +23,5 @@ export const env = envSchema.parse(process.env);
 export const isSlackConfigured = Boolean(
   env.SLACK_CLIENT_ID &&
     env.SLACK_CLIENT_SECRET &&
-    env.SLACK_BOT_TOKEN &&
     env.SLACK_SIGNING_SECRET
 );

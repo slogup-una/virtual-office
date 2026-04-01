@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiClient, clearStoredSession } from "../../api/client";
 import { useOfficeSnapshot } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
+import type { OfficeMember } from "../../types/domain";
 import { ChatPanel } from "../chat/ChatPanel";
 import { OfficeMap } from "../office/OfficeMap";
 import { TeamSidebar } from "../office/TeamSidebar";
@@ -20,6 +21,9 @@ const starSeed = Array.from({ length: 90 }).map((_, index) => ({
 
 const skylineHeights = [88, 130, 112, 164, 96, 142, 104, 176, 118, 154, 94, 136];
 
+const isUnavailableStatus = (status: OfficeMember["officeStatus"]) =>
+  status === "away" || status === "offline";
+
 export function AppShell() {
   const { data, isLoading } = useOfficeSnapshot();
   const selectedZoneId = useUIStore((state) => state.selectedZoneId);
@@ -29,7 +33,10 @@ export function AppShell() {
   const currentUser = data?.members.find((member) => member.id === data.currentUserId) ?? null;
   const initializedUserIdRef = useRef<string | null>(null);
   const initializedSeatKeyRef = useRef<string | undefined>(undefined);
+  const previousMembersRef = useRef<Map<string, OfficeMember>>(new Map());
+  const noticeTimeoutRef = useRef<number | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentUser) {
@@ -87,6 +94,62 @@ export function AppShell() {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    const previousMembers = previousMembersRef.current;
+    const nextMembers = new Map(data.members.map((member) => [member.id, member]));
+
+    if (previousMembers.size > 0) {
+      const currentHour = new Date().getHours();
+
+      for (const member of data.members) {
+        const previousMember = previousMembers.get(member.id);
+        if (!previousMember) {
+          continue;
+        }
+
+        const wasUnavailable = isUnavailableStatus(previousMember.officeStatus);
+        const isUnavailable = isUnavailableStatus(member.officeStatus);
+
+        if (wasUnavailable && !isUnavailable && currentHour >= 8 && currentHour < 11) {
+          setNoticeMessage(`${member.displayName}님 좋은 아침입니다.`);
+          break;
+        }
+
+        if (!wasUnavailable && isUnavailable && currentHour >= 17 && currentHour < 20) {
+          setNoticeMessage(`${member.displayName}님 고생하셨습니다.`);
+          break;
+        }
+      }
+    }
+
+    previousMembersRef.current = nextMembers;
+  }, [data]);
+
+  useEffect(() => {
+    if (!noticeMessage) {
+      return;
+    }
+
+    if (noticeTimeoutRef.current) {
+      window.clearTimeout(noticeTimeoutRef.current);
+    }
+
+    noticeTimeoutRef.current = window.setTimeout(() => {
+      setNoticeMessage(null);
+      noticeTimeoutRef.current = null;
+    }, 6000);
+
+    return () => {
+      if (noticeTimeoutRef.current) {
+        window.clearTimeout(noticeTimeoutRef.current);
+      }
+    };
+  }, [noticeMessage]);
 
   if (isLoading || !data) {
     return <div className="screen-center">오피스 데이터를 불러오는 중...</div>;
@@ -193,6 +256,12 @@ export function AppShell() {
           <div className="hud-date">{formattedDate}</div>
         </div>
       </header>
+      {noticeMessage ? (
+        <div className="hud-notice-bar">
+          <div className="hud-notice-pill">NOTICE</div>
+          <div className="hud-notice-text">{noticeMessage}</div>
+        </div>
+      ) : null}
       <OfficeMap snapshot={snapshot} />
       <TeamSidebar snapshot={snapshot} />
       <ChatPanel workspace={snapshot.workspace} />

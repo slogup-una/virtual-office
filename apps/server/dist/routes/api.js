@@ -100,7 +100,7 @@ router.post("/messages", async (request, response) => {
         return;
     }
     if (isSlackConfigured) {
-        await postSlackMessage(parsed.data.channelId, parsed.data.text);
+        await postSlackMessage(request.sessionUser.workspaceId, parsed.data.channelId, parsed.data.text);
     }
     const item = addMessage({
         channelId: parsed.data.channelId,

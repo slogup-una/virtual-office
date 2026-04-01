@@ -27,7 +27,7 @@ router.post("/events", async (request, response) => {
         if (event.type === "message" && typeof event.user === "string" && typeof event.text === "string") {
             const workspaceId = typeof body.team_id === "string" ? body.team_id : undefined;
             const member = getMemberBySlackId(event.user, workspaceId) ??
-                createOrUpdateMemberFromSlack(await fetchSlackUserProfile(event.user), workspaceId ?? "slack-workspace");
+                createOrUpdateMemberFromSlack(await fetchSlackUserProfile(workspaceId ?? "slack-workspace", event.user), workspaceId ?? "slack-workspace");
             addMessage({
                 channelId: typeof event.channel === "string" ? event.channel : "general",
                 userId: member.id,
@@ -42,7 +42,8 @@ router.post("/events", async (request, response) => {
         if (event.type === "user_change") {
             const user = event.user;
             if (typeof user?.id === "string") {
-                const profile = await fetchSlackUserProfile(user.id);
+                const workspaceId = typeof body.team_id === "string" ? body.team_id : "slack-workspace";
+                const profile = await fetchSlackUserProfile(workspaceId, user.id);
                 createOrUpdateMemberFromSlack(profile, typeof body.team_id === "string" ? body.team_id : "slack-workspace");
             }
         }

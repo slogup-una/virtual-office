@@ -2,7 +2,7 @@ import { Router } from "express";
 import { env, isSlackConfigured } from "../config/env.js";
 import { createOrUpdateMemberFromSlack, getMemberById, upsertWorkspace } from "../services/officeStore.js";
 import { createSession, destroySession } from "../services/sessionStore.js";
-import { exchangeCodeForToken, fetchSlackUserProfile, fetchWorkspaceMembers } from "../slack/client.js";
+import { exchangeCodeForToken, fetchSlackUserProfile, fetchWorkspaceMembers, storeSlackWorkspaceToken } from "../slack/client.js";
 const router = Router();
 router.get("/session", (request, response) => {
     if (!request.sessionUser) {
@@ -38,11 +38,16 @@ router.get("/slack/callback", async (request, response) => {
             name: token.workspaceName,
             defaultChannelId: "general"
         });
-        const workspaceMembers = await fetchWorkspaceMembers();
+        storeSlackWorkspaceToken(token.workspaceId, {
+            accessToken: token.botAccessToken,
+            refreshToken: token.botRefreshToken,
+            expiresAt: token.botTokenExpiresAt
+        });
+        const workspaceMembers = await fetchWorkspaceMembers(token.workspaceId);
         workspaceMembers.forEach((workspaceMember) => {
             createOrUpdateMemberFromSlack(workspaceMember, token.workspaceId);
         });
-        const profile = await fetchSlackUserProfile(token.slackUserId);
+        const profile = await fetchSlackUserProfile(token.workspaceId, token.slackUserId);
         const member = createOrUpdateMemberFromSlack(profile, token.workspaceId);
         const sessionId = createSession({
             id: member.id,
