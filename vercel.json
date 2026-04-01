@@ -2,5 +2,11 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build --workspace @virtual-office/web",
   "outputDirectory": "apps/web/dist",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/((?!api/|assets/|favicon.ico|vite.svg).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
