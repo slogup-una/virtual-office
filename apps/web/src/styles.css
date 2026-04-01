@@ -786,7 +786,6 @@ input {
   position: absolute;
   display: grid;
   align-items: center;
-  grid-template-columns: repeat(5, 1fr);
   padding: 0 20px;
   background: rgba(40, 30, 16, 0.92);
   border-top: 3px solid var(--desk-light);
