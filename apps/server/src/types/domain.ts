@@ -48,6 +48,14 @@ export interface WorkspaceInfo {
   defaultChannelId: string;
 }
 
+export interface OfficeSeat {
+  key: string;
+  label: string;
+  x: number;
+  y: number;
+  assignedSlackUserId?: string;
+}
+
 export interface OfficeMessage {
   id: string;
   channelId: string;
@@ -62,6 +70,7 @@ export interface OfficeSnapshot {
   workspace: WorkspaceInfo;
   currentUserId: string;
   members: OfficeMember[];
+  seats: OfficeSeat[];
   messages: OfficeMessage[];
 }
 

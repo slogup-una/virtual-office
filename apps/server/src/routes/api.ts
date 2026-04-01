@@ -2,7 +2,14 @@ import { Router } from "express";
 import { z } from "zod";
 
 import { isSlackConfigured } from "../config/env.js";
-import { addMessage, getMemberById, getSnapshot, listMessages } from "../services/officeStore.js";
+import {
+  addMessage,
+  assignSeat,
+  clearSeatAssignment,
+  getMemberById,
+  getSnapshot,
+  listMessages
+} from "../services/officeStore.js";
 import { postSlackMessage } from "../slack/client.js";
 
 const router = Router();
@@ -29,6 +36,41 @@ router.get("/office", (request, response) => {
 router.get("/messages", (request, response) => {
   const channelId = typeof request.query.channelId === "string" ? request.query.channelId : "general";
   response.json({ items: listMessages(channelId) });
+});
+
+router.put("/seats/:seatKey", (request, response) => {
+  const payloadSchema = z.object({
+    slackUserId: z.string().min(1)
+  });
+  const parsed = payloadSchema.safeParse(request.body);
+
+  if (!parsed.success || !request.sessionUser) {
+    response.status(400).json({ message: "Invalid payload" });
+    return;
+  }
+
+  const result = assignSeat(request.sessionUser.workspaceId, request.params.seatKey, parsed.data.slackUserId);
+  if (!result) {
+    response.status(404).json({ message: "Seat not found" });
+    return;
+  }
+
+  response.json({ ok: true, result });
+});
+
+router.delete("/seats/:seatKey", (request, response) => {
+  if (!request.sessionUser) {
+    response.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  const result = clearSeatAssignment(request.sessionUser.workspaceId, request.params.seatKey);
+  if (!result) {
+    response.status(404).json({ message: "Seat assignment not found" });
+    return;
+  }
+
+  response.json({ ok: true, result });
 });
 
 router.post("/messages", async (request, response) => {

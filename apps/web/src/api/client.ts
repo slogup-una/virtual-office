@@ -51,5 +51,14 @@ export const apiClient = {
       method: "POST",
       body: JSON.stringify(payload)
     }),
+  assignSeat: (seatKey: string, payload: { slackUserId: string }) =>
+    request<{ ok: true }>(`/api/seats/${encodeURIComponent(seatKey)}`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    }),
+  clearSeat: (seatKey: string) =>
+    request<{ ok: true }>(`/api/seats/${encodeURIComponent(seatKey)}`, {
+      method: "DELETE"
+    }),
   getSlackLoginUrl: () => `${API_BASE_URL}/auth/slack/start`
 };

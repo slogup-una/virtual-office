@@ -1,7 +1,8 @@
 // Temporary seat assignment map.
-// Edit the Slack email on the left and assign a seat key on the right.
-export const seatAssignmentsByEmail = {
-    "una@slogup.com": "F-04"
+// Edit the Slack user ID on the left and assign a seat key on the right.
+// Replace `U_DEMO_1` with a real Slack user ID such as `U08ABC12345`.
+export const seatAssignmentsBySlackUserId = {
+    U_DEMO_1: "F-04"
 };
 export const seatDefinitions = [
     { key: "A-01", label: "자리1", x: 9.4, y: 32.8 },
@@ -39,6 +40,6 @@ export const seatDefinitions = [
     { key: "S-01", label: "자리1", x: 82.25, y: 72.6 },
     { key: "S-02", label: "자리2", x: 92.75, y: 72.6 },
     { key: "T-01", label: "자리1", x: 82.25, y: 79.6 },
-    { key: "T-02", label: "자리2", x: 92.75, y: 79.6 }
+    { key: "T-02", label: "자리2", x: 92.75, y: 79.6 },
 ];
 export const seatDefinitionByKey = Object.fromEntries(seatDefinitions.map((seat) => [seat.key, seat]));

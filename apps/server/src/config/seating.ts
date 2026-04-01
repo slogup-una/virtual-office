@@ -6,9 +6,10 @@ export interface SeatDefinition {
 }
 
 // Temporary seat assignment map.
-// Edit the Slack display name on the left and assign a seat key on the right.
-export const seatAssignmentsByEmail: Record<string, string> = {
-  "una@slogup.com": "F-04",
+// Edit the Slack user ID on the left and assign a seat key on the right.
+// Replace `U_DEMO_1` with a real Slack user ID such as `U08ABC12345`.
+export const seatAssignmentsBySlackUserId: Record<string, string> = {
+  U_DEMO_1: "F-04"
 };
 
 export const seatDefinitions: SeatDefinition[] = [

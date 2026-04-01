@@ -29,3 +29,26 @@ export function useSendMessage() {
     }
   });
 }
+
+export function useAssignSeat() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ seatKey, slackUserId }: { seatKey: string; slackUserId: string }) =>
+      apiClient.assignSeat(seatKey, { slackUserId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["office"] });
+    }
+  });
+}
+
+export function useClearSeat() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (seatKey: string) => apiClient.clearSeat(seatKey),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["office"] });
+    }
+  });
+}

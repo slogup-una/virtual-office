@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { seatAssignmentsByEmail, seatDefinitionByKey } from "../config/seating.js";
+import { seatAssignmentsBySlackUserId, seatDefinitionByKey } from "../config/seating.js";
 const workspaces = new Map([
     [
         "demo-workspace",
@@ -29,6 +29,7 @@ const positionByZone = {
 };
 const members = new Map();
 const messages = [];
+const seatAssignmentsByWorkspace = new Map();
 const seedMembers = [
     {
         id: "u-1",
@@ -80,6 +81,11 @@ const seedMembers = [
     }
 ];
 seedMembers.forEach((member) => members.set(member.id, member));
+seedMembers.forEach((member) => {
+    if (member.seatKey) {
+        setSeatAssignment("demo-workspace", member.seatKey, member.slackUserId);
+    }
+});
 messages.push({
     id: nanoid(),
     channelId: "general",
@@ -120,7 +126,7 @@ export function getWorkspace(workspaceId) {
 export function createOrUpdateMemberFromSlack(profile, workspaceId) {
     const existing = getMemberBySlackId(profile.id, workspaceId);
     const officeStatus = mapSlackProfileToStatus(profile);
-    const seatKey = existing?.seatKey ?? resolveSeatKeyForEmail(profile.email);
+    const seatKey = resolveSeatKeyForSlackUserId(workspaceId, profile.id) ?? existing?.seatKey;
     const placement = resolvePlacement(officeStatus, seatKey);
     const member = {
         id: existing?.id ?? nanoid(),
@@ -178,7 +184,62 @@ export function getSnapshot(currentUserId, workspaceId) {
         workspace: getWorkspace(workspaceId),
         currentUserId,
         members: listMembers().filter((member) => member.workspaceId === workspaceId),
+        seats: listSeats(workspaceId),
         messages: listMessages()
+    };
+}
+export function listSeats(workspaceId) {
+    const assignments = getSeatAssignments(workspaceId);
+    return Object.values(seatDefinitionByKey).map((seat) => ({
+        key: seat.key,
+        label: seat.label,
+        x: seat.x,
+        y: seat.y,
+        assignedSlackUserId: assignments.get(seat.key)
+    }));
+}
+export function assignSeat(workspaceId, seatKey, slackUserId) {
+    const seat = seatDefinitionByKey[seatKey];
+    if (!seat) {
+        return null;
+    }
+    const assignments = getSeatAssignments(workspaceId);
+    let clearedMember = null;
+    for (const [assignedSeatKey, assignedSlackUserId] of assignments.entries()) {
+        if (assignedSlackUserId === slackUserId && assignedSeatKey !== seatKey) {
+            assignments.delete(assignedSeatKey);
+        }
+    }
+    const previousSeatHolderSlackUserId = assignments.get(seatKey);
+    if (previousSeatHolderSlackUserId && previousSeatHolderSlackUserId !== slackUserId) {
+        const previousMember = getMemberBySlackId(previousSeatHolderSlackUserId, workspaceId);
+        if (previousMember) {
+            clearedMember = updateMemberSeat(previousMember, undefined);
+        }
+    }
+    assignments.set(seatKey, slackUserId);
+    const assignedMember = getMemberBySlackId(slackUserId, workspaceId);
+    const updatedMember = assignedMember ? updateMemberSeat(assignedMember, seatKey) : null;
+    return {
+        seatKey,
+        assignedSlackUserId: slackUserId,
+        updatedMember,
+        clearedMember
+    };
+}
+export function clearSeatAssignment(workspaceId, seatKey) {
+    const assignments = getSeatAssignments(workspaceId);
+    const slackUserId = assignments.get(seatKey);
+    if (!slackUserId) {
+        return null;
+    }
+    assignments.delete(seatKey);
+    const member = getMemberBySlackId(slackUserId, workspaceId);
+    const updatedMember = member ? updateMemberSeat(member, undefined) : null;
+    return {
+        seatKey,
+        clearedSlackUserId: slackUserId,
+        updatedMember
     };
 }
 function mapSlackProfileToStatus(profile) {
@@ -201,11 +262,18 @@ function mapSlackProfileToStatus(profile) {
     }
     return "active";
 }
-function resolveSeatKeyForEmail(email) {
-    if (!email) {
-        return undefined;
+function resolveSeatKeyForSlackUserId(workspaceId, slackUserId) {
+    const workspaceSeat = getSeatAssignments(workspaceId);
+    for (const [seatKey, assignedSlackUserId] of workspaceSeat.entries()) {
+        if (assignedSlackUserId === slackUserId) {
+            return seatKey;
+        }
     }
-    return seatAssignmentsByEmail[email.toLowerCase()];
+    const defaultSeatKey = seatAssignmentsBySlackUserId[slackUserId];
+    if (defaultSeatKey) {
+        workspaceSeat.set(defaultSeatKey, slackUserId);
+    }
+    return defaultSeatKey;
 }
 function resolvePlacement(officeStatus, seatKey) {
     if (officeStatus === "active" && seatKey) {
@@ -225,4 +293,28 @@ function resolvePlacement(officeStatus, seatKey) {
         x: position.x,
         y: position.y
     };
+}
+function getSeatAssignments(workspaceId) {
+    let assignments = seatAssignmentsByWorkspace.get(workspaceId);
+    if (!assignments) {
+        assignments = new Map();
+        seatAssignmentsByWorkspace.set(workspaceId, assignments);
+    }
+    return assignments;
+}
+function setSeatAssignment(workspaceId, seatKey, slackUserId) {
+    const assignments = getSeatAssignments(workspaceId);
+    assignments.set(seatKey, slackUserId);
+}
+function updateMemberSeat(member, seatKey) {
+    const placement = resolvePlacement(member.officeStatus, seatKey);
+    const updatedMember = {
+        ...member,
+        seatKey,
+        zoneId: placement.zoneId,
+        x: placement.x,
+        y: placement.y
+    };
+    members.set(updatedMember.id, updatedMember);
+    return updatedMember;
 }
