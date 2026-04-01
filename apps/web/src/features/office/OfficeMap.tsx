@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { apiClient } from "../../api/client";
 import type { OfficeSnapshot } from "../../types/domain";
@@ -53,6 +53,46 @@ const plants = [
   { x: 93, y: 54 }
 ] as const;
 
+const entrancePosition = {
+  x: 71,
+  y: 5
+} as const;
+
+const motionDurationMs = 1200;
+
+type SnapshotMember = OfficeSnapshot["members"][number];
+
+interface MotionAvatar {
+  id: string;
+  member: SnapshotMember;
+  x: number;
+  y: number;
+  opacity: number;
+}
+
+function renderAvatar(
+  member: SnapshotMember,
+  override?: { x?: number; y?: number; opacity?: number; isTransitioning?: boolean; isCurrent?: boolean }
+) {
+  return (
+    <div
+      key={member.id}
+      className={`avatar-token ${member.officeStatus} ${override?.isCurrent ? "is-current" : ""} ${override?.isTransitioning ? "is-transitioning" : ""}`}
+      style={{
+        left: `${override?.x ?? member.x}%`,
+        top: `${override?.y ?? member.y}%`,
+        opacity: override?.opacity ?? 1
+      }}
+      title={`${member.displayName} · ${member.slackStatusText ?? member.officeStatus}`}
+    >
+      {override?.isCurrent ? <em className="you-badge">YOU</em> : null}
+      <img alt={member.displayName} src={member.avatarUrl} />
+      {member.seatKey ? <small className="avatar-seat-tag">{member.seatKey}</small> : null}
+      <span>{member.displayName}</span>
+    </div>
+  );
+}
+
 export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const selectedZoneId = useUIStore((state) => state.selectedZoneId);
   const setSelectedZoneId = useUIStore((state) => state.setSelectedZoneId);
@@ -60,6 +100,9 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const clearSeat = useClearSeat();
   const [selectedSeatKey, setSelectedSeatKey] = useState<string | null>(null);
   const [seatSearch, setSeatSearch] = useState("");
+  const [motionAvatars, setMotionAvatars] = useState<MotionAvatar[]>([]);
+  const previousMembersRef = useRef<Map<string, SnapshotMember>>(new Map());
+  const timeoutIdsRef = useRef<Map<string, number>>(new Map());
 
   const selectedSeat = snapshot.seats.find((seat) => seat.key === selectedSeatKey) ?? null;
   const selectedSeatMember = selectedSeat?.assignedSlackUserId
@@ -67,6 +110,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     : null;
   const canManageSeats = snapshot.canManageSeats;
   const normalizedSeatSearch = seatSearch.trim().toLowerCase();
+  const transitioningMemberIds = new Set(motionAvatars.map((member) => member.id));
   const filteredMembers = snapshot.members.filter((member) => {
     if (!normalizedSeatSearch) {
       return true;
@@ -99,6 +143,117 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     anchor.click();
     URL.revokeObjectURL(url);
   };
+
+  useEffect(() => {
+    const previousMembers = previousMembersRef.current;
+    const nextMembers = new Map(snapshot.members.map((member) => [member.id, member]));
+
+    snapshot.members.forEach((member) => {
+      const previousMember = previousMembers.get(member.id);
+      if (!previousMember) {
+        return;
+      }
+
+      const wasUnavailable =
+        previousMember.officeStatus === "away" || previousMember.officeStatus === "offline";
+      const isUnavailable = member.officeStatus === "away" || member.officeStatus === "offline";
+
+      if (!wasUnavailable && isUnavailable) {
+        const motionMember = {
+          ...previousMember,
+          officeStatus: "away" as const
+        };
+
+        setMotionAvatars((current) => [
+          ...current.filter((item) => item.id !== member.id),
+          {
+            id: member.id,
+            member: motionMember,
+            x: previousMember.x,
+            y: previousMember.y,
+            opacity: 1
+          }
+        ]);
+
+        window.requestAnimationFrame(() => {
+          setMotionAvatars((current) =>
+            current.map((item) =>
+              item.id === member.id
+                ? {
+                    ...item,
+                    x: entrancePosition.x,
+                    y: entrancePosition.y,
+                    opacity: 0
+                  }
+                : item
+            )
+          );
+        });
+
+        const existingTimeoutId = timeoutIdsRef.current.get(member.id);
+        if (existingTimeoutId) {
+          window.clearTimeout(existingTimeoutId);
+        }
+
+        const timeoutId = window.setTimeout(() => {
+          setMotionAvatars((current) => current.filter((item) => item.id !== member.id));
+          timeoutIdsRef.current.delete(member.id);
+        }, motionDurationMs);
+
+        timeoutIdsRef.current.set(member.id, timeoutId);
+      }
+
+      if (wasUnavailable && !isUnavailable && member.officeStatus === "active") {
+        setMotionAvatars((current) => [
+          ...current.filter((item) => item.id !== member.id),
+          {
+            id: member.id,
+            member,
+            x: entrancePosition.x,
+            y: entrancePosition.y,
+            opacity: 0.3
+          }
+        ]);
+
+        window.requestAnimationFrame(() => {
+          setMotionAvatars((current) =>
+            current.map((item) =>
+              item.id === member.id
+                ? {
+                    ...item,
+                    x: member.x,
+                    y: member.y,
+                    opacity: 1
+                  }
+                : item
+            )
+          );
+        });
+
+        const existingTimeoutId = timeoutIdsRef.current.get(member.id);
+        if (existingTimeoutId) {
+          window.clearTimeout(existingTimeoutId);
+        }
+
+        const timeoutId = window.setTimeout(() => {
+          setMotionAvatars((current) => current.filter((item) => item.id !== member.id));
+          timeoutIdsRef.current.delete(member.id);
+        }, motionDurationMs);
+
+        timeoutIdsRef.current.set(member.id, timeoutId);
+      }
+    });
+
+    previousMembersRef.current = nextMembers;
+  }, [snapshot.members]);
+
+  useEffect(
+    () => () => {
+      timeoutIdsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      timeoutIdsRef.current.clear();
+    },
+    []
+  );
 
   return (
     <section className="office-scene">
@@ -215,19 +370,20 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
           ))}
         </div>
         <div className="map-avatar-layer">
-          {snapshot.members.filter((member) => member.officeStatus !== "away").map((member) => (
-            <div
-              key={member.id}
-              className={`avatar-token ${member.officeStatus} ${member.id === snapshot.currentUserId ? "is-current" : ""}`}
-              style={{ left: `${member.x}%`, top: `${member.y}%` }}
-              title={`${member.displayName} · ${member.slackStatusText ?? member.officeStatus}`}
-            >
-              {member.id === snapshot.currentUserId ? <em className="you-badge">YOU</em> : null}
-              <img alt={member.displayName} src={member.avatarUrl} />
-              {member.seatKey ? <small className="avatar-seat-tag">{member.seatKey}</small> : null}
-              <span>{member.displayName}</span>
-            </div>
-          ))}
+          {snapshot.members
+            .filter((member) => member.officeStatus !== "away" && !transitioningMemberIds.has(member.id))
+            .map((member) =>
+              renderAvatar(member, { isCurrent: member.id === snapshot.currentUserId })
+            )}
+          {motionAvatars.map((member) =>
+            renderAvatar(member.member, {
+              x: member.x,
+              y: member.y,
+              opacity: member.opacity,
+              isTransitioning: true,
+              isCurrent: member.member.id === snapshot.currentUserId
+            })
+          )}
         </div>
         {selectedSeat && canManageSeats ? (
           <aside className="seat-assignment-panel">

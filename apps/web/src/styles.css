@@ -865,6 +865,14 @@ input {
   pointer-events: none;
 }
 
+.avatar-token.is-transitioning {
+  transition:
+    left 1200ms cubic-bezier(0.22, 1, 0.36, 1),
+    top 1200ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 1200ms ease;
+  will-change: left, top, opacity;
+}
+
 .avatar-token img,
 .member-avatar {
   width: 38px;
