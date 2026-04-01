@@ -20,12 +20,12 @@ const roomZones = [
 ] as const;
 
 const deskBands = [
-  { rowKey: "A", y: 30, seats: 6, width: 64, height: 5.6 },
-  { rowKey: "B", y: 36, seats: 6, width: 64, height: 5.6 },
-  { rowKey: "C", y: 49, seats: 6, width: 64, height: 5.6 },
-  { rowKey: "D", y: 55, seats: 6, width: 64, height: 5.6 },
-  { rowKey: "E", y: 68, seats: 6, width: 64, height: 5.6 },
-  { rowKey: "F", y: 74, seats: 6, width: 64, height: 5.6 }
+  { rowKey: "A", x: 3, y: 30, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
+  { rowKey: "B", x: 3, y: 36, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
+  { rowKey: "C", x: 3, y: 49, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
+  { rowKey: "D", x: 3, y: 55, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
+  { rowKey: "E", x: 13.67, y: 68, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 53.33, height: 5.6 },
+  { rowKey: "F", x: 13.67, y: 74, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 53.33, height: 5.6 }
 ] as const;
 
 const sideDeskBands = [
@@ -169,13 +169,16 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               className="desk-row"
               key={band.rowKey}
               style={{
-                left: "3%",
+                left: `${band.x}%`,
                 top: `${band.y}%`,
                 width: `${band.width}%`,
                 height: `${band.height}%`,
-                gridTemplateColumns: `repeat(${band.seats}, 1fr)`
+                gridTemplateColumns: `repeat(${band.columns}, 1fr)`
               }}
             >
+              {Array.from({ length: band.emptyLeadingSlots }).map((_, index) => (
+                <div aria-hidden="true" className="seat-spacer" key={`spacer-${band.rowKey}-${index}`} />
+              ))}
               {Array.from({ length: band.seats }).map((_, index) => (
                 <button
                   className={`seat-chip ${snapshot.seats.find((seat) => seat.key === `${band.rowKey}-${String(index + 1).padStart(2, "0")}`)?.assignedSlackUserId ? "is-assigned" : ""}`}

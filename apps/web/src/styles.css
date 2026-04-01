@@ -823,6 +823,11 @@ input {
   cursor: pointer;
 }
 
+.seat-spacer {
+  width: 100%;
+  height: 100%;
+}
+
 .seat-chip.is-assigned {
   box-shadow: inset 0 0 0 1px rgba(77, 255, 238, 0.35);
   background: rgba(77, 255, 238, 0.05);
