@@ -9,7 +9,7 @@ interface AuthGateProps {
 }
 
 export function AuthGate({ children }: AuthGateProps) {
-  const { data, isLoading, refetch } = useQuery({
+  const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["session"],
     queryFn: apiClient.getSession,
     retry: false
@@ -40,6 +40,7 @@ export function AuthGate({ children }: AuthGateProps) {
           <p>
             Slack OAuth로 워크스페이스를 연결하거나, 데모 모드로 흐름을 먼저 확인할 수 있습니다.
           </p>
+          {error instanceof Error ? <p className="error-text">인증 서버 연결 실패: {error.message}</p> : null}
           <div className="auth-actions">
             <a className="primary-button" href={apiClient.getSlackLoginUrl()}>
               Slack으로 시작하기
@@ -47,9 +48,16 @@ export function AuthGate({ children }: AuthGateProps) {
             <button
               className="secondary-button"
               onClick={async () => {
-                const result = await apiClient.demoLogin();
-                storeSession(result.sessionId);
-                await refetch();
+                try {
+                  const result = await apiClient.demoLogin();
+                  storeSession(result.sessionId);
+                  await refetch();
+                } catch (loginError) {
+                  console.error(loginError);
+                  window.alert(
+                    loginError instanceof Error ? `데모 로그인 실패: ${loginError.message}` : "데모 로그인에 실패했습니다."
+                  );
+                }
               }}
               type="button"
             >

@@ -59,6 +59,11 @@ textarea {
   line-height: 1.6;
 }
 
+.error-text {
+  color: #b43c3c;
+  font-weight: 600;
+}
+
 .eyebrow {
   display: inline-flex;
   padding: 6px 10px;

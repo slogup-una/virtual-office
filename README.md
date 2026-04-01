@@ -2,6 +2,8 @@
 
 Slack 상태 기반 버추얼 오피스 MVP 예제입니다. 기획안의 Phase 1 범위를 기준으로 아래 기능을 구현했습니다.
 
+다음 세션에서 맥락을 이어가려면 `/Users/una/github/virtual-office/docs/PROJECT_CONTEXT.md` 를 먼저 확인하면 됩니다. 기획안 요약, 현재 구현 범위, 인증/Slack 연동 흐름, 상태 관리 원칙, 다음 우선순위를 정리해 두었습니다.
+
 - Slack OAuth 로그인 또는 데모 로그인
 - Slack 사용자/상태 동기화
 - Slack 메시지 전송
