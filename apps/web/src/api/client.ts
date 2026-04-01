@@ -39,6 +39,25 @@ async function request<T>(path: string, init?: RequestInit) {
   return (await response.json()) as T;
 }
 
+async function requestText(path: string, init?: RequestInit) {
+  const sessionId = getStoredSession();
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
+    headers: {
+      ...(sessionId ? { Authorization: `Bearer ${sessionId}` } : {}),
+      ...(init?.headers ?? {})
+    },
+    ...init
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || `${response.status}`);
+  }
+
+  return response.text();
+}
+
 export const apiClient = {
   getSession: () => request<{ user: { id: string } }>("/auth/session"),
   demoLogin: () => request<{ sessionId: string }>("/auth/demo-login", { method: "POST" }),
@@ -60,5 +79,6 @@ export const apiClient = {
     request<{ ok: true }>(`/api/seats/${encodeURIComponent(seatKey)}`, {
       method: "DELETE"
     }),
+  exportSeatAssignments: () => requestText("/api/seats/export"),
   getSlackLoginUrl: () => `${API_BASE_URL}/auth/slack/start`
 };

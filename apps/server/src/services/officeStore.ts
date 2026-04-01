@@ -298,6 +298,11 @@ export function clearSeatAssignment(workspaceId: string, seatKey: string) {
   };
 }
 
+export function exportSeatAssignments(workspaceId: string) {
+  const assignments = getSeatAssignments(workspaceId);
+  return Object.fromEntries([...assignments.entries()].sort(([left], [right]) => left.localeCompare(right)));
+}
+
 function mapSlackProfileToStatus(profile: SlackProfile): OfficeStatus {
   const text = (profile.statusText ?? "").toLowerCase();
   const emoji = profile.statusEmoji ?? "";

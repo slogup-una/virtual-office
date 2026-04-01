@@ -1,12 +1,12 @@
 import { useState } from "react";
 
+import { apiClient } from "../../api/client";
 import type { OfficeSnapshot } from "../../types/domain";
 import { useAssignSeat, useClearSeat } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
 
 const roomZones = [
-  { id: "lounge-large", label: "휴게공간 2인실", x: 2, y: 3, width: 18, height: 14 },
-  { id: "lounge-small", label: "휴게공간 1인실", x: 20.5, y: 3, width: 9, height: 6 },
+  { id: "lounge", label: "휴게공간", x: 2, y: 3, width: 27.5, height: 14 },
   { id: "event-hall", label: "다목적 공간", x: 30, y: 3, width: 36, height: 13 },
   { id: "entrance", label: "출구", x: 66, y: 3, width: 10, height: 4 },
   { id: "storage", label: "창고", x: 77, y: 3, width: 21, height: 12 },
@@ -40,16 +40,7 @@ const wallSegments = [
   { x: 77, y: 58.5, width: 21, height: 3.4, label: "벽" }
 ] as const;
 
-const decorativeWindows = [
-  { x: 4, y: 7, width: 8, height: 13 },
-  { x: 13, y: 7, width: 8, height: 13 }
-] as const;
-
-const neonSigns = [
-  { x: 22, y: 8, label: "WORK MODE", tone: "pink" },
-  { x: 42, y: 9, label: "ON AIR", tone: "cyan" },
-  { x: 78, y: 8, label: "COFFEE", tone: "yellow" }
-] as const;
+const decorativeWindows: Array<{ x: number; y: number; width: number; height: number }> = [];
 
 const cabinets = [
   { x: 70.5, y: 70, width: 4.4, height: 11 },
@@ -98,6 +89,16 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     setSelectedSeatKey(seatKey);
     setSeatSearch("");
   };
+  const handleSeatBackupDownload = async () => {
+    const content = await apiClient.exportSeatAssignments();
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "seat-assignments.ts";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <section className="office-scene">
@@ -116,23 +117,6 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               }}
             />
           ))}
-          {neonSigns.map((sign) => (
-            <div
-              className={`pixel-neon-sign ${sign.tone}`}
-              key={sign.label}
-              style={{ left: `${sign.x}%`, top: `${sign.y}%` }}
-            >
-              {sign.label}
-            </div>
-          ))}
-          <div className="pixel-clock" style={{ left: "58%", top: "9%" }}>
-            21:42
-          </div>
-          <div className="pixel-ticker" style={{ left: "82%", top: "9%", width: "14%", height: "2.8%" }}>
-            <div className="pixel-ticker-inner">
-              <span>SLACK SYNC · NIGHT SHIFT · OFFICE LIVE</span>
-            </div>
-          </div>
           {roomZones.map((zone) => (
             <button
               key={zone.id}
@@ -222,7 +206,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
           ))}
         </div>
         <div className="map-avatar-layer">
-          {snapshot.members.map((member) => (
+          {snapshot.members.filter((member) => member.officeStatus !== "away").map((member) => (
             <div
               key={member.id}
               className={`avatar-token ${member.officeStatus} ${member.id === snapshot.currentUserId ? "is-current" : ""}`}
@@ -243,8 +227,15 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 <span className="eyebrow">Seat Manager</span>
                 <h2>{selectedSeat.key}</h2>
               </div>
-              <button className="panel-icon-button" onClick={() => setSelectedSeatKey(null)} type="button">
-                닫기
+              <button
+                aria-label="좌석 관리자 닫기"
+                className="panel-icon-button panel-close-button"
+                onClick={() => setSelectedSeatKey(null)}
+                type="button"
+              >
+                <span aria-hidden="true" className="close-glyph">
+                  ×
+                </span>
               </button>
             </div>
             <p className="seat-assignment-copy">
@@ -276,6 +267,9 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               {filteredMembers.length === 0 ? <p className="seat-empty-state">검색 결과가 없습니다.</p> : null}
             </div>
             <div className="seat-assignment-actions">
+              <button className="ghost-button" onClick={() => void handleSeatBackupDownload()} type="button">
+                배정 백업 다운로드
+              </button>
               <button
                 className="ghost-button"
                 disabled={!selectedSeat.assignedSlackUserId}

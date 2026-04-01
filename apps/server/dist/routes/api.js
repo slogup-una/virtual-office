@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { isSeatAdminSlackUserId } from "../config/admin.js";
 import { isSlackConfigured } from "../config/env.js";
-import { addMessage, assignSeat, clearSeatAssignment, getMemberById, getSnapshot, listMessages } from "../services/officeStore.js";
+import { addMessage, assignSeat, clearSeatAssignment, exportSeatAssignments, getMemberById, getSnapshot, listMessages } from "../services/officeStore.js";
 import { postSlackMessage } from "../slack/client.js";
 const router = Router();
 router.get("/me", (request, response) => {
@@ -59,6 +59,26 @@ router.delete("/seats/:seatKey", (request, response) => {
         return;
     }
     response.json({ ok: true, result });
+});
+router.get("/seats/export", (request, response) => {
+    if (!request.sessionUser) {
+        response.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+    if (!isSeatAdminSlackUserId(request.sessionUser.slackUserId)) {
+        response.status(403).json({ message: "Forbidden" });
+        return;
+    }
+    const assignments = exportSeatAssignments(request.sessionUser.workspaceId);
+    const body = [
+        "export const seatAssignmentsBySlackUserId: Record<string, string> = {",
+        ...Object.entries(assignments).map(([seatKey, slackUserId]) => `  ${JSON.stringify(slackUserId)}: ${JSON.stringify(seatKey)},`),
+        "};",
+        ""
+    ].join("\n");
+    response.setHeader("Content-Type", "text/plain; charset=utf-8");
+    response.setHeader("Content-Disposition", "attachment; filename=\"seat-assignments.ts\"");
+    response.send(body);
 });
 router.post("/messages", async (request, response) => {
     const payloadSchema = z.object({

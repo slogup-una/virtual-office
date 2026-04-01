@@ -11,6 +11,11 @@ interface UIState {
   messageDraft: string;
   chatOpacity: number;
   chatOffset: Position;
+  isChatPanelOpen: boolean;
+  chatSize: {
+    width: number;
+    height: number;
+  };
   statusOffset: Position;
   isStatusPanelOpen: boolean;
   currentUserPosition: Position | null;
@@ -19,6 +24,8 @@ interface UIState {
   setMessageDraft: (draft: string) => void;
   setChatOpacity: (opacity: number) => void;
   setChatOffset: (position: Position) => void;
+  setIsChatPanelOpen: (isOpen: boolean) => void;
+  setChatSize: (size: { width: number; height: number }) => void;
   setStatusOffset: (position: Position) => void;
   setIsStatusPanelOpen: (isOpen: boolean) => void;
   setCurrentUserPosition: (position: Position) => void;
@@ -31,6 +38,8 @@ export const useUIStore = create<UIState>((set) => ({
   messageDraft: "",
   chatOpacity: 0.86,
   chatOffset: { x: 0, y: 0 },
+  isChatPanelOpen: true,
+  chatSize: { width: 300, height: 700 },
   statusOffset: { x: 0, y: 0 },
   isStatusPanelOpen: true,
   currentUserPosition: null,
@@ -39,6 +48,8 @@ export const useUIStore = create<UIState>((set) => ({
   setMessageDraft: (messageDraft) => set({ messageDraft }),
   setChatOpacity: (chatOpacity) => set({ chatOpacity }),
   setChatOffset: (chatOffset) => set({ chatOffset }),
+  setIsChatPanelOpen: (isChatPanelOpen) => set({ isChatPanelOpen }),
+  setChatSize: (chatSize) => set({ chatSize }),
   setStatusOffset: (statusOffset) => set({ statusOffset }),
   setIsStatusPanelOpen: (isStatusPanelOpen) => set({ isStatusPanelOpen }),
   setCurrentUserPosition: (currentUserPosition) => set({ currentUserPosition }),

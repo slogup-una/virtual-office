@@ -117,6 +117,7 @@ export function AppShell() {
   })
     .format(now)
     .replace(/\//g, ".");
+  const timeOfDay = now.getHours() >= 6 && now.getHours() < 18 ? "day" : "night";
 
   return (
     <main className="app-shell">
@@ -161,42 +162,37 @@ export function AppShell() {
               </div>
             </div>
           ) : null}
-          {snapshot.members.map((member) => (
-            <div className={`hud-member ${member.officeStatus}`} key={member.id}>
-              <img alt={member.displayName} className="hud-member-avatar" src={member.avatarUrl} />
-              <div>
-                <div className="hud-member-name">{member.displayName}</div>
-                <div className="hud-member-status">{member.slackStatusText || member.officeStatus}</div>
-              </div>
+          <div className="hud-billboard">
+            <div className="hud-billboard-track">
+              <span>WHAT&apos;S UP? WE&apos;RE SLOGUP!</span>
             </div>
-          ))}
+          </div>
+          <div className="hud-actions">
+            <button
+              className="ghost-button hud-action-button"
+              onClick={() =>
+                void apiClient.logout().then(() => {
+                  clearStoredSession();
+                  window.location.reload();
+                })
+              }
+              type="button"
+            >
+              logout
+            </button>
+          </div>
         </div>
         <div className="hud-clock">
-          <div className="hud-time">{formattedTime}</div>
+          <div className="hud-time-row">
+            <span
+              aria-hidden="true"
+              className={`hud-time-icon ${timeOfDay === "day" ? "is-sun" : "is-moon"}`}
+            />
+            <div className="hud-time">{formattedTime}</div>
+          </div>
           <div className="hud-date">{formattedDate}</div>
         </div>
       </header>
-      <div className="world-actions">
-          <button
-            className="ghost-button"
-            onClick={() => useUIStore.getState().setSelectedZoneId(null)}
-            type="button"
-          >
-            전체 보기
-          </button>
-          <button
-            className="ghost-button"
-            onClick={() =>
-              void apiClient.logout().then(() => {
-                clearStoredSession();
-                window.location.reload();
-              })
-            }
-            type="button"
-          >
-            로그아웃
-          </button>
-      </div>
       <OfficeMap snapshot={snapshot} />
       <TeamSidebar snapshot={snapshot} />
       <ChatPanel workspace={snapshot.workspace} />

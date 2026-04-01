@@ -243,6 +243,10 @@ export function clearSeatAssignment(workspaceId, seatKey) {
         updatedMember
     };
 }
+export function exportSeatAssignments(workspaceId) {
+    const assignments = getSeatAssignments(workspaceId);
+    return Object.fromEntries([...assignments.entries()].sort(([left], [right]) => left.localeCompare(right)));
+}
 function mapSlackProfileToStatus(profile) {
     const text = (profile.statusText ?? "").toLowerCase();
     const emoji = profile.statusEmoji ?? "";

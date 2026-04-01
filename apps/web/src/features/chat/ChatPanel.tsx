@@ -1,4 +1,4 @@
-import { FormEvent, PointerEvent, useRef } from "react";
+import { FormEvent, PointerEvent, useEffect, useRef } from "react";
 
 import { useMessages, useSendMessage } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
@@ -9,12 +9,18 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
   const messageDraft = useUIStore((state) => state.messageDraft);
   const chatOpacity = useUIStore((state) => state.chatOpacity);
   const chatOffset = useUIStore((state) => state.chatOffset);
+  const isChatPanelOpen = useUIStore((state) => state.isChatPanelOpen);
+  const chatSize = useUIStore((state) => state.chatSize);
   const setMessageDraft = useUIStore((state) => state.setMessageDraft);
   const setChatOpacity = useUIStore((state) => state.setChatOpacity);
   const setChatOffset = useUIStore((state) => state.setChatOffset);
+  const setIsChatPanelOpen = useUIStore((state) => state.setIsChatPanelOpen);
+  const setChatSize = useUIStore((state) => state.setChatSize);
   const { data, isLoading } = useMessages(selectedChannelId);
   const sendMessage = useSendMessage();
   const dragState = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
+  const hasObservedInitialSize = useRef(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -67,12 +73,50 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
     window.addEventListener("pointerup", handlePointerUp);
   };
 
+  useEffect(() => {
+    const panelElement = panelRef.current;
+    if (!panelElement) {
+      return;
+    }
+
+    hasObservedInitialSize.current = false;
+
+    const resizeObserver = new ResizeObserver(() => {
+      const nextWidth = Math.round(panelElement.offsetWidth);
+      const nextHeight = Math.round(panelElement.offsetHeight);
+
+      if (!hasObservedInitialSize.current) {
+        hasObservedInitialSize.current = true;
+        return;
+      }
+
+      setChatSize({
+        width: nextWidth,
+        height: nextHeight
+      });
+    });
+
+    resizeObserver.observe(panelElement);
+    return () => resizeObserver.disconnect();
+  }, [setChatSize]);
+
+  if (!isChatPanelOpen) {
+    return (
+      <button className="chat-panel-toggle" onClick={() => setIsChatPanelOpen(true)} type="button">
+        채팅 열기
+      </button>
+    );
+  }
+
   return (
     <section
+      ref={panelRef}
       className="floating-panel chat-panel"
       style={{
         opacity: chatOpacity,
-        transform: `translate(${chatOffset.x}px, ${chatOffset.y}px)`
+        transform: `translate(${chatOffset.x}px, ${chatOffset.y}px)`,
+        width: `${chatSize.width}px`,
+        height: `${chatSize.height}px`
       }}
     >
       <div className="floating-header draggable-header" onPointerDown={handlePointerDown}>
@@ -80,7 +124,18 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
           <span className="eyebrow">Slack Sync</span>
           <h2>#{workspace.defaultChannelId}</h2>
         </div>
-        <span className="drag-hint">drag</span>
+        <div className="panel-tools">
+          <button
+            aria-label="채팅 패널 닫기"
+            className="panel-icon-button panel-close-button"
+            onClick={() => setIsChatPanelOpen(false)}
+            type="button"
+          >
+            <span aria-hidden="true" className="close-glyph">
+              ×
+            </span>
+          </button>
+        </div>
       </div>
       <label className="opacity-control">
         <span>투명도</span>

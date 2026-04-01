@@ -7,6 +7,7 @@ import {
   addMessage,
   assignSeat,
   clearSeatAssignment,
+  exportSeatAssignments,
   getMemberById,
   getSnapshot,
   listMessages
@@ -88,6 +89,30 @@ router.delete("/seats/:seatKey", (request, response) => {
   }
 
   response.json({ ok: true, result });
+});
+
+router.get("/seats/export", (request, response) => {
+  if (!request.sessionUser) {
+    response.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  if (!isSeatAdminSlackUserId(request.sessionUser.slackUserId)) {
+    response.status(403).json({ message: "Forbidden" });
+    return;
+  }
+
+  const assignments = exportSeatAssignments(request.sessionUser.workspaceId);
+  const body = [
+    "export const seatAssignmentsBySlackUserId: Record<string, string> = {",
+    ...Object.entries(assignments).map(([seatKey, slackUserId]) => `  ${JSON.stringify(slackUserId)}: ${JSON.stringify(seatKey)},`),
+    "};",
+    ""
+  ].join("\n");
+
+  response.setHeader("Content-Type", "text/plain; charset=utf-8");
+  response.setHeader("Content-Disposition", "attachment; filename=\"seat-assignments.ts\"");
+  response.send(body);
 });
 
 router.post("/messages", async (request, response) => {

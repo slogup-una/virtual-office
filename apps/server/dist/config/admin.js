@@ -1,7 +1,4 @@
-export const seatAdminSlackUserIds = new Set([
-    "U_DEMO_1"
-    // Replace with your real Slack user ID, e.g. "U08ABC12345"
-]);
+export const seatAdminSlackUserIds = new Set(["U098H1ZTJSW"]);
 export function isSeatAdminSlackUserId(slackUserId) {
     if (!slackUserId) {
         return false;

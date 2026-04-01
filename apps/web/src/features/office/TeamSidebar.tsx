@@ -76,24 +76,26 @@ export function TeamSidebar({ snapshot }: { snapshot: OfficeSnapshot }) {
     >
       <div className="floating-header draggable-header" onPointerDown={handlePointerDown}>
         <div>
-          <span className="eyebrow">Team Presence</span>
+          <span className="eyebrow">{"TEAM\u00A0PRESENCE"}</span>
           <h2>상태</h2>
         </div>
         <div className="panel-tools">
-          <span className="drag-hint">drag</span>
           <button
-            className="panel-icon-button"
+            aria-label="상태 패널 닫기"
+            className="panel-icon-button panel-close-button"
             onClick={() => setIsStatusPanelOpen(false)}
             type="button"
           >
-            닫기
+            <span aria-hidden="true" className="close-glyph">
+              ×
+            </span>
           </button>
         </div>
       </div>
       <div className="member-list compact-list">
         {snapshot.members.map((member) => (
           <article
-            className={`member-card compact-card ${member.id === snapshot.currentUserId ? "is-current" : ""}`}
+            className={`member-card compact-card ${member.officeStatus} ${member.id === snapshot.currentUserId ? "is-current" : ""}`}
             key={member.id}
           >
             <img alt={member.displayName} className="member-avatar" src={member.avatarUrl} />
