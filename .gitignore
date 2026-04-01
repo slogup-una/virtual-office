@@ -11,6 +11,8 @@
 .env.test.local
 .env.production.local
 apps/**/.env
+apps/**/.env.*
+!apps/**/.env.example
 
 # misc
 .DS_Store
