@@ -27,6 +27,7 @@ export interface SlackProfile {
 
 export interface OfficeMember {
   id: string;
+  workspaceId: string;
   slackUserId: string;
   displayName: string;
   email?: string;

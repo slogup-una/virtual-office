@@ -26,15 +26,15 @@ const deskBands = [
 ] as const;
 
 const sideDeskBands = [
-  { y: 58, seats: 2 },
-  { y: 66, seats: 2 },
-  { y: 72, seats: 2 }
+  { y: 62, seats: 2 },
+  { y: 70, seats: 2 },
+  { y: 77, seats: 2 }
 ] as const;
 
 const wallSegments = [
   { x: 2, y: 22, width: 64, height: 3.4, label: "벽" },
   { x: 77, y: 40.5, width: 21, height: 3.4, label: "벽" },
-  { x: 77, y: 56.5, width: 21, height: 3.4, label: "벽" }
+  { x: 77, y: 58.5, width: 21, height: 3.4, label: "벽" }
 ] as const;
 
 export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {

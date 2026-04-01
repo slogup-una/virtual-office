@@ -1,9 +1,14 @@
 import { nanoid } from "nanoid";
-const workspace = {
-    id: "demo-workspace",
-    name: "Virtual Office Workspace",
-    defaultChannelId: "general"
-};
+const workspaces = new Map([
+    [
+        "demo-workspace",
+        {
+            id: "demo-workspace",
+            name: "Virtual Office Workspace",
+            defaultChannelId: "general"
+        }
+    ]
+]);
 const zoneByStatus = {
     active: "main-office",
     away: "lounge",
@@ -26,6 +31,7 @@ const messages = [];
 const seedMembers = [
     {
         id: "u-1",
+        workspaceId: "demo-workspace",
         slackUserId: "U_DEMO_1",
         displayName: "Una",
         email: "una@example.com",
@@ -40,6 +46,7 @@ const seedMembers = [
     },
     {
         id: "u-2",
+        workspaceId: "demo-workspace",
         slackUserId: "U_DEMO_2",
         displayName: "Jae",
         email: "jae@example.com",
@@ -54,6 +61,7 @@ const seedMembers = [
     },
     {
         id: "u-3",
+        workspaceId: "demo-workspace",
         slackUserId: "U_DEMO_3",
         displayName: "Mina",
         email: "mina@example.com",
@@ -88,22 +96,31 @@ messages.push({
 export function listMembers() {
     return [...members.values()];
 }
+export function upsertWorkspace(workspace) {
+    workspaces.set(workspace.id, workspace);
+    return workspace;
+}
 export function getMemberById(userId) {
     return members.get(userId) ?? null;
 }
-export function getMemberBySlackId(slackUserId) {
-    return [...members.values()].find((member) => member.slackUserId === slackUserId) ?? null;
+export function getMemberBySlackId(slackUserId, workspaceId) {
+    return ([...members.values()].find((member) => member.slackUserId === slackUserId && (!workspaceId || member.workspaceId === workspaceId)) ?? null);
 }
-export function getWorkspace() {
-    return workspace;
+export function getWorkspace(workspaceId) {
+    return (workspaces.get(workspaceId) ?? {
+        id: workspaceId,
+        name: "Slack Workspace",
+        defaultChannelId: "general"
+    });
 }
-export function createOrUpdateMemberFromSlack(profile) {
-    const existing = getMemberBySlackId(profile.id);
+export function createOrUpdateMemberFromSlack(profile, workspaceId) {
+    const existing = getMemberBySlackId(profile.id, workspaceId);
     const officeStatus = mapSlackProfileToStatus(profile);
     const zoneId = zoneByStatus[officeStatus];
     const position = positionByZone[zoneId];
     const member = {
         id: existing?.id ?? nanoid(),
+        workspaceId,
         slackUserId: profile.id,
         displayName: profile.displayName,
         email: profile.email,
@@ -119,8 +136,8 @@ export function createOrUpdateMemberFromSlack(profile) {
     members.set(member.id, member);
     return member;
 }
-export function updateMemberPresence(slackUserId, presence) {
-    const member = getMemberBySlackId(slackUserId);
+export function updateMemberPresence(slackUserId, presence, workspaceId) {
+    const member = getMemberBySlackId(slackUserId, workspaceId);
     if (!member) {
         return null;
     }
@@ -147,16 +164,16 @@ export function addMessage(message) {
     messages.push(created);
     return created;
 }
-export function listMessages(channelId = workspace.defaultChannelId) {
+export function listMessages(channelId = "general") {
     return messages
         .filter((message) => message.channelId === channelId)
         .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }
-export function getSnapshot(currentUserId) {
+export function getSnapshot(currentUserId, workspaceId) {
     return {
-        workspace,
+        workspace: getWorkspace(workspaceId),
         currentUserId,
-        members: listMembers(),
+        members: listMembers().filter((member) => member.workspaceId === workspaceId),
         messages: listMessages()
     };
 }

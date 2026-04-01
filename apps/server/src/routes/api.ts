@@ -23,7 +23,7 @@ router.get("/office", (request, response) => {
     return;
   }
 
-  response.json(getSnapshot(request.sessionUser.id));
+  response.json(getSnapshot(request.sessionUser.id, request.sessionUser.workspaceId));
 });
 
 router.get("/messages", (request, response) => {

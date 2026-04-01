@@ -39,7 +39,8 @@ export async function exchangeCodeForToken(code) {
     }
     return {
         slackUserId: data.authed_user.id,
-        workspaceId: data.team.id
+        workspaceId: data.team.id,
+        workspaceName: data.team.name ?? "Slack Workspace"
     };
 }
 export async function fetchSlackUserProfile(slackUserId) {
@@ -55,6 +56,30 @@ export async function fetchSlackUserProfile(slackUserId) {
         presence: data.user.presence
     };
     return result;
+}
+export async function fetchWorkspaceMembers() {
+    const data = await slackFetch("/users.list");
+    const activeMembers = data.members.filter((member) => !member.deleted && !member.is_bot && member.id !== "USLACKBOT");
+    const profiles = await Promise.all(activeMembers.map(async (member) => {
+        let presence;
+        try {
+            const presenceData = await slackFetch(`/users.getPresence?user=${encodeURIComponent(member.id)}`);
+            presence = presenceData.presence;
+        }
+        catch {
+            presence = undefined;
+        }
+        return {
+            id: member.id,
+            email: member.profile.email,
+            displayName: member.profile.display_name || member.profile.real_name || member.name || "Slack User",
+            imageUrl: member.profile.image_192 || `https://api.dicebear.com/9.x/shapes/svg?seed=${member.id}`,
+            statusText: member.profile.status_text,
+            statusEmoji: member.profile.status_emoji,
+            presence
+        };
+    }));
+    return profiles;
 }
 export async function postSlackMessage(channelId, text) {
     return slackFetch("/chat.postMessage", {

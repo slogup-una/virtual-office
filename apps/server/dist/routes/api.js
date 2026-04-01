@@ -17,7 +17,7 @@ router.get("/office", (request, response) => {
         response.status(401).json({ message: "Unauthorized" });
         return;
     }
-    response.json(getSnapshot(request.sessionUser.id));
+    response.json(getSnapshot(request.sessionUser.id, request.sessionUser.workspaceId));
 });
 router.get("/messages", (request, response) => {
     const channelId = typeof request.query.channelId === "string" ? request.query.channelId : "general";

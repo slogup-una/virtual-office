@@ -47,7 +47,7 @@ export async function exchangeCodeForToken(code: string) {
     ok: boolean;
     error?: string;
     authed_user?: { id: string };
-    team?: { id: string };
+    team?: { id: string; name?: string };
   };
 
   if (!data.ok || !data.authed_user?.id || !data.team?.id) {
@@ -56,7 +56,8 @@ export async function exchangeCodeForToken(code: string) {
 
   return {
     slackUserId: data.authed_user.id,
-    workspaceId: data.team.id
+    workspaceId: data.team.id,
+    workspaceName: data.team.name ?? "Slack Workspace"
   };
 }
 
@@ -88,6 +89,56 @@ export async function fetchSlackUserProfile(slackUserId: string) {
   };
 
   return result;
+}
+
+export async function fetchWorkspaceMembers() {
+  const data = await slackFetch<{
+    members: Array<{
+      id: string;
+      deleted?: boolean;
+      is_bot?: boolean;
+      name?: string;
+      profile: {
+        email?: string;
+        display_name?: string;
+        real_name?: string;
+        image_192?: string;
+        status_text?: string;
+        status_emoji?: string;
+      };
+    }>;
+  }>("/users.list");
+
+  const activeMembers = data.members.filter(
+    (member) => !member.deleted && !member.is_bot && member.id !== "USLACKBOT"
+  );
+
+  const profiles = await Promise.all(
+    activeMembers.map(async (member) => {
+      let presence: "active" | "away" | undefined;
+
+      try {
+        const presenceData = await slackFetch<{ presence: "active" | "away" }>(
+          `/users.getPresence?user=${encodeURIComponent(member.id)}`
+        );
+        presence = presenceData.presence;
+      } catch {
+        presence = undefined;
+      }
+
+      return {
+        id: member.id,
+        email: member.profile.email,
+        displayName: member.profile.display_name || member.profile.real_name || member.name || "Slack User",
+        imageUrl: member.profile.image_192 || `https://api.dicebear.com/9.x/shapes/svg?seed=${member.id}`,
+        statusText: member.profile.status_text,
+        statusEmoji: member.profile.status_emoji,
+        presence
+      } satisfies SlackProfile;
+    })
+  );
+
+  return profiles;
 }
 
 export async function postSlackMessage(channelId: string, text: string) {
