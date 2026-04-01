@@ -1,9 +1,7 @@
 // Temporary seat assignment map.
-// Edit the Slack display name on the left and assign a seat key on the right.
-export const seatAssignmentsByDisplayName = {
-    Una: "A-01",
-    Jae: "B-02",
-    Mina: "C-03"
+// Edit the Slack email on the left and assign a seat key on the right.
+export const seatAssignmentsByEmail = {
+    "una@slogup.com": "F-04"
 };
 export const seatDefinitions = [
     { key: "A-01", label: "자리1", x: 9.4, y: 32.8 },

@@ -7,10 +7,8 @@ export interface SeatDefinition {
 
 // Temporary seat assignment map.
 // Edit the Slack display name on the left and assign a seat key on the right.
-export const seatAssignmentsByDisplayName: Record<string, string> = {
-  Una: "A-01",
-  Jae: "B-02",
-  Mina: "C-03"
+export const seatAssignmentsByEmail: Record<string, string> = {
+  "una@slogup.com": "F-04",
 };
 
 export const seatDefinitions: SeatDefinition[] = [
@@ -49,9 +47,9 @@ export const seatDefinitions: SeatDefinition[] = [
   { key: "S-01", label: "자리1", x: 82.25, y: 72.6 },
   { key: "S-02", label: "자리2", x: 92.75, y: 72.6 },
   { key: "T-01", label: "자리1", x: 82.25, y: 79.6 },
-  { key: "T-02", label: "자리2", x: 92.75, y: 79.6 }
+  { key: "T-02", label: "자리2", x: 92.75, y: 79.6 },
 ];
 
 export const seatDefinitionByKey = Object.fromEntries(
-  seatDefinitions.map((seat) => [seat.key, seat])
+  seatDefinitions.map((seat) => [seat.key, seat]),
 );

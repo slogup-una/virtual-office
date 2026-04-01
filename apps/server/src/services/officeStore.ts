@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 
-import { seatAssignmentsByDisplayName, seatDefinitionByKey } from "../config/seating.js";
+import { seatAssignmentsByEmail, seatDefinitionByKey } from "../config/seating.js";
 import type {
   OfficeMember,
   OfficeMessage,
@@ -152,7 +152,7 @@ export function getWorkspace(workspaceId: string) {
 export function createOrUpdateMemberFromSlack(profile: SlackProfile, workspaceId: string) {
   const existing = getMemberBySlackId(profile.id, workspaceId);
   const officeStatus = mapSlackProfileToStatus(profile);
-  const seatKey = existing?.seatKey ?? resolveSeatKeyForDisplayName(profile.displayName);
+  const seatKey = existing?.seatKey ?? resolveSeatKeyForEmail(profile.email);
   const placement = resolvePlacement(officeStatus, seatKey);
 
   const member: OfficeMember = {
@@ -251,8 +251,12 @@ function mapSlackProfileToStatus(profile: SlackProfile): OfficeStatus {
   return "active";
 }
 
-function resolveSeatKeyForDisplayName(displayName: string) {
-  return seatAssignmentsByDisplayName[displayName];
+function resolveSeatKeyForEmail(email?: string) {
+  if (!email) {
+    return undefined;
+  }
+
+  return seatAssignmentsByEmail[email.toLowerCase()];
 }
 
 function resolvePlacement(officeStatus: OfficeStatus, seatKey?: string) {
