@@ -17,18 +17,18 @@ const roomZones = [
 ] as const;
 
 const deskBands = [
-  { y: 30, seats: 5, width: 64, height: 5.6 },
-  { y: 36, seats: 5, width: 64, height: 5.6 },
-  { y: 49, seats: 5, width: 64, height: 5.6 },
-  { y: 55, seats: 5, width: 64, height: 5.6 },
-  { y: 68, seats: 5, width: 64, height: 5.6 },
-  { y: 74, seats: 5, width: 64, height: 5.6 }
+  { rowKey: "A", y: 30, seats: 5, width: 64, height: 5.6 },
+  { rowKey: "B", y: 36, seats: 5, width: 64, height: 5.6 },
+  { rowKey: "C", y: 49, seats: 5, width: 64, height: 5.6 },
+  { rowKey: "D", y: 55, seats: 5, width: 64, height: 5.6 },
+  { rowKey: "E", y: 68, seats: 5, width: 64, height: 5.6 },
+  { rowKey: "F", y: 74, seats: 5, width: 64, height: 5.6 }
 ] as const;
 
 const sideDeskBands = [
-  { y: 62, seats: 2 },
-  { y: 70, seats: 2 },
-  { y: 77, seats: 2 }
+  { rowKey: "R", y: 62, seats: 2 },
+  { rowKey: "S", y: 70, seats: 2 },
+  { rowKey: "T", y: 77, seats: 2 }
 ] as const;
 
 const wallSegments = [
@@ -78,22 +78,28 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
         {deskBands.map((band) => (
           <div
             className="desk-row"
-            key={band.y}
+            key={band.rowKey}
             style={{ left: "3%", top: `${band.y}%`, width: `${band.width}%`, height: `${band.height}%` }}
           >
             {Array.from({ length: band.seats }).map((_, index) => (
-              <span key={index}>자리{index + 1}</span>
+              <span key={index}>
+                <strong>{`${band.rowKey}-${String(index + 1).padStart(2, "0")}`}</strong>
+                <small>{`자리${index + 1}`}</small>
+              </span>
             ))}
           </div>
         ))}
         {sideDeskBands.map((band) => (
           <div
             className="desk-row desk-row-side"
-            key={band.y}
+            key={band.rowKey}
             style={{ left: "77%", top: `${band.y}%`, width: "21%", height: "5.2%" }}
           >
             {Array.from({ length: band.seats }).map((_, index) => (
-              <span key={index}>자리{index + 1}</span>
+              <span key={index}>
+                <strong>{`${band.rowKey}-${String(index + 1).padStart(2, "0")}`}</strong>
+                <small>{`자리${index + 1}`}</small>
+              </span>
             ))}
           </div>
         ))}
@@ -106,6 +112,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
           >
             {member.id === snapshot.currentUserId ? <em className="you-badge">YOU</em> : null}
             <img alt={member.displayName} src={member.avatarUrl} />
+            {member.seatKey ? <small className="avatar-seat-tag">{member.seatKey}</small> : null}
             <span>{member.displayName}</span>
           </div>
         ))}

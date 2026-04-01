@@ -35,6 +35,7 @@ export interface OfficeMember {
   officeStatus: OfficeStatus;
   slackStatusText?: string;
   slackStatusEmoji?: string;
+  seatKey?: string;
   zoneId: OfficeZoneId;
   x: number;
   y: number;

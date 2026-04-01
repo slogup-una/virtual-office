@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 
+import { seatAssignmentsByDisplayName, seatDefinitionByKey } from "../config/seating.js";
 import type {
   OfficeMember,
   OfficeMessage,
@@ -54,9 +55,10 @@ const seedMembers: OfficeMember[] = [
     officeStatus: "active",
     slackStatusEmoji: ":computer:",
     slackStatusText: "집중 근무",
+    seatKey: "A-01",
     zoneId: "main-office",
-    x: 24,
-    y: 28,
+    x: 9.4,
+    y: 32.8,
     isOnline: true
   },
   {
@@ -69,6 +71,7 @@ const seedMembers: OfficeMember[] = [
     officeStatus: "meeting",
     slackStatusEmoji: ":spiral_calendar_pad:",
     slackStatusText: "회의 중",
+    seatKey: "B-02",
     zoneId: "meeting-room",
     x: 66,
     y: 22,
@@ -84,6 +87,7 @@ const seedMembers: OfficeMember[] = [
     officeStatus: "lunch",
     slackStatusEmoji: ":fork_and_knife:",
     slackStatusText: "점심",
+    seatKey: "C-03",
     zoneId: "cafeteria",
     x: 78,
     y: 64,
@@ -148,8 +152,8 @@ export function getWorkspace(workspaceId: string) {
 export function createOrUpdateMemberFromSlack(profile: SlackProfile, workspaceId: string) {
   const existing = getMemberBySlackId(profile.id, workspaceId);
   const officeStatus = mapSlackProfileToStatus(profile);
-  const zoneId = zoneByStatus[officeStatus];
-  const position = positionByZone[zoneId];
+  const seatKey = existing?.seatKey ?? resolveSeatKeyForDisplayName(profile.displayName);
+  const placement = resolvePlacement(officeStatus, seatKey);
 
   const member: OfficeMember = {
     id: existing?.id ?? nanoid(),
@@ -161,9 +165,10 @@ export function createOrUpdateMemberFromSlack(profile: SlackProfile, workspaceId
     officeStatus,
     slackStatusText: profile.statusText,
     slackStatusEmoji: profile.statusEmoji,
-    zoneId,
-    x: position.x,
-    y: position.y,
+    seatKey,
+    zoneId: placement.zoneId,
+    x: placement.x,
+    y: placement.y,
     isOnline: profile.presence !== "away"
   };
 
@@ -178,15 +183,14 @@ export function updateMemberPresence(slackUserId: string, presence: "active" | "
   }
 
   const officeStatus = presence === "away" ? "away" : member.officeStatus === "offline" ? "active" : member.officeStatus;
-  const zoneId = zoneByStatus[officeStatus];
-  const position = positionByZone[zoneId];
+  const placement = resolvePlacement(officeStatus, member.seatKey);
 
   const updated: OfficeMember = {
     ...member,
     officeStatus,
-    zoneId,
-    x: position.x,
-    y: position.y,
+    zoneId: placement.zoneId,
+    x: placement.x,
+    y: placement.y,
     isOnline: presence === "active"
   };
 
@@ -245,4 +249,29 @@ function mapSlackProfileToStatus(profile: SlackProfile): OfficeStatus {
   }
 
   return "active";
+}
+
+function resolveSeatKeyForDisplayName(displayName: string) {
+  return seatAssignmentsByDisplayName[displayName];
+}
+
+function resolvePlacement(officeStatus: OfficeStatus, seatKey?: string) {
+  if (officeStatus === "active" && seatKey) {
+    const seat = seatDefinitionByKey[seatKey];
+    if (seat) {
+      return {
+        zoneId: "main-office" as OfficeZoneId,
+        x: seat.x,
+        y: seat.y
+      };
+    }
+  }
+
+  const zoneId = zoneByStatus[officeStatus];
+  const position = positionByZone[zoneId];
+  return {
+    zoneId,
+    x: position.x,
+    y: position.y
+  };
 }

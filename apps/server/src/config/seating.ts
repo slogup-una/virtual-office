@@ -1,0 +1,57 @@
+export interface SeatDefinition {
+  key: string;
+  label: string;
+  x: number;
+  y: number;
+}
+
+// Temporary seat assignment map.
+// Edit the Slack display name on the left and assign a seat key on the right.
+export const seatAssignmentsByDisplayName: Record<string, string> = {
+  Una: "A-01",
+  Jae: "B-02",
+  Mina: "C-03"
+};
+
+export const seatDefinitions: SeatDefinition[] = [
+  { key: "A-01", label: "자리1", x: 9.4, y: 32.8 },
+  { key: "A-02", label: "자리2", x: 22.2, y: 32.8 },
+  { key: "A-03", label: "자리3", x: 35, y: 32.8 },
+  { key: "A-04", label: "자리4", x: 47.8, y: 32.8 },
+  { key: "A-05", label: "자리5", x: 60.6, y: 32.8 },
+  { key: "B-01", label: "자리1", x: 9.4, y: 38.8 },
+  { key: "B-02", label: "자리2", x: 22.2, y: 38.8 },
+  { key: "B-03", label: "자리3", x: 35, y: 38.8 },
+  { key: "B-04", label: "자리4", x: 47.8, y: 38.8 },
+  { key: "B-05", label: "자리5", x: 60.6, y: 38.8 },
+  { key: "C-01", label: "자리1", x: 9.4, y: 51.8 },
+  { key: "C-02", label: "자리2", x: 22.2, y: 51.8 },
+  { key: "C-03", label: "자리3", x: 35, y: 51.8 },
+  { key: "C-04", label: "자리4", x: 47.8, y: 51.8 },
+  { key: "C-05", label: "자리5", x: 60.6, y: 51.8 },
+  { key: "D-01", label: "자리1", x: 9.4, y: 57.8 },
+  { key: "D-02", label: "자리2", x: 22.2, y: 57.8 },
+  { key: "D-03", label: "자리3", x: 35, y: 57.8 },
+  { key: "D-04", label: "자리4", x: 47.8, y: 57.8 },
+  { key: "D-05", label: "자리5", x: 60.6, y: 57.8 },
+  { key: "E-01", label: "자리1", x: 9.4, y: 70.8 },
+  { key: "E-02", label: "자리2", x: 22.2, y: 70.8 },
+  { key: "E-03", label: "자리3", x: 35, y: 70.8 },
+  { key: "E-04", label: "자리4", x: 47.8, y: 70.8 },
+  { key: "E-05", label: "자리5", x: 60.6, y: 70.8 },
+  { key: "F-01", label: "자리1", x: 9.4, y: 76.8 },
+  { key: "F-02", label: "자리2", x: 22.2, y: 76.8 },
+  { key: "F-03", label: "자리3", x: 35, y: 76.8 },
+  { key: "F-04", label: "자리4", x: 47.8, y: 76.8 },
+  { key: "F-05", label: "자리5", x: 60.6, y: 76.8 },
+  { key: "R-01", label: "자리1", x: 82.25, y: 64.6 },
+  { key: "R-02", label: "자리2", x: 92.75, y: 64.6 },
+  { key: "S-01", label: "자리1", x: 82.25, y: 72.6 },
+  { key: "S-02", label: "자리2", x: 92.75, y: 72.6 },
+  { key: "T-01", label: "자리1", x: 82.25, y: 79.6 },
+  { key: "T-02", label: "자리2", x: 92.75, y: 79.6 }
+];
+
+export const seatDefinitionByKey = Object.fromEntries(
+  seatDefinitions.map((seat) => [seat.key, seat])
+);

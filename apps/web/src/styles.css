@@ -256,8 +256,21 @@ textarea {
 }
 
 .desk-row span {
+  display: grid;
+  justify-items: center;
   text-align: center;
   font-size: 14px;
+  line-height: 1.15;
+}
+
+.desk-row strong {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.desk-row small {
+  font-size: 11px;
+  color: #566476;
 }
 
 .avatar-token {
@@ -318,6 +331,16 @@ textarea {
   border-radius: 999px;
   padding: 3px 8px;
   transform: translateY(6px);
+}
+
+.avatar-seat-tag {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #334357;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(24, 50, 87, 0.1);
 }
 
 .avatar-token.is-current img {
