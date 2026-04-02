@@ -57,6 +57,7 @@ const entrancePosition = {
   x: 71,
   y: 5
 } as const;
+const officeNoticeEventName = "office-notice";
 
 const motionStepDelayMs = 48;
 const motionStepDistance = 1.1;
@@ -283,6 +284,16 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     });
   };
 
+  const triggerDemoNotice = (message: string) => {
+    window.dispatchEvent(
+      new CustomEvent(officeNoticeEventName, {
+        detail: {
+          message
+        }
+      })
+    );
+  };
+
   useEffect(() => {
     const previousMembers = previousMembersRef.current;
     const nextMembers = new Map(snapshot.members.map((member) => [member.id, member]));
@@ -452,10 +463,24 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             <span className="eyebrow">Demo Motion</span>
             <strong>{currentUser.displayName}</strong>
             <div className="demo-motion-actions">
-              <button className="ghost-button" onClick={() => triggerDepartureMotion(currentUser)} type="button">
+              <button
+                className="ghost-button"
+                onClick={() => {
+                  triggerDepartureMotion(currentUser);
+                  triggerDemoNotice(`${currentUser.displayName}님 고생하셨습니다.`);
+                }}
+                type="button"
+              >
                 퇴장 테스트
               </button>
-              <button className="ghost-button" onClick={() => triggerArrivalMotion(currentUser)} type="button">
+              <button
+                className="ghost-button"
+                onClick={() => {
+                  triggerArrivalMotion(currentUser);
+                  triggerDemoNotice(`${currentUser.displayName}님 좋은 아침입니다.`);
+                }}
+                type="button"
+              >
                 입장 테스트
               </button>
             </div>

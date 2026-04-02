@@ -6,7 +6,9 @@ export function useOfficeSnapshot() {
   return useQuery({
     queryKey: ["office"],
     queryFn: apiClient.getOffice,
-    refetchInterval: 5000
+    refetchInterval: 5000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true
   });
 }
 
@@ -14,7 +16,9 @@ export function useMessages(channelId: string) {
   return useQuery({
     queryKey: ["messages", channelId],
     queryFn: () => apiClient.getMessages(channelId),
-    refetchInterval: 3000
+    refetchInterval: 3000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true
   });
 }
 

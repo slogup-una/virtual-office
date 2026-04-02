@@ -2,9 +2,25 @@ import { Router } from "express";
 import { z } from "zod";
 import { isSeatAdminSlackUserId } from "../config/admin.js";
 import { isSlackConfigured } from "../config/env.js";
-import { addMessage, assignSeat, clearSeatAssignment, exportSeatAssignments, getMemberById, getSnapshot, listMessages } from "../services/officeStore.js";
-import { postSlackMessage } from "../slack/client.js";
+import { addMessage, assignSeat, clearSeatAssignment, exportSeatAssignments, getMemberById, getMemberBySlackId, getSnapshot, createOrUpdateMemberFromSlack, listMessages } from "../services/officeStore.js";
+import { fetchChannelMessages, fetchSlackUserProfile, fetchWorkspaceMembers, postSlackMessage } from "../slack/client.js";
 const router = Router();
+const lastWorkspaceSyncAt = new Map();
+const workspaceSyncIntervalMs = 15 * 1000;
+async function syncWorkspaceMembersIfNeeded(workspaceId) {
+    if (!isSlackConfigured || workspaceId === "demo-workspace") {
+        return;
+    }
+    const lastSyncedAt = lastWorkspaceSyncAt.get(workspaceId) ?? 0;
+    if (Date.now() - lastSyncedAt < workspaceSyncIntervalMs) {
+        return;
+    }
+    const members = await fetchWorkspaceMembers(workspaceId);
+    members.forEach((member) => {
+        createOrUpdateMemberFromSlack(member, workspaceId);
+    });
+    lastWorkspaceSyncAt.set(workspaceId, Date.now());
+}
 router.get("/me", (request, response) => {
     if (!request.sessionUser) {
         response.status(401).json({ message: "Unauthorized" });
@@ -18,11 +34,41 @@ router.get("/office", (request, response) => {
         response.status(401).json({ message: "Unauthorized" });
         return;
     }
-    response.json(getSnapshot(request.sessionUser.id, request.sessionUser.workspaceId, isSeatAdminSlackUserId(request.sessionUser.slackUserId)));
+    void syncWorkspaceMembersIfNeeded(request.sessionUser.workspaceId)
+        .catch(() => undefined)
+        .finally(() => {
+        response.json(getSnapshot(request.sessionUser.id, request.sessionUser.workspaceId, isSeatAdminSlackUserId(request.sessionUser.slackUserId)));
+    });
 });
-router.get("/messages", (request, response) => {
-    const channelId = typeof request.query.channelId === "string" ? request.query.channelId : "general";
-    response.json({ items: listMessages(channelId) });
+router.get("/messages", async (request, response) => {
+    const channelId = typeof request.query.channelId === "string" ? request.query.channelId : "virtual-office";
+    if (!request.sessionUser) {
+        response.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+    if (!isSlackConfigured || request.sessionUser.workspaceId === "demo-workspace") {
+        response.json({ items: listMessages(channelId) });
+        return;
+    }
+    try {
+        await syncWorkspaceMembersIfNeeded(request.sessionUser.workspaceId);
+        const result = await fetchChannelMessages(request.sessionUser.workspaceId, channelId);
+        const items = await Promise.all(result.items.map(async (message) => {
+            const member = getMemberBySlackId(message.userId, request.sessionUser.workspaceId) ??
+                (message.userId !== "unknown"
+                    ? createOrUpdateMemberFromSlack(await fetchSlackUserProfile(request.sessionUser.workspaceId, message.userId), request.sessionUser.workspaceId)
+                    : null);
+            return {
+                ...message,
+                channelId,
+                userName: member?.displayName ?? message.userName
+            };
+        }));
+        response.json({ items });
+    }
+    catch (error) {
+        response.status(500).json({ message: error instanceof Error ? error.message : "Failed to fetch messages" });
+    }
 });
 router.put("/seats/:seatKey", (request, response) => {
     const payloadSchema = z.object({

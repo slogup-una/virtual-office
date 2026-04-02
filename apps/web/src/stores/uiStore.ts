@@ -33,7 +33,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  selectedChannelId: "general",
+  selectedChannelId: "virtual-office",
   selectedZoneId: null,
   messageDraft: "",
   chatOpacity: 0.86,

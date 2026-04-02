@@ -20,6 +20,7 @@ const starSeed = Array.from({ length: 90 }).map((_, index) => ({
 }));
 
 const skylineHeights = [88, 130, 112, 164, 96, 142, 104, 176, 118, 154, 94, 136];
+const officeNoticeEventName = "office-notice";
 
 const isUnavailableStatus = (status: OfficeMember["officeStatus"]) =>
   status === "away" || status === "offline";
@@ -93,6 +94,18 @@ export function AppShell() {
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleOfficeNotice = (event: Event) => {
+      const customEvent = event as CustomEvent<{ message?: string }>;
+      if (typeof customEvent.detail?.message === "string" && customEvent.detail.message.trim()) {
+        setNoticeMessage(customEvent.detail.message.trim());
+      }
+    };
+
+    window.addEventListener(officeNoticeEventName, handleOfficeNotice as EventListener);
+    return () => window.removeEventListener(officeNoticeEventName, handleOfficeNotice as EventListener);
   }, []);
 
   useEffect(() => {
@@ -209,7 +222,7 @@ export function AppShell() {
       </div>
       <header className="hud-bar">
         <div className="hud-logo">
-          <div className="hud-logo-text">NIGHT SHIFT</div>
+          <div className="hud-logo-text">SAFIENCE X SLOGUP</div>
           <div className="hud-logo-sub">{snapshot.workspace.name}</div>
         </div>
         <div className="hud-status-row">

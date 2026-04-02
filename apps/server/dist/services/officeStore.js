@@ -6,7 +6,7 @@ const workspaces = new Map([
         {
             id: "demo-workspace",
             name: "Virtual Office Workspace",
-            defaultChannelId: "general"
+            defaultChannelId: "virtual-office"
         }
     ]
 ]);
@@ -86,23 +86,6 @@ seedMembers.forEach((member) => {
         setSeatAssignment("demo-workspace", member.seatKey, member.slackUserId);
     }
 });
-messages.push({
-    id: nanoid(),
-    channelId: "general",
-    userId: "u-2",
-    userName: "Jae",
-    text: "10분 뒤 스탠드업 시작합니다.",
-    source: "slack",
-    createdAt: new Date(Date.now() - 1000 * 60 * 10).toISOString()
-}, {
-    id: nanoid(),
-    channelId: "general",
-    userId: "u-3",
-    userName: "Mina",
-    text: "점심 먹고 라운지에서 이야기해요.",
-    source: "app",
-    createdAt: new Date(Date.now() - 1000 * 60 * 4).toISOString()
-});
 export function listMembers() {
     return [...members.values()];
 }
@@ -120,7 +103,7 @@ export function getWorkspace(workspaceId) {
     return (workspaces.get(workspaceId) ?? {
         id: workspaceId,
         name: "Slack Workspace",
-        defaultChannelId: "general"
+        defaultChannelId: "virtual-office"
     });
 }
 export function createOrUpdateMemberFromSlack(profile, workspaceId) {

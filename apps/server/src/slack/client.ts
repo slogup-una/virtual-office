@@ -1,10 +1,12 @@
 import crypto from "node:crypto";
 
 import { env } from "../config/env.js";
-import type { SlackProfile } from "../types/domain.js";
+import type { OfficeMessage, SlackProfile } from "../types/domain.js";
 
 const slackApiBase = "https://slack.com/api";
 const refreshLeewayMs = 60 * 1000;
+const channelIdCache = new Map<string, { id: string; cachedAt: number }>();
+const channelCacheTtlMs = 5 * 60 * 1000;
 
 interface SlackWorkspaceToken {
   accessToken: string;
@@ -106,6 +108,38 @@ async function slackFetch<T>(path: string, workspaceId?: string, init?: RequestI
   }
 
   return data;
+}
+
+async function resolveChannelId(workspaceId: string, channelRef: string) {
+  if (channelRef.startsWith("C")) {
+    return channelRef;
+  }
+
+  const cacheKey = `${workspaceId}:${channelRef}`;
+  const cached = channelIdCache.get(cacheKey);
+  if (cached && Date.now() - cached.cachedAt < channelCacheTtlMs) {
+    return cached.id;
+  }
+
+  const data = await slackFetch<{
+    channels: Array<{
+      id: string;
+      name: string;
+      is_archived?: boolean;
+    }>;
+  }>(`/conversations.list?types=public_channel&exclude_archived=true&limit=1000`, workspaceId);
+
+  const channel = data.channels.find((item) => item.name === channelRef);
+  if (!channel) {
+    throw new Error(`Slack channel not found: ${channelRef}`);
+  }
+
+  channelIdCache.set(cacheKey, {
+    id: channel.id,
+    cachedAt: Date.now()
+  });
+
+  return channel.id;
 }
 
 export async function exchangeCodeForToken(code: string) {
@@ -233,11 +267,47 @@ export async function fetchWorkspaceMembers(workspaceId: string) {
   return profiles;
 }
 
+export async function fetchChannelMessages(workspaceId: string, channelRef: string) {
+  const channelId = await resolveChannelId(workspaceId, channelRef);
+  const data = await slackFetch<{
+    messages: Array<{
+      ts: string;
+      text?: string;
+      user?: string;
+      subtype?: string;
+    }>;
+  }>(`/conversations.history?channel=${encodeURIComponent(channelId)}&limit=40`, workspaceId);
+
+  const items = data.messages
+    .filter((message) => !message.subtype && typeof message.text === "string" && typeof message.ts === "string")
+    .map((message) => {
+      const seconds = Number(message.ts.split(".")[0] ?? "0");
+
+      return {
+        id: message.ts,
+        channelId,
+        userId: message.user ?? "unknown",
+        userName: message.user ?? "Slack User",
+        text: message.text ?? "",
+        source: "slack",
+        createdAt: new Date(seconds * 1000).toISOString()
+      } satisfies OfficeMessage;
+    })
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+
+  return {
+    channelId,
+    items
+  };
+}
+
 export async function postSlackMessage(workspaceId: string, channelId: string, text: string) {
+  const resolvedChannelId = await resolveChannelId(workspaceId, channelId);
+
   return slackFetch<{ ts: string; channel: string }>("/chat.postMessage", workspaceId, {
     method: "POST",
     body: JSON.stringify({
-      channel: channelId,
+      channel: resolvedChannelId,
       text
     })
   });

@@ -36,7 +36,7 @@ router.get("/slack/callback", async (request, response) => {
         upsertWorkspace({
             id: token.workspaceId,
             name: token.workspaceName,
-            defaultChannelId: "general"
+            defaultChannelId: "virtual-office"
         });
         storeSlackWorkspaceToken(token.workspaceId, {
             accessToken: token.botAccessToken,
