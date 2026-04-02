@@ -200,9 +200,21 @@ export async function fetchSlackUserProfile(workspaceId: string, slackUserId: st
         status_text?: string;
         status_emoji?: string;
       };
-        presence?: "active" | "away";
+      presence?: "active" | "away";
     };
   }>(`/users.info?user=${encodeURIComponent(slackUserId)}`, workspaceId);
+
+  let presence: "active" | "away" | undefined;
+
+  try {
+    const presenceData = await slackFetch<{ presence: "active" | "away" }>(
+      `/users.getPresence?user=${encodeURIComponent(slackUserId)}`,
+      workspaceId
+    );
+    presence = presenceData.presence;
+  } catch {
+    presence = data.user.presence;
+  }
 
   const profile = data.user.profile;
   const result: SlackProfile = {
@@ -212,7 +224,7 @@ export async function fetchSlackUserProfile(workspaceId: string, slackUserId: st
     imageUrl: profile.image_192 || `https://api.dicebear.com/9.x/shapes/svg?seed=${slackUserId}`,
     statusText: profile.status_text,
     statusEmoji: profile.status_emoji,
-    presence: data.user.presence
+    presence
   };
 
   return result;

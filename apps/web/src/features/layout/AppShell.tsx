@@ -40,25 +40,27 @@ const deskBarrierSegments = [
   { x: 3, y: 58.8, width: 64 },
   { x: 13.67, y: 71.8, width: 53.33 },
   { x: 13.67, y: 77.8, width: 53.33 },
-  { x: 77, y: 65.3, width: 17 },
-  { x: 77, y: 73.3, width: 17 },
-  { x: 77, y: 80.3, width: 17 }
+  { x: 78.7, y: 66.05, width: 15.3 },
+  { x: 78.7, y: 74.05, width: 15.3 },
+  { x: 78.7, y: 81.05, width: 15.3 }
 ] as const;
 
 const defaultObstacleObjects = [
-  { x: 78.7, y: 23.4, width: 12.4, height: 11.6 },
-  { x: 88.9, y: 16.7, width: 4.1, height: 5.3 },
-  { x: 78.2, y: 16.4, width: 2.8, height: 4.1 },
-  { x: 5.2, y: 7.5, width: 18, height: 7.5 },
-  { x: 12.5, y: 13.6, width: 7.6, height: 4.8 },
-  { x: 78.1, y: 86.6, width: 9.5, height: 7.2 },
-  { x: 89.2, y: 86.1, width: 3.7, height: 4.6 },
-  { x: 78.2, y: 4.8, width: 5.2, height: 7.5 },
-  { x: 85.2, y: 4.8, width: 5.2, height: 7.5 },
-  { x: 82.8, y: 8.8, width: 4.1, height: 4.1 },
-  { x: 66.4, y: 3.2, width: 7.6, height: 3.7 },
-  { x: 73.2, y: 3.45, width: 1.8, height: 3.1 }
+  { id: "meeting-table-1", x: 78.7, y: 23.4, width: 12.4, height: 11.6 },
+  { id: "whiteboard-1", x: 88.9, y: 16.7, width: 4.1, height: 5.3 },
+  { id: "wall-clock-1", x: 78.2, y: 16.4, width: 2.8, height: 4.1 },
+  { id: "sofa-1", x: 5.2, y: 7.5, width: 18, height: 7.5 },
+  { id: "coffee-table-1", x: 12.5, y: 13.6, width: 7.6, height: 4.8 },
+  { id: "l-desk-1", x: 78.1, y: 89.1, width: 9.5, height: 7.2 },
+  { id: "trophy-shelf-1", x: 89.2, y: 88.6, width: 3.7, height: 4.6 },
+  { id: "bookshelf-1", x: 78.2, y: 4.8, width: 5.2, height: 7.5 },
+  { id: "bookshelf-2", x: 85.2, y: 4.8, width: 5.2, height: 7.5 },
+  { id: "box-stack-1", x: 82.8, y: 8.8, width: 4.1, height: 4.1 },
+  { id: "security-gate-1", x: 66.4, y: 3.2, width: 7.6, height: 3.7 },
+  { id: "umbrella-stand-1", x: 73.2, y: 3.45, width: 1.8, height: 3.1 }
 ] as const;
+
+const defaultObstacleObjectIds = new Set<string>(defaultObstacleObjects.map((object) => object.id));
 
 const isVirtualOfficeMember = (member: OfficeMember) =>
   member.id.toLowerCase().includes("virtual-office") ||
@@ -69,23 +71,31 @@ function loadObstacleObjects() {
   try {
     const raw = window.localStorage.getItem(roomObjectStorageKey);
     if (!raw) {
-      return [...defaultObstacleObjects];
+      return defaultObstacleObjects.map(({ id, ...object }) => object);
     }
 
-    const parsed = JSON.parse(raw) as Array<{ x: number; y: number; width: number; height: number }>;
+    const parsed = JSON.parse(raw) as Array<{
+      id?: string;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      blocksMovement?: boolean;
+    }>;
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [...defaultObstacleObjects];
+      return defaultObstacleObjects.map(({ id, ...object }) => object);
     }
 
     return parsed.filter(
       (item) =>
+        (item?.blocksMovement === true || (typeof item?.id === "string" && defaultObstacleObjectIds.has(item.id))) &&
         typeof item?.x === "number" &&
         typeof item?.y === "number" &&
         typeof item?.width === "number" &&
         typeof item?.height === "number"
-    );
+    ).map(({ x, y, width, height }) => ({ x, y, width, height }));
   } catch {
-    return [...defaultObstacleObjects];
+    return defaultObstacleObjects.map(({ id, ...object }) => object);
   }
 }
 

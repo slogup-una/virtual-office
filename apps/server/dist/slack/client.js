@@ -128,6 +128,14 @@ export function storeSlackWorkspaceToken(workspaceId, token) {
 }
 export async function fetchSlackUserProfile(workspaceId, slackUserId) {
     const data = await slackFetch(`/users.info?user=${encodeURIComponent(slackUserId)}`, workspaceId);
+    let presence;
+    try {
+        const presenceData = await slackFetch(`/users.getPresence?user=${encodeURIComponent(slackUserId)}`, workspaceId);
+        presence = presenceData.presence;
+    }
+    catch {
+        presence = data.user.presence;
+    }
     const profile = data.user.profile;
     const result = {
         id: data.user.id,
@@ -136,7 +144,7 @@ export async function fetchSlackUserProfile(workspaceId, slackUserId) {
         imageUrl: profile.image_192 || `https://api.dicebear.com/9.x/shapes/svg?seed=${slackUserId}`,
         statusText: profile.status_text,
         statusEmoji: profile.status_emoji,
-        presence: data.user.presence
+        presence
     };
     return result;
 }

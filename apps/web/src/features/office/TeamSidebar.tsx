@@ -68,8 +68,7 @@ export function TeamSidebar({ snapshot }: { snapshot: OfficeSnapshot }) {
     >
       <div className="floating-header draggable-header" onPointerDown={handlePointerDown}>
         <div>
-          <span className="eyebrow">{"TEAM\u00A0PRESENCE"}</span>
-          <h2>상태</h2>
+          <span className="eyebrow panel-pixel-badge">TEAM</span>
         </div>
         <div className="panel-tools">
           <button
@@ -87,16 +86,14 @@ export function TeamSidebar({ snapshot }: { snapshot: OfficeSnapshot }) {
       <div className="member-list compact-list">
         {snapshot.members.map((member) => (
           <article
-            className={`member-card compact-card ${member.officeStatus} ${member.id === snapshot.currentUserId ? "is-current" : ""}`}
+            className={`member-card compact-card status-presence-card ${member.officeStatus} ${member.id === snapshot.currentUserId ? "is-current" : ""}`}
             key={member.id}
           >
-            <img alt={member.displayName} className="member-avatar" src={member.avatarUrl} />
-            <div>
+            <img alt={member.displayName} className="member-avatar status-presence-avatar" src={member.avatarUrl} />
+            <div className="status-presence-copy">
               <strong>{member.displayName}</strong>
               <p>{statusLabel[member.officeStatus]}</p>
-              <small>
-                {member.slackStatusEmoji} {member.slackStatusText || member.zoneId}
-              </small>
+              <small>{`${member.slackStatusEmoji ? `${member.slackStatusEmoji} ` : ""}${member.slackStatusText || statusLabel[member.officeStatus]}`}</small>
             </div>
           </article>
         ))}

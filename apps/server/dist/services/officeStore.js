@@ -109,7 +109,7 @@ export function getWorkspace(workspaceId) {
 }
 export function createOrUpdateMemberFromSlack(profile, workspaceId) {
     const existing = getMemberBySlackId(profile.id, workspaceId);
-    const officeStatus = mapSlackProfileToStatus(profile);
+    const officeStatus = mapSlackProfileToStatus(profile, existing?.officeStatus);
     const seatKey = resolveSeatKeyForSlackUserId(workspaceId, profile.id) ?? existing?.seatKey;
     const placement = resolvePlacement(officeStatus, seatKey);
     const member = {
@@ -126,7 +126,7 @@ export function createOrUpdateMemberFromSlack(profile, workspaceId) {
         zoneId: placement.zoneId,
         x: placement.x,
         y: placement.y,
-        isOnline: profile.presence !== "away"
+        isOnline: resolveSlackOnlineState(profile.presence, existing?.isOnline)
     };
     members.set(member.id, member);
     return member;
@@ -231,7 +231,7 @@ export function exportSeatAssignments(workspaceId) {
     const assignments = getSeatAssignments(workspaceId);
     return Object.fromEntries([...assignments.entries()].sort(([left], [right]) => left.localeCompare(right)));
 }
-function mapSlackProfileToStatus(profile) {
+function mapSlackProfileToStatus(profile, fallbackStatus) {
     const text = (profile.statusText ?? "").toLowerCase();
     const emoji = profile.statusEmoji ?? "";
     if (text.includes("점심") || emoji.includes("fork_and_knife")) {
@@ -249,7 +249,19 @@ function mapSlackProfileToStatus(profile) {
     if (profile.presence === "away") {
         return "away";
     }
+    if (profile.presence !== "active") {
+        return fallbackStatus ?? "offline";
+    }
     return "active";
+}
+function resolveSlackOnlineState(presence, fallbackIsOnline) {
+    if (presence === "active") {
+        return true;
+    }
+    if (presence === "away") {
+        return false;
+    }
+    return fallbackIsOnline ?? false;
 }
 function resolveSeatKeyForSlackUserId(workspaceId, slackUserId) {
     const workspaceSeat = getSeatAssignments(workspaceId);

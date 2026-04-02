@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
+import type { ChangeEvent } from "react";
 
 import { apiClient } from "../../api/client";
 import type { OfficeSnapshot } from "../../types/domain";
@@ -14,21 +15,21 @@ const roomZones = [
   { id: "storage", label: "창고", x: 77, y: 0, width: 17, height: 22 },
   { id: "meeting-room", label: "회의실 1", x: 77, y: 15, width: 17, height: 25 },
   { id: "qa-room", label: "QA ROOM", x: 77, y: 43.9, width: 17, height: 14.6 },
-  { id: "meeting-a", label: "Seoul", x: 2, y: 84, width: 18, height: 13 },
-  { id: "meeting-b", label: "Incheon", x: 20.5, y: 84, width: 18, height: 13 },
-  { id: "meeting-c", label: "Jeju", x: 39, y: 84, width: 18, height: 13 },
-  { id: "meeting-d", label: "Busan", x: 57.5, y: 84, width: 18, height: 13 },
-  { id: "ceo-room", label: "CEO", x: 76, y: 84, width: 18, height: 13 },
+  { id: "meeting-a", label: "Seoul", x: 2, y: 86.7, width: 18, height: 10.3 },
+  { id: "meeting-b", label: "Incheon", x: 20.5, y: 86.7, width: 18, height: 10.3 },
+  { id: "meeting-c", label: "Jeju", x: 39, y: 86.7, width: 18, height: 10.3 },
+  { id: "meeting-d", label: "Busan", x: 57.5, y: 86.7, width: 18, height: 10.3 },
+  { id: "ceo-room", label: "CEO", x: 76, y: 87.5, width: 18, height: 9.5 },
   { id: "outdoor-space", label: "OUTDOOR", x: 94, y: 0, width: 6, height: 97 }
 ] as const;
 
 const deskBands = [
-  { rowKey: "A", x: 3, y: 30, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
-  { rowKey: "B", x: 13.67, y: 36, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 53.33, height: 5.6 },
-  { rowKey: "C", x: 3, y: 49, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
-  { rowKey: "D", x: 3, y: 55, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 64, height: 5.6 },
-  { rowKey: "E", x: 13.67, y: 68, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 53.33, height: 5.6 },
-  { rowKey: "F", x: 13.67, y: 74, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 53.33, height: 5.6 }
+  { rowKey: "A", x: 14.8, y: 30.6, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 51.2, height: 4.48 },
+  { rowKey: "B", x: 23.34, y: 34.7, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 42.66, height: 4.48 },
+  { rowKey: "C", x: 14.8, y: 49.6, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 51.2, height: 4.48 },
+  { rowKey: "D", x: 14.8, y: 53.7, seats: 6, columns: 6, emptyLeadingSlots: 0, width: 51.2, height: 4.48 },
+  { rowKey: "E", x: 23.34, y: 68.6, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 42.66, height: 4.48 },
+  { rowKey: "F", x: 23.34, y: 71.8, seats: 5, columns: 5, emptyLeadingSlots: 0, width: 42.66, height: 4.48 }
 ] as const;
 
 const sideDeskBands = [
@@ -56,6 +57,7 @@ type RoomObjectType =
   | "bean-bag"
   | "folding-chair"
   | "sofa-two-seat"
+  | "lounge-sofa-table"
   | "meeting-table"
   | "round-coffee-table"
   | "whiteboard"
@@ -63,6 +65,12 @@ type RoomObjectType =
   | "sofa"
   | "coffee-table"
   | "l-desk"
+  | "water-purifier"
+  | "coffee-pot"
+  | "plant-pot"
+  | "bookshelf-pixel"
+  | "whiteboard-pixel"
+  | "meet-table"
   | "monitor-cyan"
   | "monitor-purple"
   | "monitor-pink"
@@ -119,6 +127,7 @@ interface RoomObject {
   y: number;
   width: number;
   height: number;
+  blocksMovement?: boolean;
 }
 
 const objectLibrary: RoomObjectLibraryItem[] = [
@@ -132,6 +141,7 @@ const objectLibrary: RoomObjectLibraryItem[] = [
   { type: "bean-bag", label: "빈백 소파", width: 5.4, height: 5.4 },
   { type: "folding-chair", label: "접이 의자", width: 4.2, height: 4.9 },
   { type: "sofa-two-seat", label: "2인 소파", width: 13.2, height: 7.2 },
+  { type: "lounge-sofa-table", label: "라운지 소파 세트", width: 18.5, height: 13.8 },
   { type: "meeting-table", label: "회의 테이블", width: 16.5, height: 14 },
   { type: "round-coffee-table", label: "원형 테이블", width: 7.4, height: 7.4 },
   { type: "whiteboard", label: "화이트보드", width: 5.8, height: 6.8 },
@@ -139,6 +149,12 @@ const objectLibrary: RoomObjectLibraryItem[] = [
   { type: "sofa", label: "3인 소파", width: 18, height: 7.5 },
   { type: "coffee-table", label: "커피 테이블", width: 7.6, height: 4.8 },
   { type: "l-desk", label: "L형 책상", width: 12.5, height: 8.5 },
+  { type: "water-purifier", label: "정수기", width: 3.9, height: 8.7 },
+  { type: "coffee-pot", label: "커피 포트", width: 6.8, height: 6.2 },
+  { type: "plant-pot", label: "화분", width: 3.8, height: 7.6 },
+  { type: "bookshelf-pixel", label: "책장 픽셀", width: 7.2, height: 8.9 },
+  { type: "whiteboard-pixel", label: "화이트보드 픽셀", width: 6.2, height: 4.6 },
+  { type: "meet-table", label: "미팅 테이블", width: 16.3, height: 10 },
   { type: "monitor-cyan", label: "민트 모니터", width: 6.2, height: 5.6 },
   { type: "monitor-purple", label: "퍼플 모니터", width: 6.2, height: 5.6 },
   { type: "monitor-pink", label: "핑크 모니터", width: 6.2, height: 5.6 },
@@ -188,18 +204,18 @@ const objectLabelLookup = Object.fromEntries(objectLibrary.map((item) => [item.t
 >;
 
 const defaultRoomObjects: RoomObject[] = [
-  { id: "meeting-table-1", type: "meeting-table", x: 78.7, y: 23.4, width: 12.4, height: 11.6 },
-  { id: "whiteboard-1", type: "whiteboard", x: 88.9, y: 16.7, width: 4.1, height: 5.3 },
-  { id: "wall-clock-1", type: "wall-clock", x: 78.2, y: 16.4, width: 2.8, height: 4.1 },
-  { id: "sofa-1", type: "sofa", x: 5.2, y: 7.5, width: 18, height: 7.5 },
-  { id: "coffee-table-1", type: "coffee-table", x: 12.5, y: 13.6, width: 7.6, height: 4.8 },
-  { id: "l-desk-1", type: "l-desk", x: 78.1, y: 86.6, width: 9.5, height: 7.2 },
-  { id: "trophy-shelf-1", type: "trophy-shelf", x: 89.2, y: 86.1, width: 3.7, height: 4.6 },
-  { id: "bookshelf-1", type: "bookshelf", x: 78.2, y: 4.8, width: 5.2, height: 7.5 },
-  { id: "bookshelf-2", type: "bookshelf", x: 85.2, y: 4.8, width: 5.2, height: 7.5 },
-  { id: "box-stack-1", type: "box-stack", x: 82.8, y: 8.8, width: 4.1, height: 4.1 },
-  { id: "security-gate-1", type: "security-gate", x: 66.4, y: 3.2, width: 7.6, height: 3.7 },
-  { id: "umbrella-stand-1", type: "umbrella-stand", x: 73.2, y: 3.45, width: 1.8, height: 3.1 }
+  { id: "meeting-table-1", type: "meeting-table", x: 78.7, y: 23.4, width: 12.4, height: 11.6, blocksMovement: true },
+  { id: "whiteboard-1", type: "whiteboard", x: 88.9, y: 16.7, width: 4.1, height: 5.3, blocksMovement: true },
+  { id: "wall-clock-1", type: "wall-clock", x: 78.2, y: 16.4, width: 2.8, height: 4.1, blocksMovement: true },
+  { id: "sofa-1", type: "sofa", x: 5.2, y: 7.5, width: 18, height: 7.5, blocksMovement: true },
+  { id: "coffee-table-1", type: "coffee-table", x: 12.5, y: 13.6, width: 7.6, height: 4.8, blocksMovement: true },
+  { id: "l-desk-1", type: "l-desk", x: 78.1, y: 89.1, width: 9.5, height: 7.2, blocksMovement: true },
+  { id: "trophy-shelf-1", type: "trophy-shelf", x: 89.2, y: 88.6, width: 3.7, height: 4.6, blocksMovement: true },
+  { id: "bookshelf-1", type: "bookshelf", x: 78.2, y: 4.8, width: 5.2, height: 7.5, blocksMovement: true },
+  { id: "bookshelf-2", type: "bookshelf", x: 85.2, y: 4.8, width: 5.2, height: 7.5, blocksMovement: true },
+  { id: "box-stack-1", type: "box-stack", x: 82.8, y: 8.8, width: 4.1, height: 4.1, blocksMovement: true },
+  { id: "security-gate-1", type: "security-gate", x: 66.4, y: 3.2, width: 7.6, height: 3.7, blocksMovement: true },
+  { id: "umbrella-stand-1", type: "umbrella-stand", x: 73.2, y: 3.45, width: 1.8, height: 3.1, blocksMovement: true }
 ];
 
 const roomObjectStorageKey = "virtual-office-room-objects-v2";
@@ -260,6 +276,27 @@ interface MotionAvatar {
 interface MotionPoint {
   x: number;
   y: number;
+}
+
+function isRoomObjectShape(value: unknown): value is RoomObject {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as RoomObject;
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.type === "string" &&
+    typeof candidate.x === "number" &&
+    typeof candidate.y === "number" &&
+    typeof candidate.width === "number" &&
+    typeof candidate.height === "number" &&
+    (typeof candidate.blocksMovement === "boolean" || typeof candidate.blocksMovement === "undefined")
+  );
+}
+
+function isMovementBlockingObject(object: RoomObject) {
+  return object.blocksMovement === true;
 }
 
 function getMotionObjectCollisionBounds(object: { x: number; y: number; width: number; height: number }) {
@@ -382,9 +419,10 @@ function getMotionRoute({
   const toCell = (value: number) => clamp(Math.round(value / motionGridStep), 0, maxCell);
   const toCoord = (cell: number) => cell * motionGridStep;
   const toKey = (x: number, y: number) => `${x},${y}`;
+  const obstacleObjects = roomObjects.filter(isMovementBlockingObject);
 
   const isBlocked = (x: number, y: number) =>
-    roomObjects.some(
+    obstacleObjects.some(
       (object) => {
         const bounds = getMotionObjectCollisionBounds(object);
         return (
@@ -601,6 +639,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const dragObjectIdRef = useRef<string | null>(null);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const mapSurfaceRef = useRef<HTMLDivElement | null>(null);
+  const objectBackupInputRef = useRef<HTMLInputElement | null>(null);
   const currentUser = snapshot.members.find((member) => member.id === snapshot.currentUserId) ?? null;
   const isDemoWorkspace = snapshot.workspace.id === "demo-workspace";
 
@@ -940,7 +979,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
         x: 32,
         y: 20,
         width: template.width,
-        height: template.height
+        height: template.height,
+        blocksMovement: false
       }
     ]);
     setSelectedObjectId(id);
@@ -960,6 +1000,60 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     setRoomObjects([...defaultRoomObjects]);
     setSelectedObjectId(null);
     window.localStorage.removeItem(roomObjectStorageKey);
+  };
+
+  const handleObjectBackupDownload = () => {
+    const content = JSON.stringify(
+      {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        objects: roomObjects
+      },
+      null,
+      2
+    );
+    const blob = new Blob([content], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "room-object-layout.json";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleObjectBackupImport = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const content = await file.text();
+      const parsed = JSON.parse(content) as { objects?: unknown };
+      const importedObjects = Array.isArray(parsed)
+        ? parsed
+        : Array.isArray(parsed.objects)
+          ? parsed.objects
+          : null;
+
+      if (!importedObjects) {
+        throw new Error("invalid format");
+      }
+
+      const nextObjects = importedObjects.filter(isRoomObjectShape);
+
+      if (nextObjects.length === 0) {
+        throw new Error("empty layout");
+      }
+
+      setRoomObjects(nextObjects);
+      setSelectedObjectId(null);
+      setIsLayoutEditMode(true);
+    } catch {
+      window.alert("오브젝트 백업 파일을 읽지 못했습니다.");
+    } finally {
+      event.target.value = "";
+    }
   };
 
   const startFloatingPanelDrag = (
@@ -1100,7 +1194,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
         <div className={`map-seat-layer ${isLayoutEditMode ? "is-editing" : ""}`}>
           {deskBands.map((band) => (
             <div
-              className="desk-row"
+              className={`desk-row desk-row-main desk-row-${band.rowKey.toLowerCase()}`}
               key={band.rowKey}
               style={{
                 left: `${band.x}%`,
@@ -1113,38 +1207,50 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               {Array.from({ length: band.emptyLeadingSlots }).map((_, index) => (
                 <div aria-hidden="true" className="seat-spacer" key={`spacer-${band.rowKey}-${index}`} />
               ))}
-              {Array.from({ length: band.seats }).map((_, index) => (
-                <button
-                  className={`seat-chip ${snapshot.seats.find((seat) => seat.key === `${band.rowKey}-${String(index + 1).padStart(2, "0")}`)?.assignedSlackUserId ? "is-assigned" : ""}`}
-                  disabled={!canManageSeats}
-                  key={index}
-                  onClick={() => handleSeatClick(`${band.rowKey}-${String(index + 1).padStart(2, "0")}`)}
-                  type="button"
-                >
-                  <strong>{`${band.rowKey}-${String(index + 1).padStart(2, "0")}`}</strong>
-                  <small>{`자리${index + 1}`}</small>
-                </button>
-              ))}
+              {Array.from({ length: band.seats }).map((_, index) => {
+                const seatKey = `${band.rowKey}-${String(index + 1).padStart(2, "0")}`;
+                const isAssigned = Boolean(snapshot.seats.find((seat) => seat.key === seatKey)?.assignedSlackUserId);
+                return (
+                  <button
+                    className={`seat-chip ${isAssigned ? "is-assigned" : ""}`}
+                    disabled={!canManageSeats}
+                    key={seatKey}
+                    onClick={() => handleSeatClick(seatKey)}
+                    type="button"
+                  >
+                    <span className="seat-chip-meta">
+                      <strong>{seatKey}</strong>
+                      <small>{`자리${index + 1}`}</small>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           ))}
           {sideDeskBands.map((band) => (
             <div
-              className="desk-row desk-row-side"
+              className={`desk-row desk-row-side desk-row-${band.rowKey.toLowerCase()}`}
               key={band.rowKey}
-              style={{ left: "77%", top: `${band.y}%`, width: "17%", height: "4.5%" }}
+              style={{ left: "78.7%", top: `${band.y}%`, width: "15.3%", height: "4.05%" }}
             >
-              {Array.from({ length: band.seats }).map((_, index) => (
-                <button
-                  className={`seat-chip ${snapshot.seats.find((seat) => seat.key === `${band.rowKey}-${String(index + 1).padStart(2, "0")}`)?.assignedSlackUserId ? "is-assigned" : ""}`}
-                  disabled={!canManageSeats}
-                  key={index}
-                  onClick={() => handleSeatClick(`${band.rowKey}-${String(index + 1).padStart(2, "0")}`)}
-                  type="button"
-                >
-                  <strong>{`${band.rowKey}-${String(index + 1).padStart(2, "0")}`}</strong>
-                  <small>{`자리${index + 1}`}</small>
-                </button>
-              ))}
+              {Array.from({ length: band.seats }).map((_, index) => {
+                const seatKey = `${band.rowKey}-${String(index + 1).padStart(2, "0")}`;
+                const isAssigned = Boolean(snapshot.seats.find((seat) => seat.key === seatKey)?.assignedSlackUserId);
+                return (
+                  <button
+                    className={`seat-chip ${isAssigned ? "is-assigned" : ""}`}
+                    disabled={!canManageSeats}
+                    key={seatKey}
+                    onClick={() => handleSeatClick(seatKey)}
+                    type="button"
+                  >
+                    <span className="seat-chip-meta">
+                      <strong>{seatKey}</strong>
+                      <small>{`자리${index + 1}`}</small>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -1179,7 +1285,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
           <aside className="demo-motion-panel" style={{ transform: `translate(${demoMotionOffset.x}px, ${demoMotionOffset.y}px)` }}>
             <div className="floating-header draggable-header" onPointerDown={(event) => startFloatingPanelDrag(event, "demo")}>
               <div>
-                <span className="eyebrow">Demo Motion</span>
+                <span className="eyebrow panel-pixel-badge">Demo Motion</span>
                 <h2>{currentUser.displayName}</h2>
               </div>
               <div className="panel-tools">
@@ -1228,7 +1334,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
           <aside className="layout-editor-panel" style={{ transform: `translate(${layoutEditorOffset.x}px, ${layoutEditorOffset.y}px)` }}>
             <div className="floating-header draggable-header" onPointerDown={(event) => startFloatingPanelDrag(event, "layout")}>
               <div>
-                <span className="eyebrow">Object Layout</span>
+                <span className="eyebrow panel-pixel-badge">Object Library</span>
                 <h2>오브젝트 편집</h2>
               </div>
               <div className="panel-tools">
@@ -1263,20 +1369,37 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               ))}
             </div>
             <div className="seat-assignment-actions">
-              <button className="ghost-button" disabled={!selectedObjectId} onClick={removeSelectedObject} type="button">
+              <button className="ghost-button" onClick={handleObjectBackupDownload} type="button">
+                백업 다운로드
+              </button>
+              <button
+                className="ghost-button"
+                onClick={() => objectBackupInputRef.current?.click()}
+                type="button"
+              >
+                백업 불러오기
+              </button>
+              <button className="ghost-button is-danger" disabled={!selectedObjectId} onClick={removeSelectedObject} type="button">
                 선택 오브젝트 삭제
               </button>
               <button className="ghost-button" onClick={resetRoomObjects} type="button">
                 기본 배치 복원
               </button>
             </div>
+            <input
+              accept="application/json,.json"
+              className="sr-only"
+              onChange={handleObjectBackupImport}
+              ref={objectBackupInputRef}
+              type="file"
+            />
           </aside>
         ) : null}
         {selectedSeat && canManageSeats ? (
           <aside className="seat-assignment-panel" style={{ transform: `translate(${seatAssignmentOffset.x}px, ${seatAssignmentOffset.y}px)` }}>
             <div className="floating-header draggable-header" onPointerDown={(event) => startFloatingPanelDrag(event, "seat")}>
               <div>
-                <span className="eyebrow">Seat Manager</span>
+                <span className="eyebrow panel-pixel-badge">Seat Manager</span>
                 <h2>{selectedSeat.key}</h2>
               </div>
               <button

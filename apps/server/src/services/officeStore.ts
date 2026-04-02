@@ -138,7 +138,7 @@ export function getWorkspace(workspaceId: string) {
 
 export function createOrUpdateMemberFromSlack(profile: SlackProfile, workspaceId: string) {
   const existing = getMemberBySlackId(profile.id, workspaceId);
-  const officeStatus = mapSlackProfileToStatus(profile);
+  const officeStatus = mapSlackProfileToStatus(profile, existing?.officeStatus);
   const seatKey = resolveSeatKeyForSlackUserId(workspaceId, profile.id) ?? existing?.seatKey;
   const placement = resolvePlacement(officeStatus, seatKey);
 
@@ -156,7 +156,7 @@ export function createOrUpdateMemberFromSlack(profile: SlackProfile, workspaceId
     zoneId: placement.zoneId,
     x: placement.x,
     y: placement.y,
-    isOnline: profile.presence !== "away"
+    isOnline: resolveSlackOnlineState(profile.presence, existing?.isOnline)
   };
 
   members.set(member.id, member);
@@ -283,7 +283,7 @@ export function exportSeatAssignments(workspaceId: string) {
   return Object.fromEntries([...assignments.entries()].sort(([left], [right]) => left.localeCompare(right)));
 }
 
-function mapSlackProfileToStatus(profile: SlackProfile): OfficeStatus {
+function mapSlackProfileToStatus(profile: SlackProfile, fallbackStatus?: OfficeStatus): OfficeStatus {
   const text = (profile.statusText ?? "").toLowerCase();
   const emoji = profile.statusEmoji ?? "";
 
@@ -307,7 +307,26 @@ function mapSlackProfileToStatus(profile: SlackProfile): OfficeStatus {
     return "away";
   }
 
+  if (profile.presence !== "active") {
+    return fallbackStatus ?? "offline";
+  }
+
   return "active";
+}
+
+function resolveSlackOnlineState(
+  presence: SlackProfile["presence"],
+  fallbackIsOnline?: boolean
+) {
+  if (presence === "active") {
+    return true;
+  }
+
+  if (presence === "away") {
+    return false;
+  }
+
+  return fallbackIsOnline ?? false;
 }
 
 function resolveSeatKeyForSlackUserId(workspaceId: string, slackUserId: string) {

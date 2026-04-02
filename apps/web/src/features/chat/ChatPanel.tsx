@@ -134,7 +134,7 @@ export function ChatPanel({
     >
       <div className="floating-header draggable-header" onPointerDown={handlePointerDown}>
         <div>
-          <span className="eyebrow">Slack Sync</span>
+          <span className="eyebrow panel-pixel-badge">Slack Sync</span>
           <h2>virtual-office</h2>
         </div>
         <div className="panel-tools">
