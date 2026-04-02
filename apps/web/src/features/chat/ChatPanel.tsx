@@ -108,19 +108,17 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
   }, [setChatSize]);
 
   if (!isChatPanelOpen) {
-    return (
-      <button className="chat-panel-toggle" onClick={() => setIsChatPanelOpen(true)} type="button">
-        채팅 열기
-      </button>
-    );
+    return null;
   }
+
+  const chatPanelBackgroundAlpha = 0.25 + chatOpacity * 0.7;
 
   return (
     <section
       ref={panelRef}
       className="floating-panel chat-panel"
       style={{
-        opacity: chatOpacity,
+        backgroundColor: `rgba(255, 252, 255, ${chatPanelBackgroundAlpha.toFixed(2)})`,
         transform: `translate(${chatOffset.x}px, ${chatOffset.y}px)`,
         width: `${chatSize.width}px`,
         height: `${chatSize.height}px`

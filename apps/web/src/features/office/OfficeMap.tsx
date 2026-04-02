@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 
 import { apiClient } from "../../api/client";
 import type { OfficeSnapshot } from "../../types/domain";
@@ -35,23 +36,174 @@ const sideDeskBands = [
 ] as const;
 
 const wallSegments = [
-  { x: 2, y: 22, width: 64, height: 3.4, label: "벽" },
-  { x: 77, y: 40.5, width: 21, height: 3.4, label: "벽" },
-  { x: 77, y: 58.5, width: 21, height: 3.4, label: "벽" }
+  { x: 2, y: 22, width: 64, height: 3.4, label: "WALL TYPE A", variant: "brick" },
+  { x: 77, y: 40.5, width: 21, height: 3.4, label: "WALL TYPE B", variant: "glass" },
+  { x: 77, y: 58.5, width: 21, height: 3.4, label: "WALL TYPE A", variant: "brick" }
 ] as const;
 
 const decorativeWindows: Array<{ x: number; y: number; width: number; height: number }> = [];
 
-const cabinets = [
-  { x: 70.5, y: 70, width: 4.4, height: 11 },
-  { x: 75.6, y: 70, width: 4.4, height: 11 }
-] as const;
+type RoomObjectType =
+  | "standard-desk"
+  | "standing-desk"
+  | "shared-bench"
+  | "chair-standard"
+  | "chair-mint"
+  | "chair-pink"
+  | "chair-executive"
+  | "bean-bag"
+  | "folding-chair"
+  | "sofa-two-seat"
+  | "meeting-table"
+  | "round-coffee-table"
+  | "whiteboard"
+  | "wall-clock"
+  | "sofa"
+  | "coffee-table"
+  | "l-desk"
+  | "monitor-cyan"
+  | "monitor-purple"
+  | "monitor-pink"
+  | "dual-monitor"
+  | "laptop-open"
+  | "tablet"
+  | "printer"
+  | "wall-monitor"
+  | "succulent"
+  | "monstera"
+  | "cactus"
+  | "hanging-plant"
+  | "bonsai"
+  | "mug"
+  | "boba-tea"
+  | "can-drink"
+  | "bottle"
+  | "snack-box"
+  | "donut"
+  | "notice-board"
+  | "file-cabinet"
+  | "trophy-shelf"
+  | "bookshelf"
+  | "box-stack"
+  | "vending-machine"
+  | "foosball-table"
+  | "arcade-cabinet"
+  | "floor-lamp"
+  | "rug-set"
+  | "reception-desk"
+  | "security-gate"
+  | "umbrella-stand"
+  | "mailbox"
+  | "server-rack"
+  | "trolley-cart"
+  | "meeting-room-sign"
+  | "vacant-sign"
+  | "in-meeting-sign"
+  | "dnd-sign"
+  | "neon-open-sign"
+  | "floor-sign";
 
-const plants = [
-  { x: 95, y: 74 },
-  { x: 72.5, y: 23 },
-  { x: 93, y: 54 }
-] as const;
+interface RoomObjectLibraryItem {
+  type: RoomObjectType;
+  label: string;
+  width: number;
+  height: number;
+}
+
+interface RoomObject {
+  id: string;
+  type: RoomObjectType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const objectLibrary: RoomObjectLibraryItem[] = [
+  { type: "standard-desk", label: "기본 책상", width: 9.8, height: 7.4 },
+  { type: "standing-desk", label: "스탠딩 책상", width: 9.4, height: 8.3 },
+  { type: "shared-bench", label: "공유 벤치", width: 15.8, height: 6.7 },
+  { type: "chair-standard", label: "기본 의자", width: 4.6, height: 5.4 },
+  { type: "chair-mint", label: "민트 의자", width: 4.6, height: 5.4 },
+  { type: "chair-pink", label: "핑크 의자", width: 4.6, height: 5.4 },
+  { type: "chair-executive", label: "CEO 의자", width: 5.2, height: 5.9 },
+  { type: "bean-bag", label: "빈백 소파", width: 5.4, height: 5.4 },
+  { type: "folding-chair", label: "접이 의자", width: 4.2, height: 4.9 },
+  { type: "sofa-two-seat", label: "2인 소파", width: 13.2, height: 7.2 },
+  { type: "meeting-table", label: "회의 테이블", width: 16.5, height: 14 },
+  { type: "round-coffee-table", label: "원형 테이블", width: 7.4, height: 7.4 },
+  { type: "whiteboard", label: "화이트보드", width: 5.8, height: 6.8 },
+  { type: "wall-clock", label: "벽시계", width: 3.8, height: 5.2 },
+  { type: "sofa", label: "3인 소파", width: 18, height: 7.5 },
+  { type: "coffee-table", label: "커피 테이블", width: 7.6, height: 4.8 },
+  { type: "l-desk", label: "L형 책상", width: 12.5, height: 8.5 },
+  { type: "monitor-cyan", label: "민트 모니터", width: 6.2, height: 5.6 },
+  { type: "monitor-purple", label: "퍼플 모니터", width: 6.2, height: 5.6 },
+  { type: "monitor-pink", label: "핑크 모니터", width: 6.2, height: 5.6 },
+  { type: "dual-monitor", label: "듀얼 모니터", width: 10.2, height: 6 },
+  { type: "laptop-open", label: "노트북", width: 7.4, height: 5.7 },
+  { type: "tablet", label: "태블릿", width: 4.8, height: 6.4 },
+  { type: "printer", label: "프린터", width: 7.6, height: 5.3 },
+  { type: "wall-monitor", label: "벽면 TV", width: 10.5, height: 6.2 },
+  { type: "succulent", label: "다육이", width: 3.8, height: 4.9 },
+  { type: "monstera", label: "몬스테라", width: 4.8, height: 6.6 },
+  { type: "cactus", label: "선인장", width: 4, height: 6.6 },
+  { type: "hanging-plant", label: "행잉 플랜트", width: 4.8, height: 6.6 },
+  { type: "bonsai", label: "분재", width: 5.4, height: 5.8 },
+  { type: "mug", label: "커피잔", width: 3.4, height: 4.1 },
+  { type: "boba-tea", label: "버블티", width: 3, height: 4.8 },
+  { type: "can-drink", label: "캔음료", width: 2.8, height: 4.3 },
+  { type: "bottle", label: "물병", width: 2.6, height: 4.9 },
+  { type: "snack-box", label: "스낵 박스", width: 4.2, height: 3.5 },
+  { type: "donut", label: "도넛", width: 4.2, height: 3.3 },
+  { type: "notice-board", label: "스티키 보드", width: 6.1, height: 6.1 },
+  { type: "file-cabinet", label: "파일 캐비넷", width: 4.8, height: 7.6 },
+  { type: "trophy-shelf", label: "트로피 선반", width: 4.8, height: 5.8 },
+  { type: "bookshelf", label: "책장", width: 7.2, height: 8.6 },
+  { type: "box-stack", label: "박스 더미", width: 5.6, height: 5.4 },
+  { type: "vending-machine", label: "자판기", width: 4.8, height: 7.8 },
+  { type: "foosball-table", label: "테이블 게임", width: 9.5, height: 6.2 },
+  { type: "arcade-cabinet", label: "아케이드 게임", width: 4.8, height: 7.8 },
+  { type: "floor-lamp", label: "플로어 램프", width: 3.4, height: 7.8 },
+  { type: "rug-set", label: "러그 세트", width: 9.2, height: 6.2 },
+  { type: "reception-desk", label: "안내 데스크", width: 11.5, height: 6.6 },
+  { type: "security-gate", label: "보안 게이트", width: 7.6, height: 3.7 },
+  { type: "umbrella-stand", label: "우산꽂이", width: 1.8, height: 3.1 },
+  { type: "mailbox", label: "우편함", width: 5.6, height: 5.6 },
+  { type: "server-rack", label: "서버 랙", width: 5.1, height: 7.8 },
+  { type: "trolley-cart", label: "카트", width: 7.1, height: 6.4 },
+  { type: "meeting-room-sign", label: "회의실 표지판", width: 7.6, height: 3.6 },
+  { type: "vacant-sign", label: "공실 표시", width: 5.8, height: 3.6 },
+  { type: "in-meeting-sign", label: "회의중 표시", width: 5.8, height: 3.6 },
+  { type: "dnd-sign", label: "방해금지", width: 5.8, height: 3.6 },
+  { type: "neon-open-sign", label: "오픈 네온사인", width: 6.8, height: 3.8 },
+  { type: "floor-sign", label: "층 표지판", width: 4.1, height: 5.8 }
+];
+
+const objectLabelLookup = Object.fromEntries(objectLibrary.map((item) => [item.type, item.label])) as Record<
+  RoomObjectType,
+  string
+>;
+
+const defaultRoomObjects: RoomObject[] = [
+  { id: "meeting-table-1", type: "meeting-table", x: 79.5, y: 22.5, width: 16.5, height: 14 },
+  { id: "whiteboard-1", type: "whiteboard", x: 91.5, y: 16.5, width: 5.8, height: 6.8 },
+  { id: "wall-clock-1", type: "wall-clock", x: 78.8, y: 16.2, width: 3.8, height: 5.2 },
+  { id: "sofa-1", type: "sofa", x: 5.2, y: 7.5, width: 18, height: 7.5 },
+  { id: "coffee-table-1", type: "coffee-table", x: 12.5, y: 13.6, width: 7.6, height: 4.8 },
+  { id: "l-desk-1", type: "l-desk", x: 79.3, y: 86.2, width: 12.5, height: 8.5 },
+  { id: "trophy-shelf-1", type: "trophy-shelf", x: 93, y: 85.6, width: 4.8, height: 5.8 },
+  { id: "bookshelf-1", type: "bookshelf", x: 79.2, y: 4.4, width: 7.2, height: 8.6 },
+  { id: "bookshelf-2", type: "bookshelf", x: 90.4, y: 4.4, width: 7.2, height: 8.6 },
+  { id: "box-stack-1", type: "box-stack", x: 85.3, y: 8.5, width: 5.6, height: 5.4 },
+  { id: "security-gate-1", type: "security-gate", x: 66.4, y: 3.2, width: 7.6, height: 3.7 },
+  { id: "umbrella-stand-1", type: "umbrella-stand", x: 73.2, y: 3.45, width: 1.8, height: 3.1 }
+];
+
+const roomObjectStorageKey = "virtual-office-room-objects-v2";
+const objectSnapStep = 0.5;
+const motionGridStep = 2;
+const motionObstaclePadding = 1.2;
 
 const entrancePosition = {
   x: 71,
@@ -71,6 +223,155 @@ interface MotionAvatar {
   x: number;
   y: number;
   opacity: number;
+}
+
+interface MotionPoint {
+  x: number;
+  y: number;
+}
+
+function getMotionRoute({
+  startX,
+  startY,
+  endX,
+  endY,
+  roomObjects,
+  wallSegments
+}: {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  roomObjects: RoomObject[];
+  wallSegments: ReadonlyArray<{ x: number; y: number; width: number; height: number }>;
+}) {
+  const maxCell = Math.round(100 / motionGridStep);
+  const toCell = (value: number) => clamp(Math.round(value / motionGridStep), 0, maxCell);
+  const toCoord = (cell: number) => cell * motionGridStep;
+  const toKey = (x: number, y: number) => `${x},${y}`;
+
+  const isBlocked = (x: number, y: number) =>
+    roomObjects.some(
+      (object) =>
+        x >= object.x - motionObstaclePadding &&
+        x <= object.x + object.width + motionObstaclePadding &&
+        y >= object.y - motionObstaclePadding &&
+        y <= object.y + object.height + motionObstaclePadding
+    ) ||
+    wallSegments.some(
+      (wall) =>
+        x >= wall.x - motionObstaclePadding &&
+        x <= wall.x + wall.width + motionObstaclePadding &&
+        y >= wall.y - motionObstaclePadding &&
+        y <= wall.y + wall.height + motionObstaclePadding
+    );
+
+  const blocked = new Set<string>();
+  for (let cellY = 0; cellY <= maxCell; cellY += 1) {
+    for (let cellX = 0; cellX <= maxCell; cellX += 1) {
+      if (isBlocked(toCoord(cellX), toCoord(cellY))) {
+        blocked.add(toKey(cellX, cellY));
+      }
+    }
+  }
+
+  const startCell = { x: toCell(startX), y: toCell(startY) };
+  const endCell = { x: toCell(endX), y: toCell(endY) };
+
+  for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
+    for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+      blocked.delete(toKey(clamp(startCell.x + offsetX, 0, maxCell), clamp(startCell.y + offsetY, 0, maxCell)));
+      blocked.delete(toKey(clamp(endCell.x + offsetX, 0, maxCell), clamp(endCell.y + offsetY, 0, maxCell)));
+    }
+  }
+
+  const open: Array<{ x: number; y: number }> = [startCell];
+  const cameFrom = new Map<string, string>();
+  const gScore = new Map<string, number>([[toKey(startCell.x, startCell.y), 0]]);
+  const fScore = new Map<string, number>([
+    [toKey(startCell.x, startCell.y), Math.abs(endCell.x - startCell.x) + Math.abs(endCell.y - startCell.y)]
+  ]);
+
+  while (open.length > 0) {
+    open.sort((a, b) => (fScore.get(toKey(a.x, a.y)) ?? Number.POSITIVE_INFINITY) - (fScore.get(toKey(b.x, b.y)) ?? Number.POSITIVE_INFINITY));
+    const current = open.shift();
+    if (!current) {
+      break;
+    }
+
+    if (current.x === endCell.x && current.y === endCell.y) {
+      const pathCells: MotionPoint[] = [];
+      let cursorKey = toKey(current.x, current.y);
+      while (cursorKey) {
+        const [cellX, cellY] = cursorKey.split(",").map(Number);
+        pathCells.unshift({ x: toCoord(cellX), y: toCoord(cellY) });
+        const previous = cameFrom.get(cursorKey);
+        if (!previous) {
+          break;
+        }
+        cursorKey = previous;
+      }
+
+      const compressed = pathCells.filter((point, index, list) => {
+        if (index === 0 || index === list.length - 1) {
+          return true;
+        }
+        const previous = list[index - 1];
+        const next = list[index + 1];
+        const previousDirection = { x: point.x - previous.x, y: point.y - previous.y };
+        const nextDirection = { x: next.x - point.x, y: next.y - point.y };
+        return previousDirection.x !== nextDirection.x || previousDirection.y !== nextDirection.y;
+      });
+
+      return [
+        { x: startX, y: startY },
+        ...compressed.slice(1, -1),
+        { x: endX, y: endY }
+      ];
+    }
+
+    const neighbors = [
+      { x: current.x + 1, y: current.y },
+      { x: current.x - 1, y: current.y },
+      { x: current.x, y: current.y + 1 },
+      { x: current.x, y: current.y - 1 }
+    ].filter((neighbor) => neighbor.x >= 0 && neighbor.x <= maxCell && neighbor.y >= 0 && neighbor.y <= maxCell);
+
+    neighbors.forEach((neighbor) => {
+      const neighborKey = toKey(neighbor.x, neighbor.y);
+      if (blocked.has(neighborKey)) {
+        return;
+      }
+
+      const tentativeGScore = (gScore.get(toKey(current.x, current.y)) ?? Number.POSITIVE_INFINITY) + 1;
+      if (tentativeGScore >= (gScore.get(neighborKey) ?? Number.POSITIVE_INFINITY)) {
+        return;
+      }
+
+      cameFrom.set(neighborKey, toKey(current.x, current.y));
+      gScore.set(neighborKey, tentativeGScore);
+      fScore.set(neighborKey, tentativeGScore + Math.abs(endCell.x - neighbor.x) + Math.abs(endCell.y - neighbor.y));
+
+      if (!open.some((node) => node.x === neighbor.x && node.y === neighbor.y)) {
+        open.push(neighbor);
+      }
+    });
+  }
+
+  return [
+    { x: startX, y: startY },
+    { x: startX, y: corridorY },
+    { x: endX, y: corridorY },
+    { x: endX, y: endY }
+  ];
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function snap(value: number) {
+  return Math.round(value / objectSnapStep) * objectSnapStep;
 }
 
 function renderAvatar(
@@ -101,11 +402,26 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const setSelectedZoneId = useUIStore((state) => state.setSelectedZoneId);
   const assignSeat = useAssignSeat();
   const clearSeat = useClearSeat();
+  const layoutEditorOffset = useUIStore((state) => state.layoutEditorOffset);
+  const demoMotionOffset = useUIStore((state) => state.demoMotionOffset);
+  const isDemoMotionOpen = useUIStore((state) => state.isDemoMotionOpen);
+  const setLayoutEditorOffset = useUIStore((state) => state.setLayoutEditorOffset);
+  const setDemoMotionOffset = useUIStore((state) => state.setDemoMotionOffset);
+  const setIsDemoMotionOpen = useUIStore((state) => state.setIsDemoMotionOpen);
   const [selectedSeatKey, setSelectedSeatKey] = useState<string | null>(null);
   const [seatSearch, setSeatSearch] = useState("");
   const [motionAvatars, setMotionAvatars] = useState<MotionAvatar[]>([]);
+  const [roomObjects, setRoomObjects] = useState<RoomObject[]>(() => [...defaultRoomObjects]);
+  const [isLayoutEditMode, setIsLayoutEditMode] = useState(false);
+  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+  const [draggingObjectId, setDraggingObjectId] = useState<string | null>(null);
   const previousMembersRef = useRef<Map<string, SnapshotMember>>(new Map());
   const timeoutIdsRef = useRef<Map<string, number>>(new Map());
+  const layoutPanelDragRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const demoPanelDragRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const dragObjectIdRef = useRef<string | null>(null);
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const mapSurfaceRef = useRef<HTMLDivElement | null>(null);
   const currentUser = snapshot.members.find((member) => member.id === snapshot.currentUserId) ?? null;
   const isDemoWorkspace = snapshot.workspace.id === "demo-workspace";
 
@@ -114,6 +430,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     ? snapshot.members.find((member) => member.slackUserId === selectedSeat.assignedSlackUserId) ?? null
     : null;
   const canManageSeats = snapshot.canManageSeats;
+  const canEditLayout = canManageSeats || isDemoWorkspace;
   const normalizedSeatSearch = seatSearch.trim().toLowerCase();
   const transitioningMemberIds = new Set(motionAvatars.map((member) => member.id));
   const filteredMembers = snapshot.members.filter((member) => {
@@ -149,6 +466,26 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     URL.revokeObjectURL(url);
   };
 
+  useEffect(() => {
+    const raw = window.localStorage.getItem(roomObjectStorageKey);
+    if (!raw) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as RoomObject[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setRoomObjects(parsed);
+      }
+    } catch {
+      window.localStorage.removeItem(roomObjectStorageKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(roomObjectStorageKey, JSON.stringify(roomObjects));
+  }, [roomObjects]);
+
   const runMotion = ({
     member,
     startX,
@@ -177,12 +514,14 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
 
     clearExistingMotion();
 
-    const routePoints = [
-      { x: startX, y: startY },
-      { x: startX, y: corridorY },
-      { x: endX, y: corridorY },
-      { x: endX, y: endY }
-    ];
+    const routePoints = getMotionRoute({
+      startX,
+      startY,
+      endX,
+      endY,
+      roomObjects,
+      wallSegments
+    });
 
     const totalDistance = routePoints.slice(1).reduce((distance, point, index) => {
       const previousPoint = routePoints[index];
@@ -328,11 +667,164 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     []
   );
 
+  useEffect(() => {
+    if (!isLayoutEditMode) {
+      dragObjectIdRef.current = null;
+      return;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const objectId = dragObjectIdRef.current;
+      const mapSurface = mapSurfaceRef.current;
+      if (!objectId || !mapSurface) {
+        return;
+      }
+
+      const rect = mapSurface.getBoundingClientRect();
+      const nextX = ((event.clientX - rect.left) / rect.width) * 100 - dragOffsetRef.current.x;
+      const nextY = ((event.clientY - rect.top) / rect.height) * 100 - dragOffsetRef.current.y;
+
+      setRoomObjects((current) =>
+        current.map((object) =>
+          object.id === objectId
+            ? {
+                ...object,
+                x: snap(clamp(nextX, 0, 100 - object.width)),
+                y: snap(clamp(nextY, 0, 100 - object.height))
+              }
+            : object
+        )
+      );
+    };
+
+    const handlePointerUp = () => {
+      dragObjectIdRef.current = null;
+      setDraggingObjectId(null);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [isLayoutEditMode]);
+
+  const startObjectDrag = (event: React.PointerEvent<HTMLButtonElement>, object: RoomObject) => {
+    if (!isLayoutEditMode || !mapSurfaceRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const rect = mapSurfaceRef.current.getBoundingClientRect();
+    const pointerX = ((event.clientX - rect.left) / rect.width) * 100;
+    const pointerY = ((event.clientY - rect.top) / rect.height) * 100;
+    dragObjectIdRef.current = object.id;
+    dragOffsetRef.current = {
+      x: pointerX - object.x,
+      y: pointerY - object.y
+    };
+    setSelectedObjectId(object.id);
+    setDraggingObjectId(object.id);
+  };
+
+  const addRoomObject = (type: (typeof objectLibrary)[number]["type"]) => {
+    const template = objectLibrary.find((item) => item.type === type);
+    if (!template) {
+      return;
+    }
+
+    const id = `${type}-${Date.now()}`;
+    setRoomObjects((current) => [
+      ...current,
+      {
+        id,
+        type,
+        x: 32,
+        y: 20,
+        width: template.width,
+        height: template.height
+      }
+    ]);
+    setSelectedObjectId(id);
+    setIsLayoutEditMode(true);
+  };
+
+  const removeSelectedObject = () => {
+    if (!selectedObjectId) {
+      return;
+    }
+
+    setRoomObjects((current) => current.filter((object) => object.id !== selectedObjectId));
+    setSelectedObjectId(null);
+  };
+
+  const resetRoomObjects = () => {
+    setRoomObjects([...defaultRoomObjects]);
+    setSelectedObjectId(null);
+    window.localStorage.removeItem(roomObjectStorageKey);
+  };
+
+  const startFloatingPanelDrag = (
+    event: ReactPointerEvent<HTMLDivElement>,
+    type: "layout" | "demo"
+  ) => {
+    const dragRef = type === "layout" ? layoutPanelDragRef : demoPanelDragRef;
+    const setter = type === "layout" ? setLayoutEditorOffset : setDemoMotionOffset;
+
+    dragRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      pointerId: event.pointerId
+    };
+
+    const handlePointerMove = (moveEvent: globalThis.PointerEvent) => {
+      if (!dragRef.current || moveEvent.pointerId !== dragRef.current.pointerId) {
+        return;
+      }
+
+      const deltaX = moveEvent.clientX - dragRef.current.x;
+      const deltaY = moveEvent.clientY - dragRef.current.y;
+      dragRef.current = {
+        x: moveEvent.clientX,
+        y: moveEvent.clientY,
+        pointerId: moveEvent.pointerId
+      };
+
+      const currentOffset =
+        type === "layout" ? useUIStore.getState().layoutEditorOffset : useUIStore.getState().demoMotionOffset;
+
+      setter({
+        x: currentOffset.x + deltaX,
+        y: currentOffset.y + deltaY
+      });
+    };
+
+    const handlePointerUp = () => {
+      dragRef.current = null;
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  };
+
   return (
     <section className="office-scene">
-      <div className="map-surface">
+      <div
+        className={`map-surface ${isLayoutEditMode ? "is-layout-editing" : ""}`}
+        onClick={() => {
+          if (isLayoutEditMode) {
+            setSelectedObjectId(null);
+          }
+        }}
+        ref={mapSurfaceRef}
+      >
         <div className="map-grid" />
-        <div className="map-decor-layer">
+        <div className={`map-decor-layer ${isLayoutEditMode ? "is-editing" : ""}`}>
           {decorativeWindows.map((windowRect, index) => (
             <div
               className="pixel-window"
@@ -345,10 +837,34 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               }}
             />
           ))}
+          {roomObjects.map((object) => (
+            <button
+              className={`map-object object-${object.type} ${isLayoutEditMode ? "is-editing" : ""} ${selectedObjectId === object.id ? "is-selected" : ""} ${draggingObjectId === object.id ? "is-dragging" : ""}`}
+              key={object.id}
+              onClick={(event) => {
+                if (!isLayoutEditMode) {
+                  return;
+                }
+                event.stopPropagation();
+                setSelectedObjectId(object.id);
+              }}
+              onPointerDown={(event) => startObjectDrag(event, object)}
+              style={{
+                left: `${object.x}%`,
+                top: `${object.y}%`,
+                width: `${object.width}%`,
+                height: `${object.height}%`
+              }}
+              title={objectLabelLookup[object.type]}
+              type="button"
+            >
+              {draggingObjectId === object.id ? <span className="map-object-label">{objectLabelLookup[object.type]}</span> : null}
+            </button>
+          ))}
           {roomZones.map((zone) => (
             <button
               key={zone.id}
-              className={`zone-card zone-room ${selectedZoneId === zone.id ? "is-selected" : ""}`}
+              className={`zone-card zone-room zone-${zone.id} ${selectedZoneId === zone.id ? "is-selected" : ""}`}
               onClick={() => setSelectedZoneId(zone.id)}
               style={{
                 left: `${zone.x}%`,
@@ -363,7 +879,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
           ))}
           {wallSegments.map((wall) => (
             <div
-              className="wall-segment"
+              className={`wall-segment wall-${wall.variant}`}
               key={`${wall.x}-${wall.y}`}
               style={{
                 left: `${wall.x}%`,
@@ -375,23 +891,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               <span>{wall.label}</span>
             </div>
           ))}
-          {cabinets.map((cabinet, index) => (
-            <div
-              className="pixel-cabinet"
-              key={index}
-              style={{
-                left: `${cabinet.x}%`,
-                top: `${cabinet.y}%`,
-                width: `${cabinet.width}%`,
-                height: `${cabinet.height}%`
-              }}
-            />
-          ))}
-          {plants.map((plant, index) => (
-            <div className="pixel-plant" key={index} style={{ left: `${plant.x}%`, top: `${plant.y}%` }} />
-          ))}
         </div>
-        <div className="map-seat-layer">
+        <div className={`map-seat-layer ${isLayoutEditMode ? "is-editing" : ""}`}>
           {deskBands.map((band) => (
             <div
               className="desk-row"
@@ -442,7 +943,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             </div>
           ))}
         </div>
-        <div className="map-avatar-layer">
+        <div className={`map-avatar-layer ${isLayoutEditMode ? "is-editing" : ""}`}>
           {snapshot.members
             .filter((member) => member.officeStatus !== "away" && !transitioningMemberIds.has(member.id))
             .map((member) =>
@@ -458,10 +959,26 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             })
           )}
         </div>
-        {isDemoWorkspace && currentUser ? (
-          <aside className="demo-motion-panel">
-            <span className="eyebrow">Demo Motion</span>
-            <strong>{currentUser.displayName}</strong>
+        {isDemoWorkspace && currentUser && isDemoMotionOpen ? (
+          <aside className="demo-motion-panel" style={{ transform: `translate(${demoMotionOffset.x}px, ${demoMotionOffset.y}px)` }}>
+            <div className="floating-header draggable-header" onPointerDown={(event) => startFloatingPanelDrag(event, "demo")}>
+              <div>
+                <span className="eyebrow">Demo Motion</span>
+                <h2>{currentUser.displayName}</h2>
+              </div>
+              <div className="panel-tools">
+                <button
+                  aria-label="데모 모션 패널 닫기"
+                  className="panel-icon-button panel-close-button"
+                  onClick={() => setIsDemoMotionOpen(false)}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="close-glyph">
+                    ×
+                  </span>
+                </button>
+              </div>
+            </div>
             <div className="demo-motion-actions">
               <button
                 className="ghost-button"
@@ -482,6 +999,47 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 type="button"
               >
                 입장 테스트
+              </button>
+            </div>
+          </aside>
+        ) : null}
+        {isDemoWorkspace && currentUser && !isDemoMotionOpen ? (
+          <button className="demo-motion-open-button" onClick={() => setIsDemoMotionOpen(true)} type="button">
+            Demo Motion 열기
+          </button>
+        ) : null}
+        {canEditLayout ? (
+          <aside className="layout-editor-panel" style={{ transform: `translate(${layoutEditorOffset.x}px, ${layoutEditorOffset.y}px)` }}>
+            <div className="floating-header draggable-header" onPointerDown={(event) => startFloatingPanelDrag(event, "layout")}>
+              <div>
+                <span className="eyebrow">Object Layout</span>
+                <h2>오브젝트 편집</h2>
+              </div>
+              <button
+                className={`panel-icon-button layout-toggle-button ${isLayoutEditMode ? "is-active" : ""}`}
+                onClick={() => setIsLayoutEditMode((current) => !current)}
+                type="button"
+              >
+                {isLayoutEditMode ? "편집중" : "편집"}
+              </button>
+            </div>
+            <p className="seat-assignment-copy">
+              오브젝트를 직접 드래그해 배치할 수 있습니다. 위치는 현재 브라우저에 저장됩니다.
+            </p>
+            <div className="object-library-grid">
+              {objectLibrary.map((item) => (
+                <button className="object-library-chip" key={item.type} onClick={() => addRoomObject(item.type)} type="button">
+                  <strong>{item.label}</strong>
+                  <small>{item.type}</small>
+                </button>
+              ))}
+            </div>
+            <div className="seat-assignment-actions">
+              <button className="ghost-button" disabled={!selectedObjectId} onClick={removeSelectedObject} type="button">
+                선택 오브젝트 삭제
+              </button>
+              <button className="ghost-button" onClick={resetRoomObjects} type="button">
+                기본 배치 복원
               </button>
             </div>
           </aside>

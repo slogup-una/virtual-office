@@ -1,0 +1,19 @@
+<svg width="110" height="65" viewBox="0 0 110 65" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="18" width="102" height="36" rx="3" fill="#D4B890" stroke="#A88860" stroke-width="2.5"/>
+  <rect x="6" y="20" width="98" height="32" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1" rx="2"/>
+  <rect x="4" y="40" width="102" height="16" rx="3" fill="#C8A878" stroke="#A88860" stroke-width="2"/>
+  <rect x="12" y="21" width="28" height="20" rx="1" fill="#2A2240" stroke="#3A3258" stroke-width="1"/>
+  <rect x="15" y="24" width="22" height="14" fill="#1A3040"/>
+  <rect x="17" y="26" width="14" height="2" fill="#72C8B4" opacity=".7"/>
+  <rect x="17" y="30" width="10" height="2" fill="#72C8B4" opacity=".5"/>
+  <rect x="17" y="34" width="16" height="2" fill="#72C8B4" opacity=".4"/>
+  <rect x="48" y="24" width="18" height="12" rx="2" fill="#E0D8F0" stroke="#C4B0F0" stroke-width="1"/>
+  <rect x="50" y="26" width="14" height="6" rx="1" fill="#C4B0F0"/>
+  <rect x="50" y="34" width="6" height="2" rx="1" fill="#9878D8"/>
+  <circle cx="84" cy="22" r="10" fill="#88C878"/>
+  <circle cx="78" cy="26" r="7" fill="#B8E8B0"/>
+  <circle cx="90" cy="26" r="7" fill="#9AD880"/>
+  <rect x="81" y="32" width="6" height="6" rx="1" fill="#F0A860"/>
+  <rect x="50" y="44" width="60" height="10" rx="1" fill="rgba(200,168,120,.5)"/>
+  <text x="80" y="51.5" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="4.5" fill="#8B6040">WELCOME</text>
+</svg>

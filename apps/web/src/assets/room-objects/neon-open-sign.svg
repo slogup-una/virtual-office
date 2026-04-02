@@ -1,0 +1,6 @@
+<svg width="70" height="38" viewBox="0 0 70 38" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="66" height="34" rx="3" fill="#0A0818"/>
+  <rect x="4" y="4" width="62" height="30" rx="2" fill="#0A0818"/>
+  <text x="35" y="23" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="11" fill="#A8E8D8">OPEN</text>
+  <rect x="2" y="2" width="66" height="34" rx="3" fill="none" stroke="#72C8B4" stroke-width="1.5" opacity=".5"/>
+</svg>

@@ -1,0 +1,39 @@
+<svg width="200" height="160" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="tile-multi" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <rect width="24" height="24" fill="#EDE4F8"/>
+      <rect x="1" y="1" width="22" height="22" fill="none" stroke="#E0D4F0" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="200" height="160" fill="url(#tile-multi)"/>
+  <rect x="0" y="0" width="200" height="36" fill="#E4D8F8"/>
+  <rect x="0" y="34" width="200" height="3" fill="#C8B8E8"/>
+  <rect x="40" y="4" width="120" height="28" fill="#FAF6FF" stroke="#9878D8" stroke-width="2"/>
+  <rect x="42" y="6" width="116" height="24" fill="#F0ECFF"/>
+  <rect x="46" y="10" width="50" height="8" rx="1" fill="#C4B0F0" opacity=".5"/>
+  <rect x="102" y="10" width="50" height="8" rx="1" fill="#A8D4F8" opacity=".5"/>
+  <rect x="46" y="21" width="30" height="6" rx="1" fill="#F7A8C4" opacity=".5"/>
+  <rect x="80" y="21" width="72" height="6" rx="1" fill="#A8E8D8" opacity=".5"/>
+  <rect x="97" y="32" width="6" height="4" fill="#9878D8"/>
+  <rect x="84" y="50" width="32" height="20" rx="2" fill="#E0D8F0" stroke="#8878A8" stroke-width="1.5"/>
+  <circle cx="100" cy="60" r="6" fill="#D0C8E0" stroke="#8878A8" stroke-width="1"/>
+  <circle cx="100" cy="60" r="3" fill="#C4B0F0"/>
+  <rect x="86" y="52" width="8" height="4" fill="#C4B0F0" opacity=".6"/>
+  <polygon points="100,50 60,36 140,36" fill="rgba(200,180,255,.08)"/>
+  <rect x="30" y="80" width="60" height="28" rx="2" fill="#F7C8A0" stroke="#D4956A" stroke-width="2"/>
+  <rect x="110" y="80" width="60" height="28" rx="2" fill="#F7C8A0" stroke="#D4956A" stroke-width="2"/>
+  <rect x="34" y="112" width="18" height="12" rx="2" fill="#C4B0F0" stroke="#9878D8" stroke-width="1.5"/>
+  <rect x="56" y="112" width="18" height="12" rx="2" fill="#C4B0F0" stroke="#9878D8" stroke-width="1.5"/>
+  <rect x="114" y="112" width="18" height="12" rx="2" fill="#C4B0F0" stroke="#9878D8" stroke-width="1.5"/>
+  <rect x="136" y="112" width="18" height="12" rx="2" fill="#C4B0F0" stroke="#9878D8" stroke-width="1.5"/>
+  <rect x="34" y="66" width="18" height="12" rx="2" fill="#D4C4FF" stroke="#9878D8" stroke-width="1.5"/>
+  <rect x="56" y="66" width="18" height="12" rx="2" fill="#D4C4FF" stroke="#9878D8" stroke-width="1.5"/>
+  <rect x="114" y="66" width="18" height="12" rx="2" fill="#D4C4FF" stroke="#9878D8" stroke-width="1.5"/>
+  <rect x="136" y="66" width="18" height="12" rx="2" fill="#D4C4FF" stroke="#9878D8" stroke-width="1.5"/>
+  <rect x="160" y="80" width="30" height="44" fill="#FFF0DC" stroke="#F0A860" stroke-width="1.5"/>
+  <text x="175" y="96" text-anchor="middle" font-size="10">🧁</text>
+  <text x="175" y="113" text-anchor="middle" font-size="10">☕</text>
+  <rect x="160" y="80" width="30" height="8" fill="#F0C840" opacity=".6"/>
+  <rect x="0" y="148" width="200" height="12" fill="rgba(196,176,240,.3)"/>
+  <text x="100" y="157" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="6" fill="#7858B8">MULTI SPACE</text>
+</svg>

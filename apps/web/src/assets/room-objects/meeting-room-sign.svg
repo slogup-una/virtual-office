@@ -1,0 +1,6 @@
+<svg width="80" height="38" viewBox="0 0 80 38" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="4" width="76" height="30" rx="3" fill="#D4C4FF" stroke="#9878D8" stroke-width="2.5"/>
+  <rect x="4" y="6" width="72" height="26" rx="2" fill="none" stroke="#EAE4FF" stroke-width="1"/>
+  <text x="40" y="17" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="6" fill="#5C4E7A">MEETING</text>
+  <text x="40" y="27" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="5" fill="#9878D8">ROOM A</text>
+</svg>

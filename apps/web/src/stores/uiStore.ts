@@ -18,6 +18,9 @@ interface UIState {
   };
   statusOffset: Position;
   isStatusPanelOpen: boolean;
+  layoutEditorOffset: Position;
+  demoMotionOffset: Position;
+  isDemoMotionOpen: boolean;
   currentUserPosition: Position | null;
   setSelectedChannelId: (channelId: string) => void;
   setSelectedZoneId: (zoneId: string | null) => void;
@@ -28,6 +31,9 @@ interface UIState {
   setChatSize: (size: { width: number; height: number }) => void;
   setStatusOffset: (position: Position) => void;
   setIsStatusPanelOpen: (isOpen: boolean) => void;
+  setLayoutEditorOffset: (position: Position) => void;
+  setDemoMotionOffset: (position: Position) => void;
+  setIsDemoMotionOpen: (isOpen: boolean) => void;
   setCurrentUserPosition: (position: Position) => void;
   moveCurrentUserPosition: (delta: Position) => void;
 }
@@ -42,6 +48,9 @@ export const useUIStore = create<UIState>((set) => ({
   chatSize: { width: 300, height: 700 },
   statusOffset: { x: 0, y: 0 },
   isStatusPanelOpen: true,
+  layoutEditorOffset: { x: 0, y: 0 },
+  demoMotionOffset: { x: 0, y: 0 },
+  isDemoMotionOpen: true,
   currentUserPosition: null,
   setSelectedChannelId: (selectedChannelId) => set({ selectedChannelId }),
   setSelectedZoneId: (selectedZoneId) => set({ selectedZoneId }),
@@ -52,6 +61,9 @@ export const useUIStore = create<UIState>((set) => ({
   setChatSize: (chatSize) => set({ chatSize }),
   setStatusOffset: (statusOffset) => set({ statusOffset }),
   setIsStatusPanelOpen: (isStatusPanelOpen) => set({ isStatusPanelOpen }),
+  setLayoutEditorOffset: (layoutEditorOffset) => set({ layoutEditorOffset }),
+  setDemoMotionOffset: (demoMotionOffset) => set({ demoMotionOffset }),
+  setIsDemoMotionOpen: (isDemoMotionOpen) => set({ isDemoMotionOpen }),
   setCurrentUserPosition: (currentUserPosition) => set({ currentUserPosition }),
   moveCurrentUserPosition: (delta) =>
     set((state) => {

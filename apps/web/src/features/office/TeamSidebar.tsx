@@ -58,15 +58,7 @@ export function TeamSidebar({ snapshot }: { snapshot: OfficeSnapshot }) {
   };
 
   if (!isStatusPanelOpen) {
-    return (
-      <button
-        className="status-panel-toggle"
-        onClick={() => setIsStatusPanelOpen(true)}
-        type="button"
-      >
-        상태 열기
-      </button>
-    );
+    return null;
   }
 
   return (

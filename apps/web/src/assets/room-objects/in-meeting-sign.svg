@@ -1,0 +1,8 @@
+<svg width="60" height="38" viewBox="0 0 60 38" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="4" width="56" height="30" rx="3" fill="#EDE9FE" stroke="#C4B0F0" stroke-width="2.5"/>
+  <circle cx="14" cy="19" r="5" fill="#C4B0F0"/>
+  <circle cx="14" cy="19" r="3" fill="white"/>
+  <circle cx="14" cy="19" r="1.5" fill="#9878D8"/>
+  <text x="36" y="16" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="4.5" fill="#7858B8">IN</text>
+  <text x="36" y="26" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="4.5" fill="#7858B8">MEETING</text>
+</svg>

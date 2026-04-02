@@ -21,6 +21,72 @@ const starSeed = Array.from({ length: 90 }).map((_, index) => ({
 
 const skylineHeights = [88, 130, 112, 164, 96, 142, 104, 176, 118, 154, 94, 136];
 const officeNoticeEventName = "office-notice";
+const roomObjectStorageKey = "virtual-office-room-objects-v2";
+const movementObstaclePadding = 1.2;
+
+const wallObstacleSegments = [
+  { x: 2, y: 22, width: 64, height: 3.4 },
+  { x: 77, y: 40.5, width: 21, height: 3.4 },
+  { x: 77, y: 58.5, width: 21, height: 3.4 }
+] as const;
+
+const defaultObstacleObjects = [
+  { x: 79.5, y: 22.5, width: 16.5, height: 14 },
+  { x: 91.5, y: 16.5, width: 5.8, height: 6.8 },
+  { x: 78.8, y: 16.2, width: 3.8, height: 5.2 },
+  { x: 5.2, y: 7.5, width: 18, height: 7.5 },
+  { x: 12.5, y: 13.6, width: 7.6, height: 4.8 },
+  { x: 79.3, y: 86.2, width: 12.5, height: 8.5 },
+  { x: 93, y: 85.6, width: 4.8, height: 5.8 },
+  { x: 79.2, y: 4.4, width: 7.2, height: 8.6 },
+  { x: 90.4, y: 4.4, width: 7.2, height: 8.6 },
+  { x: 85.3, y: 8.5, width: 5.6, height: 5.4 },
+  { x: 66.4, y: 3.2, width: 7.6, height: 3.7 },
+  { x: 73.2, y: 3.45, width: 1.8, height: 3.1 }
+] as const;
+
+function loadObstacleObjects() {
+  try {
+    const raw = window.localStorage.getItem(roomObjectStorageKey);
+    if (!raw) {
+      return [...defaultObstacleObjects];
+    }
+
+    const parsed = JSON.parse(raw) as Array<{ x: number; y: number; width: number; height: number }>;
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return [...defaultObstacleObjects];
+    }
+
+    return parsed.filter(
+      (item) =>
+        typeof item?.x === "number" &&
+        typeof item?.y === "number" &&
+        typeof item?.width === "number" &&
+        typeof item?.height === "number"
+    );
+  } catch {
+    return [...defaultObstacleObjects];
+  }
+}
+
+function isMovementBlocked(x: number, y: number, obstacles: Array<{ x: number; y: number; width: number; height: number }>) {
+  return (
+    obstacles.some(
+      (object) =>
+        x >= object.x - movementObstaclePadding &&
+        x <= object.x + object.width + movementObstaclePadding &&
+        y >= object.y - movementObstaclePadding &&
+        y <= object.y + object.height + movementObstaclePadding
+    ) ||
+    wallObstacleSegments.some(
+      (wall) =>
+        x >= wall.x - movementObstaclePadding &&
+        x <= wall.x + wall.width + movementObstaclePadding &&
+        y >= wall.y - movementObstaclePadding &&
+        y <= wall.y + wall.height + movementObstaclePadding
+    )
+  );
+}
 
 const isUnavailableStatus = (status: OfficeMember["officeStatus"]) =>
   status === "away" || status === "offline";
@@ -28,8 +94,12 @@ const isUnavailableStatus = (status: OfficeMember["officeStatus"]) =>
 export function AppShell() {
   const { data, isLoading } = useOfficeSnapshot();
   const selectedZoneId = useUIStore((state) => state.selectedZoneId);
+  const isChatPanelOpen = useUIStore((state) => state.isChatPanelOpen);
+  const isStatusPanelOpen = useUIStore((state) => state.isStatusPanelOpen);
   const currentUserPosition = useUIStore((state) => state.currentUserPosition);
   const setCurrentUserPosition = useUIStore((state) => state.setCurrentUserPosition);
+  const setIsChatPanelOpen = useUIStore((state) => state.setIsChatPanelOpen);
+  const setIsStatusPanelOpen = useUIStore((state) => state.setIsStatusPanelOpen);
   const moveCurrentUserPosition = useUIStore((state) => state.moveCurrentUserPosition);
   const currentUser = data?.members.find((member) => member.id === data.currentUserId) ?? null;
   const initializedUserIdRef = useRef<string | null>(null);
@@ -66,30 +136,49 @@ export function AppShell() {
         return;
       }
 
+      if (!currentUserPosition) {
+        return;
+      }
+
+      let deltaX = 0;
+      let deltaY = 0;
+
       if (event.key === "ArrowUp") {
         event.preventDefault();
-        moveCurrentUserPosition({ x: 0, y: -1.5 });
+        deltaY = -1.5;
       }
 
       if (event.key === "ArrowDown") {
         event.preventDefault();
-        moveCurrentUserPosition({ x: 0, y: 1.5 });
+        deltaY = 1.5;
       }
 
       if (event.key === "ArrowLeft") {
         event.preventDefault();
-        moveCurrentUserPosition({ x: -1.5, y: 0 });
+        deltaX = -1.5;
       }
 
       if (event.key === "ArrowRight") {
         event.preventDefault();
-        moveCurrentUserPosition({ x: 1.5, y: 0 });
+        deltaX = 1.5;
+      }
+
+      if (deltaX === 0 && deltaY === 0) {
+        return;
+      }
+
+      const nextX = Math.min(96, Math.max(4, currentUserPosition.x + deltaX));
+      const nextY = Math.min(95, Math.max(5, currentUserPosition.y + deltaY));
+      const obstacles = loadObstacleObjects();
+
+      if (!isMovementBlocked(nextX, nextY, obstacles)) {
+        moveCurrentUserPosition({ x: deltaX, y: deltaY });
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [moveCurrentUserPosition]);
+  }, [currentUserPosition, moveCurrentUserPosition]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -243,20 +332,6 @@ export function AppShell() {
               <span>WHAT&apos;S UP? WE&apos;RE SLOGUP!</span>
             </div>
           </div>
-          <div className="hud-actions">
-            <button
-              className="ghost-button hud-action-button"
-              onClick={() =>
-                void apiClient.logout().then(() => {
-                  clearStoredSession();
-                  window.location.reload();
-                })
-              }
-              type="button"
-            >
-              logout
-            </button>
-          </div>
         </div>
         <div className="hud-clock">
           <div className="hud-time-row">
@@ -275,6 +350,34 @@ export function AppShell() {
           <div className="hud-notice-text">{noticeMessage}</div>
         </div>
       ) : null}
+      <aside className="panel-label-dock" aria-label="패널 컨트롤">
+        <button
+          className={`panel-label-button ${isStatusPanelOpen ? "is-active" : ""}`}
+          onClick={() => setIsStatusPanelOpen(!isStatusPanelOpen)}
+          type="button"
+        >
+          상태
+        </button>
+        <button
+          className={`panel-label-button ${isChatPanelOpen ? "is-active" : ""}`}
+          onClick={() => setIsChatPanelOpen(!isChatPanelOpen)}
+          type="button"
+        >
+          채팅
+        </button>
+        <button
+          className="panel-label-button"
+          onClick={() =>
+            void apiClient.logout().then(() => {
+              clearStoredSession();
+              window.location.reload();
+            })
+          }
+          type="button"
+        >
+          로그아웃
+        </button>
+      </aside>
       <OfficeMap snapshot={snapshot} />
       <TeamSidebar snapshot={snapshot} />
       <ChatPanel workspace={snapshot.workspace} />

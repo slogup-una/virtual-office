@@ -1,0 +1,30 @@
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="4" width="72" height="72" rx="3" fill="#D4B890" stroke="#A88860" stroke-width="2.5"/>
+  <rect x="4" y="30" width="72" height="4" fill="#A88860"/>
+  <rect x="4" y="56" width="72" height="4" fill="#A88860"/>
+  <rect x="8" y="8" width="7" height="20" rx="1" fill="#F7A8C4"/>
+  <rect x="16" y="8" width="5" height="20" rx="1" fill="#A8E8D8"/>
+  <rect x="22" y="8" width="9" height="20" rx="1" fill="#FFE8A8"/>
+  <rect x="32" y="8" width="6" height="20" rx="1" fill="#A8D4F8"/>
+  <rect x="39" y="8" width="7" height="20" rx="1" fill="#C4B0F0"/>
+  <rect x="47" y="8" width="5" height="20" rx="1" fill="#F0A860"/>
+  <rect x="53" y="8" width="8" height="20" rx="1" fill="#B8D8B0"/>
+  <rect x="62" y="8" width="6" height="20" rx="1" fill="#F7A8C4"/>
+  <rect x="69" y="8" width="5" height="20" rx="1" fill="#A8D4F8"/>
+  <rect x="8" y="34" width="9" height="20" rx="1" fill="#C4B0F0"/>
+  <rect x="18" y="34" width="6" height="20" rx="1" fill="#FFE8A8"/>
+  <rect x="25" y="34" width="8" height="20" rx="1" fill="#F7A8C4"/>
+  <rect x="34" y="34" width="5" height="20" rx="1" fill="#A8E8D8"/>
+  <rect x="42" y="42" width="14" height="12" rx="2" fill="#FAF6FF" stroke="#C4B0F0" stroke-width="1"/>
+  <ellipse cx="55" cy="36" rx="8" ry="8" fill="#F7A8C4" stroke="#E87FA8" stroke-width="1"/>
+  <ellipse cx="55" cy="36" rx="5" ry="5" fill="#FDD5E5"/>
+  <ellipse cx="68" cy="42" rx="8" ry="6" fill="#88C878"/>
+  <rect x="65" y="48" width="6" height="6" rx="1" fill="#F0A860"/>
+  <rect x="8" y="60" width="12" height="16" rx="1" fill="#A8D4F8"/>
+  <rect x="21" y="60" width="8" height="16" rx="1" fill="#F0A860"/>
+  <rect x="30" y="60" width="10" height="16" rx="1" fill="#C4B0F0"/>
+  <rect x="41" y="60" width="7" height="16" rx="1" fill="#A8E8D8"/>
+  <rect x="49" y="60" width="9" height="16" rx="1" fill="#FFE8A8"/>
+  <rect x="59" y="60" width="6" height="16" rx="1" fill="#F7A8C4"/>
+  <rect x="66" y="60" width="8" height="16" rx="1" fill="#A8D4F8"/>
+</svg>

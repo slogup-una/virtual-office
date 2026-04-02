@@ -1,0 +1,16 @@
+<svg width="80" height="70" viewBox="0 0 80 70" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="4" width="72" height="36" rx="2" fill="#C4D8C0" stroke="#88A880" stroke-width="2"/>
+  <rect x="6" y="6" width="68" height="32" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+  <rect x="18" y="7" width="44" height="26" rx="1" fill="#2A2240" stroke="#3A3258" stroke-width="1"/>
+  <rect x="21" y="10" width="38" height="20" fill="#0A2030"/>
+  <rect x="23" y="12" width="24" height="2" fill="#A8E8D8" opacity=".8"/>
+  <rect x="23" y="16" width="18" height="2" fill="#A8E8D8" opacity=".5"/>
+  <rect x="23" y="20" width="28" height="2" fill="#A8E8D8" opacity=".4"/>
+  <rect x="10" y="34" width="36" height="8" rx="1" fill="#D4ECD0" stroke="#88A880" stroke-width="1"/>
+  <rect x="54" y="36" width="18" height="6" rx="1" fill="#FFE8A8" stroke="#F0C840" stroke-width="1"/>
+  <text x="63" y="40.5" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="4" fill="#A88020">UP</text>
+  <rect x="8" y="40" width="8" height="28" fill="#A0B898" stroke="#88A880" stroke-width="1"/>
+  <rect x="64" y="40" width="8" height="28" fill="#A0B898" stroke="#88A880" stroke-width="1"/>
+  <rect x="4" y="66" width="16" height="4" fill="#88A880"/>
+  <rect x="60" y="66" width="16" height="4" fill="#88A880"/>
+</svg>

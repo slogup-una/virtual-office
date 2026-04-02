@@ -1,0 +1,14 @@
+<svg width="80" height="60" viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="10" width="72" height="34" rx="2" fill="#D4B890" stroke="#A88860" stroke-width="2"/>
+  <rect x="6" y="12" width="68" height="30" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+  <rect x="20" y="13" width="42" height="24" rx="1" fill="#2A2240" stroke="#3A3258" stroke-width="1"/>
+  <rect x="23" y="16" width="36" height="18" fill="#1A1A30"/>
+  <rect x="25" y="18" width="20" height="2" fill="#72C8B4" opacity=".8"/>
+  <rect x="25" y="22" width="14" height="2" fill="#72C8B4" opacity=".5"/>
+  <rect x="25" y="26" width="26" height="2" fill="#72C8B4" opacity=".4"/>
+  <rect x="10" y="32" width="36" height="8" rx="1" fill="#E0D8F0" stroke="#C4B0F0" stroke-width="1"/>
+  <rect x="12" y="34" width="32" height="4" fill="none" stroke="#C4B0F0" stroke-width="1" rx="1" opacity=".5"/>
+  <rect x="50" y="34" width="12" height="8" rx="4" fill="#E0D8F0" stroke="#C4B0F0" stroke-width="1"/>
+  <rect x="4" y="44" width="8" height="14" fill="#B89870" stroke="#A88860" stroke-width="1"/>
+  <rect x="68" y="44" width="8" height="14" fill="#B89870" stroke="#A88860" stroke-width="1"/>
+</svg>
