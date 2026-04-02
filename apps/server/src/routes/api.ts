@@ -12,7 +12,8 @@ import {
   getMemberBySlackId,
   getSnapshot,
   createOrUpdateMemberFromSlack,
-  listMessages
+  listMessages,
+  getWorkspace
 } from "../services/officeStore.js";
 import { fetchChannelMessages, fetchSlackUserProfile, fetchWorkspaceMembers, postSlackMessage } from "../slack/client.js";
 
@@ -67,12 +68,14 @@ router.get("/office", (request, response) => {
 });
 
 router.get("/messages", async (request, response) => {
-  const channelId = typeof request.query.channelId === "string" ? request.query.channelId : "virtual-office";
-
   if (!request.sessionUser) {
     response.status(401).json({ message: "Unauthorized" });
     return;
   }
+
+  const workspace = getWorkspace(request.sessionUser.workspaceId);
+  const channelId =
+    typeof request.query.channelId === "string" ? request.query.channelId : workspace.defaultChannelId;
 
   if (!isSlackConfigured || request.sessionUser.workspaceId === "demo-workspace") {
     response.json({ items: listMessages(channelId) });

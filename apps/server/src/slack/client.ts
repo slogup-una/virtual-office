@@ -111,7 +111,7 @@ async function slackFetch<T>(path: string, workspaceId?: string, init?: RequestI
 }
 
 async function resolveChannelId(workspaceId: string, channelRef: string) {
-  if (channelRef.startsWith("C")) {
+  if (channelRef.startsWith("C") || channelRef.startsWith("G")) {
     return channelRef;
   }
 
@@ -127,11 +127,13 @@ async function resolveChannelId(workspaceId: string, channelRef: string) {
       name: string;
       is_archived?: boolean;
     }>;
-  }>(`/conversations.list?types=public_channel&exclude_archived=true&limit=1000`, workspaceId);
+  }>(`/conversations.list?types=public_channel,private_channel&exclude_archived=true&limit=1000`, workspaceId);
 
   const channel = data.channels.find((item) => item.name === channelRef);
   if (!channel) {
-    throw new Error(`Slack channel not found: ${channelRef}`);
+    throw new Error(
+      `Slack channel not found: ${channelRef}. Set SLACK_DEFAULT_CHANNEL to the exact Slack channel name or channel ID.`
+    );
   }
 
   channelIdCache.set(cacheKey, {

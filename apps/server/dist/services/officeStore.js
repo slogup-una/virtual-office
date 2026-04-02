@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import { env } from "../config/env.js";
 import { seatAssignmentsBySlackUserId, seatDefinitionByKey } from "../config/seating.js";
 const workspaces = new Map([
     [
@@ -6,7 +7,7 @@ const workspaces = new Map([
         {
             id: "demo-workspace",
             name: "Virtual Office Workspace",
-            defaultChannelId: "virtual-office"
+            defaultChannelId: env.SLACK_DEFAULT_CHANNEL
         }
     ]
 ]);
@@ -103,7 +104,7 @@ export function getWorkspace(workspaceId) {
     return (workspaces.get(workspaceId) ?? {
         id: workspaceId,
         name: "Slack Workspace",
-        defaultChannelId: "virtual-office"
+        defaultChannelId: env.SLACK_DEFAULT_CHANNEL
     });
 }
 export function createOrUpdateMemberFromSlack(profile, workspaceId) {

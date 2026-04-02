@@ -10,6 +10,7 @@ const envSchema = z.object({
     SLACK_SIGNING_SECRET: z.string().optional().default(""),
     SLACK_BOT_TOKEN: z.string().optional().default(""),
     SLACK_REDIRECT_URI: z.string().default("http://localhost:4000/auth/slack/callback"),
+    SLACK_DEFAULT_CHANNEL: z.string().default("virtual-office"),
     ENABLE_SLACK_MOCK: z
         .string()
         .default("true")

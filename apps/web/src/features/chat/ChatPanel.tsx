@@ -16,6 +16,7 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
   const setChatOffset = useUIStore((state) => state.setChatOffset);
   const setIsChatPanelOpen = useUIStore((state) => state.setIsChatPanelOpen);
   const setChatSize = useUIStore((state) => state.setChatSize);
+  const setSelectedChannelId = useUIStore((state) => state.setSelectedChannelId);
   const { data, isLoading } = useMessages(selectedChannelId);
   const sendMessage = useSendMessage();
   const dragState = useRef<{ x: number; y: number; pointerId: number } | null>(null);
@@ -72,6 +73,12 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
   };
+
+  useEffect(() => {
+    if (workspace.defaultChannelId && selectedChannelId !== workspace.defaultChannelId) {
+      setSelectedChannelId(workspace.defaultChannelId);
+    }
+  }, [selectedChannelId, setSelectedChannelId, workspace.defaultChannelId]);
 
   useEffect(() => {
     const panelElement = panelRef.current;

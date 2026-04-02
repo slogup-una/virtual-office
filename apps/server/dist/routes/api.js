@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { isSeatAdminSlackUserId } from "../config/admin.js";
 import { isSlackConfigured } from "../config/env.js";
-import { addMessage, assignSeat, clearSeatAssignment, exportSeatAssignments, getMemberById, getMemberBySlackId, getSnapshot, createOrUpdateMemberFromSlack, listMessages } from "../services/officeStore.js";
+import { addMessage, assignSeat, clearSeatAssignment, exportSeatAssignments, getMemberById, getMemberBySlackId, getSnapshot, createOrUpdateMemberFromSlack, listMessages, getWorkspace } from "../services/officeStore.js";
 import { fetchChannelMessages, fetchSlackUserProfile, fetchWorkspaceMembers, postSlackMessage } from "../slack/client.js";
 const router = Router();
 const lastWorkspaceSyncAt = new Map();
@@ -41,11 +41,12 @@ router.get("/office", (request, response) => {
     });
 });
 router.get("/messages", async (request, response) => {
-    const channelId = typeof request.query.channelId === "string" ? request.query.channelId : "virtual-office";
     if (!request.sessionUser) {
         response.status(401).json({ message: "Unauthorized" });
         return;
     }
+    const workspace = getWorkspace(request.sessionUser.workspaceId);
+    const channelId = typeof request.query.channelId === "string" ? request.query.channelId : workspace.defaultChannelId;
     if (!isSlackConfigured || request.sessionUser.workspaceId === "demo-workspace") {
         response.json({ items: listMessages(channelId) });
         return;
