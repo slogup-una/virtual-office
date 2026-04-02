@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiClient, clearStoredSession } from "../../api/client";
 import { useOfficeSnapshot } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
+import type { AvatarDirection } from "../../stores/uiStore";
 import type { OfficeMember } from "../../types/domain";
 import { ChatPanel } from "../chat/ChatPanel";
 import { OfficeMap } from "../office/OfficeMap";
@@ -23,27 +24,46 @@ const skylineHeights = [88, 130, 112, 164, 96, 142, 104, 176, 118, 154, 94, 136]
 const officeNoticeEventName = "office-notice";
 const roomObjectStorageKey = "virtual-office-room-objects-v2";
 const movementObstaclePadding = 1.2;
+const objectHitboxInsetRatio = 0.18;
+const objectHitboxMinInset = 0.35;
 
 const wallObstacleSegments = [
   { x: 2, y: 22, width: 64, height: 3.4 },
-  { x: 77, y: 40.5, width: 21, height: 3.4 },
-  { x: 77, y: 58.5, width: 21, height: 3.4 }
+  { x: 77, y: 40.5, width: 17, height: 3.4 },
+  { x: 77, y: 58.5, width: 17, height: 3.4 }
+] as const;
+
+const deskBarrierSegments = [
+  { x: 3, y: 33.8, width: 64 },
+  { x: 13.67, y: 39.8, width: 53.33 },
+  { x: 3, y: 52.8, width: 64 },
+  { x: 3, y: 58.8, width: 64 },
+  { x: 13.67, y: 71.8, width: 53.33 },
+  { x: 13.67, y: 77.8, width: 53.33 },
+  { x: 77, y: 65.3, width: 17 },
+  { x: 77, y: 73.3, width: 17 },
+  { x: 77, y: 80.3, width: 17 }
 ] as const;
 
 const defaultObstacleObjects = [
-  { x: 79.5, y: 22.5, width: 16.5, height: 14 },
-  { x: 91.5, y: 16.5, width: 5.8, height: 6.8 },
-  { x: 78.8, y: 16.2, width: 3.8, height: 5.2 },
+  { x: 78.7, y: 23.4, width: 12.4, height: 11.6 },
+  { x: 88.9, y: 16.7, width: 4.1, height: 5.3 },
+  { x: 78.2, y: 16.4, width: 2.8, height: 4.1 },
   { x: 5.2, y: 7.5, width: 18, height: 7.5 },
   { x: 12.5, y: 13.6, width: 7.6, height: 4.8 },
-  { x: 79.3, y: 86.2, width: 12.5, height: 8.5 },
-  { x: 93, y: 85.6, width: 4.8, height: 5.8 },
-  { x: 79.2, y: 4.4, width: 7.2, height: 8.6 },
-  { x: 90.4, y: 4.4, width: 7.2, height: 8.6 },
-  { x: 85.3, y: 8.5, width: 5.6, height: 5.4 },
+  { x: 78.1, y: 86.6, width: 9.5, height: 7.2 },
+  { x: 89.2, y: 86.1, width: 3.7, height: 4.6 },
+  { x: 78.2, y: 4.8, width: 5.2, height: 7.5 },
+  { x: 85.2, y: 4.8, width: 5.2, height: 7.5 },
+  { x: 82.8, y: 8.8, width: 4.1, height: 4.1 },
   { x: 66.4, y: 3.2, width: 7.6, height: 3.7 },
   { x: 73.2, y: 3.45, width: 1.8, height: 3.1 }
 ] as const;
+
+const isVirtualOfficeMember = (member: OfficeMember) =>
+  member.id.toLowerCase().includes("virtual-office") ||
+  member.slackUserId.toLowerCase().includes("virtual-office") ||
+  member.displayName.toLowerCase().includes("virtual-office");
 
 function loadObstacleObjects() {
   try {
@@ -69,22 +89,60 @@ function loadObstacleObjects() {
   }
 }
 
-function isMovementBlocked(x: number, y: number, obstacles: Array<{ x: number; y: number; width: number; height: number }>) {
+function getObjectCollisionBounds(object: { x: number; y: number; width: number; height: number }) {
+  const insetX = Math.max(object.width * objectHitboxInsetRatio, objectHitboxMinInset);
+  const insetY = Math.max(object.height * objectHitboxInsetRatio, objectHitboxMinInset);
+
+  return {
+    left: object.x + insetX,
+    right: object.x + object.width - insetX,
+    top: object.y + insetY,
+    bottom: object.y + object.height - insetY
+  };
+}
+
+function crossesDeskBarrier(
+  previousX: number,
+  previousY: number,
+  nextX: number,
+  nextY: number,
+  barrier: { x: number; y: number; width: number }
+) {
+  const withinHorizontalRange =
+    Math.max(previousX, nextX) >= barrier.x && Math.min(previousX, nextX) <= barrier.x + barrier.width;
+  const crossedVerticalLine =
+    (previousY < barrier.y && nextY >= barrier.y) || (previousY > barrier.y && nextY <= barrier.y);
+
+  return withinHorizontalRange && crossedVerticalLine;
+}
+
+function isMovementBlocked(
+  previousX: number,
+  previousY: number,
+  nextX: number,
+  nextY: number,
+  obstacles: Array<{ x: number; y: number; width: number; height: number }>
+) {
   return (
     obstacles.some(
-      (object) =>
-        x >= object.x - movementObstaclePadding &&
-        x <= object.x + object.width + movementObstaclePadding &&
-        y >= object.y - movementObstaclePadding &&
-        y <= object.y + object.height + movementObstaclePadding
+      (object) => {
+        const bounds = getObjectCollisionBounds(object);
+        return (
+          nextX >= bounds.left - movementObstaclePadding &&
+          nextX <= bounds.right + movementObstaclePadding &&
+          nextY >= bounds.top - movementObstaclePadding &&
+          nextY <= bounds.bottom + movementObstaclePadding
+        );
+      }
     ) ||
     wallObstacleSegments.some(
       (wall) =>
-        x >= wall.x - movementObstaclePadding &&
-        x <= wall.x + wall.width + movementObstaclePadding &&
-        y >= wall.y - movementObstaclePadding &&
-        y <= wall.y + wall.height + movementObstaclePadding
-    )
+        nextX >= wall.x - movementObstaclePadding &&
+        nextX <= wall.x + wall.width + movementObstaclePadding &&
+        nextY >= wall.y - movementObstaclePadding &&
+        nextY <= wall.y + wall.height + movementObstaclePadding
+    ) ||
+    deskBarrierSegments.some((barrier) => crossesDeskBarrier(previousX, previousY, nextX, nextY, barrier))
   );
 }
 
@@ -96,12 +154,21 @@ export function AppShell() {
   const selectedZoneId = useUIStore((state) => state.selectedZoneId);
   const isChatPanelOpen = useUIStore((state) => state.isChatPanelOpen);
   const isStatusPanelOpen = useUIStore((state) => state.isStatusPanelOpen);
+  const isLayoutEditorPanelOpen = useUIStore((state) => state.isLayoutEditorPanelOpen);
   const currentUserPosition = useUIStore((state) => state.currentUserPosition);
   const setCurrentUserPosition = useUIStore((state) => state.setCurrentUserPosition);
   const setIsChatPanelOpen = useUIStore((state) => state.setIsChatPanelOpen);
   const setIsStatusPanelOpen = useUIStore((state) => state.setIsStatusPanelOpen);
+  const setIsLayoutEditorPanelOpen = useUIStore((state) => state.setIsLayoutEditorPanelOpen);
   const moveCurrentUserPosition = useUIStore((state) => state.moveCurrentUserPosition);
-  const currentUser = data?.members.find((member) => member.id === data.currentUserId) ?? null;
+  const setCurrentUserDirection = useUIStore((state) => state.setCurrentUserDirection);
+  const isCurrentUserSeated = useUIStore((state) => state.isCurrentUserSeated);
+  const setIsCurrentUserSeated = useUIStore((state) => state.setIsCurrentUserSeated);
+  const setIsCurrentUserMoving = useUIStore((state) => state.setIsCurrentUserMoving);
+  const isDemoWorkspace = data?.workspace.id === "demo-workspace";
+  const visibleMembers = data?.members.filter((member) => !isVirtualOfficeMember(member)) ?? [];
+  const currentUser = visibleMembers.find((member) => member.id === data?.currentUserId) ?? null;
+  const canManageSeats = isDemoWorkspace || (data?.canManageSeats ?? false);
   const initializedUserIdRef = useRef<string | null>(null);
   const initializedSeatKeyRef = useRef<string | undefined>(undefined);
   const previousMembersRef = useRef<Map<string, OfficeMember>>(new Map());
@@ -126,6 +193,14 @@ export function AppShell() {
   }, [currentUser, currentUserPosition, setCurrentUserPosition]);
 
   useEffect(() => {
+    setCurrentUserDirection("down");
+  }, [setCurrentUserDirection]);
+
+  useEffect(() => {
+    setIsCurrentUserSeated(false);
+  }, [setIsCurrentUserSeated]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (
@@ -142,43 +217,69 @@ export function AppShell() {
 
       let deltaX = 0;
       let deltaY = 0;
+      let direction: AvatarDirection | null = null;
 
       if (event.key === "ArrowUp") {
         event.preventDefault();
         deltaY = -1.5;
+        direction = "down";
       }
 
       if (event.key === "ArrowDown") {
         event.preventDefault();
         deltaY = 1.5;
+        direction = "down";
       }
 
       if (event.key === "ArrowLeft") {
         event.preventDefault();
         deltaX = -1.5;
+        direction = "left";
       }
 
       if (event.key === "ArrowRight") {
         event.preventDefault();
         deltaX = 1.5;
+        direction = "down";
       }
 
       if (deltaX === 0 && deltaY === 0) {
         return;
       }
 
+      if (direction) {
+        setCurrentUserDirection(direction);
+      }
+      setIsCurrentUserMoving(true);
+
       const nextX = Math.min(96, Math.max(4, currentUserPosition.x + deltaX));
       const nextY = Math.min(95, Math.max(5, currentUserPosition.y + deltaY));
       const obstacles = loadObstacleObjects();
 
-      if (!isMovementBlocked(nextX, nextY, obstacles)) {
+      if (!isMovementBlocked(currentUserPosition.x, currentUserPosition.y, nextX, nextY, obstacles)) {
         moveCurrentUserPosition({ x: deltaX, y: deltaY });
       }
     };
 
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key.startsWith("Arrow")) {
+        setIsCurrentUserMoving(false);
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentUserPosition, moveCurrentUserPosition]);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [
+    currentUserPosition,
+    moveCurrentUserPosition,
+    setCurrentUserDirection,
+    setIsCurrentUserMoving,
+    setIsCurrentUserSeated
+  ]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -203,12 +304,12 @@ export function AppShell() {
     }
 
     const previousMembers = previousMembersRef.current;
-    const nextMembers = new Map(data.members.map((member) => [member.id, member]));
+    const nextMembers = new Map(visibleMembers.map((member) => [member.id, member]));
 
     if (previousMembers.size > 0) {
       const currentHour = new Date().getHours();
 
-      for (const member of data.members) {
+      for (const member of visibleMembers) {
         const previousMember = previousMembers.get(member.id);
         if (!previousMember) {
           continue;
@@ -230,7 +331,7 @@ export function AppShell() {
     }
 
     previousMembersRef.current = nextMembers;
-  }, [data]);
+  }, [visibleMembers]);
 
   useEffect(() => {
     if (!noticeMessage) {
@@ -259,7 +360,8 @@ export function AppShell() {
 
   const snapshot = {
     ...data,
-    members: data.members.map((member) =>
+    canManageSeats,
+    members: visibleMembers.map((member) =>
       member.id === data.currentUserId && currentUserPosition
         ? {
             ...member,
@@ -351,36 +453,53 @@ export function AppShell() {
         </div>
       ) : null}
       <aside className="panel-label-dock" aria-label="패널 컨트롤">
-        <button
-          className={`panel-label-button ${isStatusPanelOpen ? "is-active" : ""}`}
-          onClick={() => setIsStatusPanelOpen(!isStatusPanelOpen)}
-          type="button"
-        >
-          상태
-        </button>
-        <button
-          className={`panel-label-button ${isChatPanelOpen ? "is-active" : ""}`}
-          onClick={() => setIsChatPanelOpen(!isChatPanelOpen)}
-          type="button"
-        >
-          채팅
-        </button>
-        <button
-          className="panel-label-button"
-          onClick={() =>
-            void apiClient.logout().then(() => {
-              clearStoredSession();
-              window.location.reload();
-            })
-          }
-          type="button"
-        >
-          로그아웃
-        </button>
+        <div className="panel-label-group">
+          <button
+            className={`panel-label-button ${isStatusPanelOpen ? "is-active" : ""}`}
+            onClick={() => setIsStatusPanelOpen(!isStatusPanelOpen)}
+            type="button"
+          >
+            상태
+          </button>
+          <button
+            className={`panel-label-button ${isChatPanelOpen ? "is-active" : ""}`}
+            onClick={() => setIsChatPanelOpen(!isChatPanelOpen)}
+            type="button"
+          >
+            채팅
+          </button>
+          <button
+            className="panel-label-button"
+            onClick={() =>
+              void apiClient.logout().then(() => {
+                clearStoredSession();
+                window.location.reload();
+              })
+            }
+            type="button"
+          >
+            로그아웃
+          </button>
+        </div>
+        {canManageSeats ? (
+          <div className="panel-label-group panel-label-group-bottom">
+            <button
+              className={`panel-label-button ${isLayoutEditorPanelOpen ? "is-active" : ""}`}
+              onClick={() => setIsLayoutEditorPanelOpen(!isLayoutEditorPanelOpen)}
+              type="button"
+            >
+              {isLayoutEditorPanelOpen ? "편집 닫기" : "오브젝트 편집"}
+            </button>
+          </div>
+        ) : null}
       </aside>
       <OfficeMap snapshot={snapshot} />
       <TeamSidebar snapshot={snapshot} />
-      <ChatPanel workspace={snapshot.workspace} />
+      <ChatPanel
+        currentUserId={snapshot.currentUserId}
+        currentUserName={currentUser?.displayName}
+        workspace={snapshot.workspace}
+      />
     </main>
   );
 }

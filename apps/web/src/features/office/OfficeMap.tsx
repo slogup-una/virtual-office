@@ -5,19 +5,21 @@ import { apiClient } from "../../api/client";
 import type { OfficeSnapshot } from "../../types/domain";
 import { useAssignSeat, useClearSeat } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
+import type { AvatarDirection } from "../../stores/uiStore";
 
 const roomZones = [
-  { id: "lounge", label: "휴게공간", x: 2, y: 3, width: 27.5, height: 14 },
-  { id: "event-hall", label: "다목적 공간", x: 30, y: 3, width: 36, height: 13 },
-  { id: "entrance", label: "출구", x: 66, y: 3, width: 10, height: 4 },
-  { id: "storage", label: "창고", x: 77, y: 3, width: 21, height: 12 },
-  { id: "meeting-room", label: "회의실 1", x: 77, y: 15, width: 21, height: 25 },
-  { id: "qa-room", label: "QA ROOM", x: 78, y: 45, width: 19, height: 10 },
-  { id: "meeting-a", label: "회의실 A", x: 2, y: 84, width: 18, height: 13 },
-  { id: "meeting-b", label: "회의실 B", x: 20.5, y: 84, width: 18, height: 13 },
-  { id: "meeting-c", label: "회의실 C", x: 39, y: 84, width: 18, height: 13 },
-  { id: "meeting-d", label: "회의실 D", x: 57.5, y: 84, width: 18, height: 13 },
-  { id: "ceo-room", label: "CEO", x: 76, y: 84, width: 22, height: 13 }
+  { id: "lounge", label: "휴게공간", x: 0, y: 0, width: 30, height: 22 },
+  { id: "event-hall", label: "다목적 공간", x: 30, y: 0, width: 36, height: 22 },
+  { id: "entrance", label: "출구", x: 66, y: 0, width: 10, height: 7 },
+  { id: "storage", label: "창고", x: 77, y: 0, width: 17, height: 22 },
+  { id: "meeting-room", label: "회의실 1", x: 77, y: 15, width: 17, height: 25 },
+  { id: "qa-room", label: "QA ROOM", x: 77, y: 43.9, width: 17, height: 14.6 },
+  { id: "meeting-a", label: "Seoul", x: 2, y: 84, width: 18, height: 13 },
+  { id: "meeting-b", label: "Incheon", x: 20.5, y: 84, width: 18, height: 13 },
+  { id: "meeting-c", label: "Jeju", x: 39, y: 84, width: 18, height: 13 },
+  { id: "meeting-d", label: "Busan", x: 57.5, y: 84, width: 18, height: 13 },
+  { id: "ceo-room", label: "CEO", x: 76, y: 84, width: 18, height: 13 },
+  { id: "outdoor-space", label: "OUTDOOR", x: 94, y: 0, width: 6, height: 97 }
 ] as const;
 
 const deskBands = [
@@ -36,9 +38,9 @@ const sideDeskBands = [
 ] as const;
 
 const wallSegments = [
-  { x: 2, y: 22, width: 64, height: 3.4, label: "WALL TYPE A", variant: "brick" },
-  { x: 77, y: 40.5, width: 21, height: 3.4, label: "WALL TYPE B", variant: "glass" },
-  { x: 77, y: 58.5, width: 21, height: 3.4, label: "WALL TYPE A", variant: "brick" }
+  { x: 0, y: 22, width: 66, height: 3.4, label: "WALL TYPE A", variant: "brick" },
+  { x: 77, y: 40.5, width: 17, height: 3.4, label: "WALL TYPE B", variant: "glass" },
+  { x: 77, y: 58.5, width: 17, height: 3.4, label: "WALL TYPE A", variant: "brick" }
 ] as const;
 
 const decorativeWindows: Array<{ x: number; y: number; width: number; height: number }> = [];
@@ -186,16 +188,16 @@ const objectLabelLookup = Object.fromEntries(objectLibrary.map((item) => [item.t
 >;
 
 const defaultRoomObjects: RoomObject[] = [
-  { id: "meeting-table-1", type: "meeting-table", x: 79.5, y: 22.5, width: 16.5, height: 14 },
-  { id: "whiteboard-1", type: "whiteboard", x: 91.5, y: 16.5, width: 5.8, height: 6.8 },
-  { id: "wall-clock-1", type: "wall-clock", x: 78.8, y: 16.2, width: 3.8, height: 5.2 },
+  { id: "meeting-table-1", type: "meeting-table", x: 78.7, y: 23.4, width: 12.4, height: 11.6 },
+  { id: "whiteboard-1", type: "whiteboard", x: 88.9, y: 16.7, width: 4.1, height: 5.3 },
+  { id: "wall-clock-1", type: "wall-clock", x: 78.2, y: 16.4, width: 2.8, height: 4.1 },
   { id: "sofa-1", type: "sofa", x: 5.2, y: 7.5, width: 18, height: 7.5 },
   { id: "coffee-table-1", type: "coffee-table", x: 12.5, y: 13.6, width: 7.6, height: 4.8 },
-  { id: "l-desk-1", type: "l-desk", x: 79.3, y: 86.2, width: 12.5, height: 8.5 },
-  { id: "trophy-shelf-1", type: "trophy-shelf", x: 93, y: 85.6, width: 4.8, height: 5.8 },
-  { id: "bookshelf-1", type: "bookshelf", x: 79.2, y: 4.4, width: 7.2, height: 8.6 },
-  { id: "bookshelf-2", type: "bookshelf", x: 90.4, y: 4.4, width: 7.2, height: 8.6 },
-  { id: "box-stack-1", type: "box-stack", x: 85.3, y: 8.5, width: 5.6, height: 5.4 },
+  { id: "l-desk-1", type: "l-desk", x: 78.1, y: 86.6, width: 9.5, height: 7.2 },
+  { id: "trophy-shelf-1", type: "trophy-shelf", x: 89.2, y: 86.1, width: 3.7, height: 4.6 },
+  { id: "bookshelf-1", type: "bookshelf", x: 78.2, y: 4.8, width: 5.2, height: 7.5 },
+  { id: "bookshelf-2", type: "bookshelf", x: 85.2, y: 4.8, width: 5.2, height: 7.5 },
+  { id: "box-stack-1", type: "box-stack", x: 82.8, y: 8.8, width: 4.1, height: 4.1 },
   { id: "security-gate-1", type: "security-gate", x: 66.4, y: 3.2, width: 7.6, height: 3.7 },
   { id: "umbrella-stand-1", type: "umbrella-stand", x: 73.2, y: 3.45, width: 1.8, height: 3.1 }
 ];
@@ -204,11 +206,41 @@ const roomObjectStorageKey = "virtual-office-room-objects-v2";
 const objectSnapStep = 0.5;
 const motionGridStep = 2;
 const motionObstaclePadding = 1.2;
+const motionObjectHitboxInsetRatio = 0.18;
+const motionObjectHitboxMinInset = 0.35;
 
 const entrancePosition = {
   x: 71,
   y: 5
 } as const;
+const pinnedCeoSlackUserId = "U08EU38CJ64";
+const demoPinnedCeoDisplayName = "Mina";
+const pinnedCeoPosition = {
+  x: 84.8,
+  y: 90.5
+} as const;
+const meetingRoomSlots = [
+  { zoneId: "meeting-a", x: 11, y: 90.5 },
+  { zoneId: "meeting-b", x: 29.5, y: 90.5 },
+  { zoneId: "meeting-c", x: 48, y: 90.5 },
+  { zoneId: "meeting-d", x: 66.5, y: 90.5 }
+] as const;
+const fieldRoomPosition = {
+  x: 84.8,
+  y: 28
+} as const;
+const outdoorSlotPositions = [
+  { x: 97, y: 11 },
+  { x: 97, y: 19 },
+  { x: 97, y: 27 },
+  { x: 97, y: 35 },
+  { x: 97, y: 43 },
+  { x: 97, y: 51 },
+  { x: 97, y: 59 },
+  { x: 97, y: 67 },
+  { x: 97, y: 75 },
+  { x: 97, y: 83 }
+] as const;
 const officeNoticeEventName = "office-notice";
 
 const motionStepDelayMs = 48;
@@ -228,6 +260,107 @@ interface MotionAvatar {
 interface MotionPoint {
   x: number;
   y: number;
+}
+
+function getMotionObjectCollisionBounds(object: { x: number; y: number; width: number; height: number }) {
+  const insetX = Math.max(object.width * motionObjectHitboxInsetRatio, motionObjectHitboxMinInset);
+  const insetY = Math.max(object.height * motionObjectHitboxInsetRatio, motionObjectHitboxMinInset);
+
+  return {
+    left: object.x + insetX,
+    right: object.x + object.width - insetX,
+    top: object.y + insetY,
+    bottom: object.y + object.height - insetY
+  };
+}
+
+function hashValue(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function getPinnedMemberPosition(member: SnapshotMember, isDemoWorkspace: boolean) {
+  if (
+    member.slackUserId === pinnedCeoSlackUserId &&
+    member.isOnline &&
+    member.officeStatus !== "away" &&
+    member.officeStatus !== "offline"
+  ) {
+    return pinnedCeoPosition;
+  }
+
+  if (
+    isDemoWorkspace &&
+    member.displayName === demoPinnedCeoDisplayName &&
+    member.isOnline &&
+    member.officeStatus !== "away" &&
+    member.officeStatus !== "offline"
+  ) {
+    return pinnedCeoPosition;
+  }
+
+  return null;
+}
+
+function getOutdoorPositionMap(members: SnapshotMember[]) {
+  const eligibleMembers = members
+    .filter(
+      (member) =>
+        !member.seatKey &&
+        member.officeStatus !== "meeting" &&
+        member.officeStatus !== "field" &&
+        member.officeStatus !== "away" &&
+        member.officeStatus !== "offline"
+    )
+    .sort((left, right) => left.slackUserId.localeCompare(right.slackUserId));
+
+  return new Map(
+    eligibleMembers.map((member, index) => [
+      member.id,
+      outdoorSlotPositions[index % outdoorSlotPositions.length]
+    ])
+  );
+}
+
+function getMeetingRoomPosition(member: SnapshotMember) {
+  const roomIndex = hashValue(member.slackUserId || member.id) % meetingRoomSlots.length;
+  const room = meetingRoomSlots[roomIndex];
+  return {
+    x: room.x,
+    y: room.y
+  };
+}
+
+function getPreferredMemberPosition(
+  member: SnapshotMember,
+  outdoorPositionMap: Map<string, { x: number; y: number }>,
+  isDemoWorkspace: boolean
+) {
+  const pinnedPosition = getPinnedMemberPosition(member, isDemoWorkspace);
+  if (pinnedPosition) {
+    return pinnedPosition;
+  }
+
+  if (member.isOnline && member.officeStatus === "meeting") {
+    return getMeetingRoomPosition(member);
+  }
+
+  if (member.isOnline && member.officeStatus === "field") {
+    return fieldRoomPosition;
+  }
+
+  const outdoorPosition = outdoorPositionMap.get(member.id);
+  if (member.isOnline && outdoorPosition) {
+    return outdoorPosition;
+  }
+
+  return {
+    x: member.x,
+    y: member.y
+  };
 }
 
 function getMotionRoute({
@@ -252,11 +385,15 @@ function getMotionRoute({
 
   const isBlocked = (x: number, y: number) =>
     roomObjects.some(
-      (object) =>
-        x >= object.x - motionObstaclePadding &&
-        x <= object.x + object.width + motionObstaclePadding &&
-        y >= object.y - motionObstaclePadding &&
-        y <= object.y + object.height + motionObstaclePadding
+      (object) => {
+        const bounds = getMotionObjectCollisionBounds(object);
+        return (
+          x >= bounds.left - motionObstaclePadding &&
+          x <= bounds.right + motionObstaclePadding &&
+          y >= bounds.top - motionObstaclePadding &&
+          y <= bounds.bottom + motionObstaclePadding
+        );
+      }
     ) ||
     wallSegments.some(
       (wall) =>
@@ -376,12 +513,21 @@ function snap(value: number) {
 
 function renderAvatar(
   member: SnapshotMember,
-  override?: { x?: number; y?: number; opacity?: number; isTransitioning?: boolean; isCurrent?: boolean }
+  override?: {
+    x?: number;
+    y?: number;
+    opacity?: number;
+    isTransitioning?: boolean;
+    isCurrent?: boolean;
+    direction?: AvatarDirection;
+    isMoving?: boolean;
+    isSeated?: boolean;
+  }
 ) {
   return (
     <div
       key={member.id}
-      className={`avatar-token ${member.officeStatus} ${override?.isCurrent ? "is-current" : ""} ${override?.isTransitioning ? "is-transitioning" : ""}`}
+      className={`avatar-token ${member.officeStatus} ${override?.isCurrent ? "is-current" : ""} ${override?.isTransitioning ? "is-transitioning" : ""} direction-${override?.direction ?? "down"} ${override?.isMoving ? "is-moving" : ""} ${override?.isSeated ? "is-seated" : ""}`}
       style={{
         left: `${override?.x ?? member.x}%`,
         top: `${override?.y ?? member.y}%`,
@@ -390,8 +536,33 @@ function renderAvatar(
       title={`${member.displayName} · ${member.slackStatusText ?? member.officeStatus}`}
     >
       {override?.isCurrent ? <em className="you-badge">YOU</em> : null}
-      <img alt={member.displayName} src={member.avatarUrl} />
-      {member.seatKey ? <small className="avatar-seat-tag">{member.seatKey}</small> : null}
+      {override?.isSeated ? (
+        <div className="avatar-seated-sprite">
+          <div className="avatar-seated-head">
+            <img alt={member.displayName} src={member.avatarUrl} />
+          </div>
+          <span className="avatar-seated-back" />
+          <span className="avatar-seated-body" />
+          <span className="avatar-seated-seat" />
+          <span className="avatar-seated-post" />
+          <span className="avatar-seated-base" />
+        </div>
+      ) : (
+        <div className="avatar-chibi">
+          <div className="avatar-head-shell">
+            <img alt={member.displayName} src={member.avatarUrl} />
+          </div>
+          <div className="avatar-body-shell">
+            <span className="avatar-chair-back" />
+            <span className="avatar-arm avatar-arm-left" />
+            <span className="avatar-arm avatar-arm-right" />
+            <span className="avatar-torso" />
+            <span className="avatar-leg avatar-leg-left" />
+            <span className="avatar-leg avatar-leg-right" />
+            <span className="avatar-seat" />
+          </div>
+        </div>
+      )}
       <span>{member.displayName}</span>
     </div>
   );
@@ -403,11 +574,18 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const assignSeat = useAssignSeat();
   const clearSeat = useClearSeat();
   const layoutEditorOffset = useUIStore((state) => state.layoutEditorOffset);
+  const isLayoutEditorPanelOpen = useUIStore((state) => state.isLayoutEditorPanelOpen);
   const demoMotionOffset = useUIStore((state) => state.demoMotionOffset);
+  const seatAssignmentOffset = useUIStore((state) => state.seatAssignmentOffset);
   const isDemoMotionOpen = useUIStore((state) => state.isDemoMotionOpen);
   const setLayoutEditorOffset = useUIStore((state) => state.setLayoutEditorOffset);
+  const setIsLayoutEditorPanelOpen = useUIStore((state) => state.setIsLayoutEditorPanelOpen);
   const setDemoMotionOffset = useUIStore((state) => state.setDemoMotionOffset);
+  const setSeatAssignmentOffset = useUIStore((state) => state.setSeatAssignmentOffset);
   const setIsDemoMotionOpen = useUIStore((state) => state.setIsDemoMotionOpen);
+  const currentUserDirection = useUIStore((state) => state.currentUserDirection);
+  const isCurrentUserMoving = useUIStore((state) => state.isCurrentUserMoving);
+  const isCurrentUserSeated = useUIStore((state) => state.isCurrentUserSeated);
   const [selectedSeatKey, setSelectedSeatKey] = useState<string | null>(null);
   const [seatSearch, setSeatSearch] = useState("");
   const [motionAvatars, setMotionAvatars] = useState<MotionAvatar[]>([]);
@@ -419,6 +597,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const timeoutIdsRef = useRef<Map<string, number>>(new Map());
   const layoutPanelDragRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const demoPanelDragRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const seatPanelDragRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const dragObjectIdRef = useRef<string | null>(null);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const mapSurfaceRef = useRef<HTMLDivElement | null>(null);
@@ -430,9 +609,10 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     ? snapshot.members.find((member) => member.slackUserId === selectedSeat.assignedSlackUserId) ?? null
     : null;
   const canManageSeats = snapshot.canManageSeats;
-  const canEditLayout = canManageSeats || isDemoWorkspace;
+  const canEditLayout = canManageSeats;
   const normalizedSeatSearch = seatSearch.trim().toLowerCase();
   const transitioningMemberIds = new Set(motionAvatars.map((member) => member.id));
+  const outdoorPositionMap = getOutdoorPositionMap(snapshot.members);
   const filteredMembers = snapshot.members.filter((member) => {
     if (!normalizedSeatSearch) {
       return true;
@@ -492,8 +672,6 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     startY,
     endX,
     endY,
-    startOpacity,
-    endOpacity,
     motionStatus
   }: {
     member: SnapshotMember;
@@ -501,8 +679,6 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     startY: number;
     endX: number;
     endY: number;
-    startOpacity: number;
-    endOpacity: number;
     motionStatus: SnapshotMember["officeStatus"];
   }) => {
     const clearExistingMotion = () => {
@@ -538,7 +714,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
         },
         x: startX,
         y: startY,
-        opacity: startOpacity
+        opacity: 1
       }
     ]);
 
@@ -573,9 +749,6 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
         travelledDistance += Math.abs(stepY);
       }
 
-      const progress = totalDistance === 0 ? 1 : Math.min(1, travelledDistance / totalDistance);
-      const nextOpacity = startOpacity + (endOpacity - startOpacity) * progress;
-
       setMotionAvatars((current) =>
         current.map((item) =>
           item.id === member.id
@@ -583,7 +756,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 ...item,
                 x: currentX,
                 y: currentY,
-                opacity: nextOpacity
+                opacity: 1
               }
             : item
         )
@@ -598,28 +771,37 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   };
 
   const triggerDepartureMotion = (member: SnapshotMember) => {
+    const preferredPosition = getPreferredMemberPosition(member, outdoorPositionMap, isDemoWorkspace);
     runMotion({
       member,
-      startX: member.x,
-      startY: member.y,
+      startX: preferredPosition.x,
+      startY: preferredPosition.y,
       endX: entrancePosition.x,
       endY: entrancePosition.y,
-      startOpacity: 1,
-      endOpacity: 0,
       motionStatus: "away"
     });
   };
 
   const triggerArrivalMotion = (member: SnapshotMember) => {
+    const preferredPosition = getPreferredMemberPosition(member, outdoorPositionMap, isDemoWorkspace);
     runMotion({
       member,
       startX: entrancePosition.x,
       startY: entrancePosition.y,
-      endX: member.x,
-      endY: member.y,
-      startOpacity: 0.3,
-      endOpacity: 1,
-      motionStatus: "active"
+      endX: preferredPosition.x,
+      endY: preferredPosition.y,
+      motionStatus: member.officeStatus
+    });
+  };
+
+  const triggerRelocationMotion = (member: SnapshotMember, startPoint: MotionPoint, endPoint: MotionPoint) => {
+    runMotion({
+      member,
+      startX: startPoint.x,
+      startY: startPoint.y,
+      endX: endPoint.x,
+      endY: endPoint.y,
+      motionStatus: member.officeStatus
     });
   };
 
@@ -636,6 +818,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   useEffect(() => {
     const previousMembers = previousMembersRef.current;
     const nextMembers = new Map(snapshot.members.map((member) => [member.id, member]));
+    const previousOutdoorPositionMap = getOutdoorPositionMap([...previousMembers.values()]);
 
     snapshot.members.forEach((member) => {
       const previousMember = previousMembers.get(member.id);
@@ -646,18 +829,30 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
       const wasUnavailable =
         previousMember.officeStatus === "away" || previousMember.officeStatus === "offline";
       const isUnavailable = member.officeStatus === "away" || member.officeStatus === "offline";
+      const previousPosition = getPreferredMemberPosition(previousMember, previousOutdoorPositionMap, isDemoWorkspace);
+      const nextPosition = getPreferredMemberPosition(member, outdoorPositionMap, isDemoWorkspace);
 
       if (!wasUnavailable && isUnavailable) {
         triggerDepartureMotion(previousMember);
+        return;
       }
 
-      if (wasUnavailable && !isUnavailable && member.officeStatus === "active") {
+      if (wasUnavailable && !isUnavailable) {
         triggerArrivalMotion(member);
+        return;
+      }
+
+      if (
+        !wasUnavailable &&
+        !isUnavailable &&
+        (Math.abs(previousPosition.x - nextPosition.x) > 0.1 || Math.abs(previousPosition.y - nextPosition.y) > 0.1)
+      ) {
+        triggerRelocationMotion(member, previousPosition, nextPosition);
       }
     });
 
     previousMembersRef.current = nextMembers;
-  }, [snapshot.members]);
+  }, [outdoorPositionMap, snapshot.members]);
 
   useEffect(
     () => () => {
@@ -769,10 +964,16 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
 
   const startFloatingPanelDrag = (
     event: ReactPointerEvent<HTMLDivElement>,
-    type: "layout" | "demo"
+    type: "layout" | "demo" | "seat"
   ) => {
-    const dragRef = type === "layout" ? layoutPanelDragRef : demoPanelDragRef;
-    const setter = type === "layout" ? setLayoutEditorOffset : setDemoMotionOffset;
+    const dragRef =
+      type === "layout" ? layoutPanelDragRef : type === "demo" ? demoPanelDragRef : seatPanelDragRef;
+    const setter =
+      type === "layout"
+        ? setLayoutEditorOffset
+        : type === "demo"
+          ? setDemoMotionOffset
+          : setSeatAssignmentOffset;
 
     dragRef.current = {
       x: event.clientX,
@@ -794,7 +995,11 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
       };
 
       const currentOffset =
-        type === "layout" ? useUIStore.getState().layoutEditorOffset : useUIStore.getState().demoMotionOffset;
+        type === "layout"
+          ? useUIStore.getState().layoutEditorOffset
+          : type === "demo"
+            ? useUIStore.getState().demoMotionOffset
+            : useUIStore.getState().seatAssignmentOffset;
 
       setter({
         x: currentOffset.x + deltaX,
@@ -926,7 +1131,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             <div
               className="desk-row desk-row-side"
               key={band.rowKey}
-              style={{ left: "77%", top: `${band.y}%`, width: "21%", height: "5.2%" }}
+              style={{ left: "77%", top: `${band.y}%`, width: "17%", height: "4.5%" }}
             >
               {Array.from({ length: band.seats }).map((_, index) => (
                 <button
@@ -946,16 +1151,27 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
         <div className={`map-avatar-layer ${isLayoutEditMode ? "is-editing" : ""}`}>
           {snapshot.members
             .filter((member) => member.officeStatus !== "away" && !transitioningMemberIds.has(member.id))
-            .map((member) =>
-              renderAvatar(member, { isCurrent: member.id === snapshot.currentUserId })
-            )}
+            .map((member) => {
+              const preferredPosition = getPreferredMemberPosition(member, outdoorPositionMap, isDemoWorkspace);
+              return renderAvatar(member, {
+                x: preferredPosition.x,
+                y: preferredPosition.y,
+                isCurrent: member.id === snapshot.currentUserId,
+                direction: member.id === snapshot.currentUserId ? currentUserDirection : "down",
+                isMoving: member.id === snapshot.currentUserId ? isCurrentUserMoving : false,
+                isSeated: member.id === snapshot.currentUserId ? isCurrentUserSeated : false
+              });
+            })}
           {motionAvatars.map((member) =>
             renderAvatar(member.member, {
               x: member.x,
               y: member.y,
               opacity: member.opacity,
               isTransitioning: true,
-              isCurrent: member.member.id === snapshot.currentUserId
+              isCurrent: member.member.id === snapshot.currentUserId,
+              direction: member.member.id === snapshot.currentUserId ? currentUserDirection : "down",
+              isMoving: true,
+              isSeated: false
             })
           )}
         </div>
@@ -1008,20 +1224,32 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             Demo Motion 열기
           </button>
         ) : null}
-        {canEditLayout ? (
+        {canEditLayout && isLayoutEditorPanelOpen ? (
           <aside className="layout-editor-panel" style={{ transform: `translate(${layoutEditorOffset.x}px, ${layoutEditorOffset.y}px)` }}>
             <div className="floating-header draggable-header" onPointerDown={(event) => startFloatingPanelDrag(event, "layout")}>
               <div>
                 <span className="eyebrow">Object Layout</span>
                 <h2>오브젝트 편집</h2>
               </div>
-              <button
-                className={`panel-icon-button layout-toggle-button ${isLayoutEditMode ? "is-active" : ""}`}
-                onClick={() => setIsLayoutEditMode((current) => !current)}
-                type="button"
-              >
-                {isLayoutEditMode ? "편집중" : "편집"}
-              </button>
+              <div className="panel-tools">
+                <button
+                  className={`panel-icon-button layout-toggle-button ${isLayoutEditMode ? "is-active" : ""}`}
+                  onClick={() => setIsLayoutEditMode((current) => !current)}
+                  type="button"
+                >
+                  {isLayoutEditMode ? "편집중" : "편집"}
+                </button>
+                <button
+                  aria-label="오브젝트 편집 패널 닫기"
+                  className="panel-icon-button panel-close-button"
+                  onClick={() => setIsLayoutEditorPanelOpen(false)}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="close-glyph">
+                    ×
+                  </span>
+                </button>
+              </div>
             </div>
             <p className="seat-assignment-copy">
               오브젝트를 직접 드래그해 배치할 수 있습니다. 위치는 현재 브라우저에 저장됩니다.
@@ -1045,8 +1273,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
           </aside>
         ) : null}
         {selectedSeat && canManageSeats ? (
-          <aside className="seat-assignment-panel">
-            <div className="floating-header">
+          <aside className="seat-assignment-panel" style={{ transform: `translate(${seatAssignmentOffset.x}px, ${seatAssignmentOffset.y}px)` }}>
+            <div className="floating-header draggable-header" onPointerDown={(event) => startFloatingPanelDrag(event, "seat")}>
               <div>
                 <span className="eyebrow">Seat Manager</span>
                 <h2>{selectedSeat.key}</h2>
@@ -1092,7 +1320,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             </div>
             <div className="seat-assignment-actions">
               <button className="ghost-button" onClick={() => void handleSeatBackupDownload()} type="button">
-                배정 백업 다운로드
+                백업 다운로드
               </button>
               <button
                 className="ghost-button"

@@ -4,7 +4,15 @@ import { useMessages, useSendMessage } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
 import type { WorkspaceInfo } from "../../types/domain";
 
-export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
+export function ChatPanel({
+  workspace,
+  currentUserId,
+  currentUserName
+}: {
+  workspace: WorkspaceInfo;
+  currentUserId?: string;
+  currentUserName?: string;
+}) {
   const selectedChannelId = useUIStore((state) => state.selectedChannelId);
   const messageDraft = useUIStore((state) => state.messageDraft);
   const chatOpacity = useUIStore((state) => state.chatOpacity);
@@ -25,8 +33,8 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const text = messageDraft.trim();
-    if (!text) {
+    const text = messageDraft.replace(/\r\n/g, "\n");
+    if (!text.trim()) {
       return;
     }
 
@@ -127,7 +135,7 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
       <div className="floating-header draggable-header" onPointerDown={handlePointerDown}>
         <div>
           <span className="eyebrow">Slack Sync</span>
-          <h2>#{workspace.defaultChannelId}</h2>
+          <h2>virtual-office</h2>
         </div>
         <div className="panel-tools">
           <button
@@ -160,12 +168,16 @@ export function ChatPanel({ workspace }: { workspace: WorkspaceInfo }) {
         ) : (
           data?.items.map((message) => (
             <article className="message-card" key={message.id}>
+              <strong className="message-author">
+                {message.source === "app" && message.userId === currentUserId && currentUserName
+                  ? currentUserName
+                  : message.userName}
+              </strong>
+              <p className="message-text">{message.text}</p>
               <div className="message-meta">
-                <strong>{message.userName}</strong>
+                <small>{message.source === "slack" ? "Slack Events / Web API" : "App Demo Store"}</small>
                 <span>{new Date(message.createdAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
-              <p>{message.text}</p>
-              <small>{message.source === "slack" ? "Slack Events / Web API" : "App Demo Store"}</small>
             </article>
           ))
         )}
