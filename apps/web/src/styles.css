@@ -767,23 +767,12 @@ input {
 
 .zone-outdoor-space::before {
   background:
-    linear-gradient(90deg, #d2d6dc 0 10%, transparent 10% 100%),
-    repeating-linear-gradient(
-      180deg,
-      rgba(210, 202, 189, 0.55) 0,
-      rgba(210, 202, 189, 0.55) 1px,
-      transparent 1px,
-      transparent 22px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(210, 202, 189, 0.38) 0,
-      rgba(210, 202, 189, 0.38) 1px,
-      transparent 1px,
-      transparent 16px
-    ),
-    linear-gradient(180deg, #fbf7ef 0%, #f2eadf 100%);
-  background-size: auto, 100% 22px, 16px 100%, auto;
+    url("./assets/room-objects/tile-sidewalk.png"),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(231, 222, 206, 0.08)),
+    linear-gradient(180deg, #f5f1e8 0%, #e7dece 100%);
+  background-position: center top, center, center;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size: 96px 96px, auto, auto;
 }
 
 .zone-meeting-room::before,
@@ -841,9 +830,18 @@ input {
     inset 6px 0 0 rgba(210, 214, 220, 0.72);
 }
 
+.zone-outdoor-space::after {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 30%);
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-size: auto, auto;
+}
+
 .zone-outdoor-space strong {
-  background: rgba(250, 246, 239, 0.76);
-  color: #b6a88d;
+  background: rgba(248, 245, 237, 0.86);
+  color: #8fa37d;
 }
 
 .zone-card.is-selected {
@@ -874,6 +872,19 @@ input {
   font-size: 6px;
   letter-spacing: 0.05em;
   opacity: 0.7;
+}
+
+.wall-segment[style*="height: 97%"],
+.wall-segment[style*="height: 97px"] {
+  justify-content: center;
+  align-items: flex-start;
+  padding: 10px 0;
+}
+
+.wall-segment[style*="height: 97%"] span,
+.wall-segment[style*="height: 97px"] span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
 
 .wall-brick {
@@ -1036,6 +1047,14 @@ input {
 
 .object-bookshelf-pixel {
   background-image: url("./assets/room-objects/bookshelf-pixel.png");
+}
+
+.object-trash-bin {
+  background-image: url("./assets/room-objects/obj-trash.png");
+}
+
+.object-street-lamp {
+  background-image: url("./assets/room-objects/obj-lamp.png");
 }
 
 .object-whiteboard-pixel {
@@ -1815,6 +1834,7 @@ input {
   }
 }
 
+
 @keyframes avatar-step-left {
   0%,
   100% {
@@ -2064,6 +2084,8 @@ input {
   z-index: 35;
   width: 320px;
   max-height: min(54vh, 520px);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -2110,8 +2132,9 @@ input {
 
 .seat-member-list {
   display: grid;
+  flex: 1 1 auto;
   gap: 8px;
-  max-height: 280px;
+  min-height: 0;
   overflow: auto;
 }
 

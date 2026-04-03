@@ -22,24 +22,38 @@ const starSeed = Array.from({ length: 90 }).map((_, index) => ({
 
 const skylineHeights = [88, 130, 112, 164, 96, 142, 104, 176, 118, 154, 94, 136];
 const officeNoticeEventName = "office-notice";
-const roomObjectStorageKey = "virtual-office-room-objects-v3";
+const roomObjectStorageKey = "virtual-office-room-objects-v4";
 const movementObstaclePadding = 1.2;
 const objectHitboxInsetRatio = 0.18;
 const objectHitboxMinInset = 0.35;
+const outdoorBoundaryX = 96;
+const indoorMovementBounds = {
+  minX: 4,
+  maxX: outdoorBoundaryX - 0.5,
+  minY: 5,
+  maxY: 95
+} as const;
+const outdoorMovementBounds = {
+  minX: outdoorBoundaryX + 0.1,
+  maxX: 98.8,
+  minY: 1.5,
+  maxY: 95
+} as const;
 
 const wallObstacleSegments = [
   { x: 2, y: 22, width: 64, height: 3.4 },
   { x: 77, y: 40.5, width: 17, height: 3.4 },
-  { x: 77, y: 58.5, width: 17, height: 3.4 }
+  { x: 77, y: 58.5, width: 17, height: 3.4 },
+  { x: 94, y: 0, width: 2, height: 97 }
 ] as const;
 
 const deskBarrierSegments = [
-  { x: 3, y: 33.8, width: 64 },
-  { x: 13.67, y: 39.8, width: 53.33 },
-  { x: 3, y: 52.8, width: 64 },
-  { x: 3, y: 58.8, width: 64 },
-  { x: 13.67, y: 71.8, width: 53.33 },
-  { x: 13.67, y: 77.8, width: 53.33 },
+  { x: 14.8, y: 33.8, width: 51.2 },
+  { x: 23.34, y: 39.8, width: 42.66 },
+  { x: 14.8, y: 52.8, width: 51.2 },
+  { x: 14.8, y: 58.8, width: 51.2 },
+  { x: 23.34, y: 71.8, width: 42.66 },
+  { x: 23.34, y: 77.8, width: 42.66 },
   { x: 78.7, y: 66.05, width: 15.3 },
   { x: 78.7, y: 74.05, width: 15.3 },
   { x: 78.7, y: 81.05, width: 15.3 }
@@ -148,6 +162,10 @@ function isMovementBlocked(
   );
 }
 
+function isOutdoorPosition(x: number) {
+  return x >= outdoorBoundaryX;
+}
+
 const isUnavailableStatus = (status: OfficeMember["officeStatus"]) =>
   status === "away" || status === "offline";
 
@@ -254,9 +272,14 @@ export function AppShell() {
       }
       setIsCurrentUserMoving(true);
 
-      const nextX = Math.min(96, Math.max(4, currentUserPosition.x + deltaX));
-      const nextY = Math.min(95, Math.max(5, currentUserPosition.y + deltaY));
+      const movementBounds = isOutdoorPosition(currentUserPosition.x) ? outdoorMovementBounds : indoorMovementBounds;
+      const nextX = Math.min(movementBounds.maxX, Math.max(movementBounds.minX, currentUserPosition.x + deltaX));
+      const nextY = Math.min(movementBounds.maxY, Math.max(movementBounds.minY, currentUserPosition.y + deltaY));
       const obstacles = loadObstacleObjects();
+
+      if (isOutdoorPosition(currentUserPosition.x) !== isOutdoorPosition(nextX)) {
+        return;
+      }
 
       if (!isMovementBlocked(currentUserPosition.x, currentUserPosition.y, nextX, nextY, obstacles)) {
         moveCurrentUserPosition({ x: deltaX, y: deltaY });

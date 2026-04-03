@@ -41,7 +41,8 @@ const sideDeskBands = [
 const wallSegments = [
   { x: 0, y: 22, width: 66, height: 3.4, label: "WALL TYPE A", variant: "brick" },
   { x: 77, y: 40.5, width: 17, height: 3.4, label: "WALL TYPE B", variant: "glass" },
-  { x: 77, y: 58.5, width: 17, height: 3.4, label: "WALL TYPE A", variant: "brick" }
+  { x: 77, y: 58.5, width: 17, height: 3.4, label: "WALL TYPE A", variant: "brick" },
+  { x: 94, y: 0, width: 2, height: 97, label: "WALL TYPE A", variant: "brick" }
 ] as const;
 
 const decorativeWindows: Array<{ x: number; y: number; width: number; height: number }> = [];
@@ -69,6 +70,8 @@ type RoomObjectType =
   | "coffee-pot"
   | "plant-pot"
   | "bookshelf-pixel"
+  | "trash-bin"
+  | "street-lamp"
   | "whiteboard-pixel"
   | "meet-table"
   | "monitor-cyan"
@@ -153,6 +156,8 @@ const objectLibrary: RoomObjectLibraryItem[] = [
   { type: "coffee-pot", label: "커피 포트", width: 6.8, height: 6.2 },
   { type: "plant-pot", label: "화분", width: 3.8, height: 7.6 },
   { type: "bookshelf-pixel", label: "책장 픽셀", width: 7.2, height: 8.9 },
+  { type: "trash-bin", label: "휴지통", width: 3.2, height: 4.8 },
+  { type: "street-lamp", label: "가로등", width: 3.2, height: 9.6 },
   { type: "whiteboard-pixel", label: "화이트보드 픽셀", width: 6.2, height: 4.6 },
   { type: "meet-table", label: "미팅 테이블", width: 16.3, height: 10 },
   { type: "monitor-cyan", label: "민트 모니터", width: 6.2, height: 5.6 },
@@ -222,10 +227,15 @@ const defaultRoomObjects: RoomObject[] = [
   { id: "bookshelf-pixel-1775144362958", type: "bookshelf-pixel", x: 79, y: 0, width: 7.2, height: 8.9, blocksMovement: false },
   { id: "bookshelf-pixel-1775144366771", type: "bookshelf-pixel", x: 88.5, y: 0, width: 7.2, height: 8.9, blocksMovement: false },
   { id: "box-stack-1775144394648", type: "box-stack", x: 83, y: 3.5, width: 5.6, height: 5.4, blocksMovement: false },
-  { id: "plant-pot-1775144429714", type: "plant-pot", x: 79, y: 83.5, width: 3.8, height: 7.6, blocksMovement: false }
+  { id: "plant-pot-1775144429714", type: "plant-pot", x: 79, y: 83.5, width: 3.8, height: 7.6, blocksMovement: false },
+  { id: "street-lamp-outdoor-1", type: "street-lamp", x: 95.1, y: 12.5, width: 3.2, height: 9.6, blocksMovement: false },
+  { id: "street-lamp-outdoor-2", type: "street-lamp", x: 95.1, y: 46.8, width: 3.2, height: 9.6, blocksMovement: false },
+  { id: "street-lamp-outdoor-3", type: "street-lamp", x: 95.1, y: 80.5, width: 3.2, height: 9.6, blocksMovement: false },
+  { id: "trash-bin-outdoor-1", type: "trash-bin", x: 95.6, y: 29.5, width: 3.2, height: 4.8, blocksMovement: false },
+  { id: "trash-bin-outdoor-2", type: "trash-bin", x: 95.6, y: 64.2, width: 3.2, height: 4.8, blocksMovement: false }
 ];
 
-const roomObjectStorageKey = "virtual-office-room-objects-v3";
+const roomObjectStorageKey = "virtual-office-room-objects-v4";
 const objectSnapStep = 0.5;
 const motionGridStep = 2;
 const motionObstaclePadding = 1.2;

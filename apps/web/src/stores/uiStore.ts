@@ -93,8 +93,8 @@ export const useUIStore = create<UIState>((set) => ({
         return state;
       }
 
-      const nextX = Math.min(96, Math.max(4, state.currentUserPosition.x + delta.x));
-      const nextY = Math.min(95, Math.max(5, state.currentUserPosition.y + delta.y));
+      const nextX = Math.min(98.8, Math.max(4, state.currentUserPosition.x + delta.x));
+      const nextY = Math.min(95, Math.max(1.5, state.currentUserPosition.y + delta.y));
 
       return {
         currentUserPosition: {
