@@ -1,11 +1,11 @@
-const mainDeskSeatCenters = [8.33, 19, 29.67, 40.33, 51, 61.67];
+const mainDeskSeatCenters = [19.07, 27.6, 36.13, 44.67, 53.2, 61.73];
 const mainDeskRows = [
-    { rowKey: "A", y: 32.8, seatCenters: mainDeskSeatCenters },
-    { rowKey: "B", y: 38.8, seatCenters: mainDeskSeatCenters.slice(1) },
-    { rowKey: "C", y: 51.8, seatCenters: mainDeskSeatCenters },
-    { rowKey: "D", y: 57.8, seatCenters: mainDeskSeatCenters },
-    { rowKey: "E", y: 70.8, seatCenters: mainDeskSeatCenters.slice(1) },
-    { rowKey: "F", y: 76.8, seatCenters: mainDeskSeatCenters.slice(1) },
+    { rowKey: "A", y: 32.84, seatCenters: mainDeskSeatCenters },
+    { rowKey: "B", y: 36.94, seatCenters: mainDeskSeatCenters.slice(1) },
+    { rowKey: "C", y: 51.84, seatCenters: mainDeskSeatCenters },
+    { rowKey: "D", y: 55.94, seatCenters: mainDeskSeatCenters },
+    { rowKey: "E", y: 70.84, seatCenters: mainDeskSeatCenters.slice(1) },
+    { rowKey: "F", y: 74.04, seatCenters: mainDeskSeatCenters.slice(1) },
 ];
 function createMainDeskSeatDefinitions() {
     return mainDeskRows.flatMap((row) => row.seatCenters.map((x, index) => ({
@@ -60,11 +60,11 @@ export const seatAssignmentsBySlackUserId = {
 };
 export const seatDefinitions = [
     ...createMainDeskSeatDefinitions(),
-    { key: "R-01", label: "자리1", x: 82.25, y: 64.6 },
-    { key: "R-02", label: "자리2", x: 92.75, y: 64.6 },
-    { key: "S-01", label: "자리1", x: 82.25, y: 72.6 },
-    { key: "S-02", label: "자리2", x: 92.75, y: 72.6 },
-    { key: "T-01", label: "자리1", x: 82.25, y: 79.6 },
-    { key: "T-02", label: "자리2", x: 92.75, y: 79.6 },
+    { key: "R-01", label: "자리1", x: 82.53, y: 64.03 },
+    { key: "R-02", label: "자리2", x: 90.18, y: 64.03 },
+    { key: "S-01", label: "자리1", x: 82.53, y: 72.03 },
+    { key: "S-02", label: "자리2", x: 90.18, y: 72.03 },
+    { key: "T-01", label: "자리1", x: 82.53, y: 79.03 },
+    { key: "T-02", label: "자리2", x: 90.18, y: 79.03 },
 ];
 export const seatDefinitionByKey = Object.fromEntries(seatDefinitions.map((seat) => [seat.key, seat]));

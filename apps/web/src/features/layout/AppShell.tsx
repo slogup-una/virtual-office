@@ -22,7 +22,7 @@ const starSeed = Array.from({ length: 90 }).map((_, index) => ({
 
 const skylineHeights = [88, 130, 112, 164, 96, 142, 104, 176, 118, 154, 94, 136];
 const officeNoticeEventName = "office-notice";
-const roomObjectStorageKey = "virtual-office-room-objects-v2";
+const roomObjectStorageKey = "virtual-office-room-objects-v3";
 const movementObstaclePadding = 1.2;
 const objectHitboxInsetRatio = 0.18;
 const objectHitboxMinInset = 0.35;
@@ -46,18 +46,10 @@ const deskBarrierSegments = [
 ] as const;
 
 const defaultObstacleObjects = [
-  { id: "meeting-table-1", x: 78.7, y: 23.4, width: 12.4, height: 11.6 },
   { id: "whiteboard-1", x: 88.9, y: 16.7, width: 4.1, height: 5.3 },
   { id: "wall-clock-1", x: 78.2, y: 16.4, width: 2.8, height: 4.1 },
-  { id: "sofa-1", x: 5.2, y: 7.5, width: 18, height: 7.5 },
-  { id: "coffee-table-1", x: 12.5, y: 13.6, width: 7.6, height: 4.8 },
-  { id: "l-desk-1", x: 78.1, y: 89.1, width: 9.5, height: 7.2 },
-  { id: "trophy-shelf-1", x: 89.2, y: 88.6, width: 3.7, height: 4.6 },
-  { id: "bookshelf-1", x: 78.2, y: 4.8, width: 5.2, height: 7.5 },
-  { id: "bookshelf-2", x: 85.2, y: 4.8, width: 5.2, height: 7.5 },
-  { id: "box-stack-1", x: 82.8, y: 8.8, width: 4.1, height: 4.1 },
-  { id: "security-gate-1", x: 66.4, y: 3.2, width: 7.6, height: 3.7 },
-  { id: "umbrella-stand-1", x: 73.2, y: 3.45, width: 1.8, height: 3.1 }
+  { id: "l-desk-1", x: 74, y: 86.5, width: 9.5, height: 7.2 },
+  { id: "trophy-shelf-1", x: 90, y: 89, width: 3.7, height: 4.6 }
 ] as const;
 
 const defaultObstacleObjectIds = new Set<string>(defaultObstacleObjects.map((object) => object.id));

@@ -204,21 +204,28 @@ const objectLabelLookup = Object.fromEntries(objectLibrary.map((item) => [item.t
 >;
 
 const defaultRoomObjects: RoomObject[] = [
-  { id: "meeting-table-1", type: "meeting-table", x: 78.7, y: 23.4, width: 12.4, height: 11.6, blocksMovement: true },
   { id: "whiteboard-1", type: "whiteboard", x: 88.9, y: 16.7, width: 4.1, height: 5.3, blocksMovement: true },
   { id: "wall-clock-1", type: "wall-clock", x: 78.2, y: 16.4, width: 2.8, height: 4.1, blocksMovement: true },
-  { id: "sofa-1", type: "sofa", x: 5.2, y: 7.5, width: 18, height: 7.5, blocksMovement: true },
-  { id: "coffee-table-1", type: "coffee-table", x: 12.5, y: 13.6, width: 7.6, height: 4.8, blocksMovement: true },
-  { id: "l-desk-1", type: "l-desk", x: 78.1, y: 89.1, width: 9.5, height: 7.2, blocksMovement: true },
-  { id: "trophy-shelf-1", type: "trophy-shelf", x: 89.2, y: 88.6, width: 3.7, height: 4.6, blocksMovement: true },
-  { id: "bookshelf-1", type: "bookshelf", x: 78.2, y: 4.8, width: 5.2, height: 7.5, blocksMovement: true },
-  { id: "bookshelf-2", type: "bookshelf", x: 85.2, y: 4.8, width: 5.2, height: 7.5, blocksMovement: true },
-  { id: "box-stack-1", type: "box-stack", x: 82.8, y: 8.8, width: 4.1, height: 4.1, blocksMovement: true },
-  { id: "security-gate-1", type: "security-gate", x: 66.4, y: 3.2, width: 7.6, height: 3.7, blocksMovement: true },
-  { id: "umbrella-stand-1", type: "umbrella-stand", x: 73.2, y: 3.45, width: 1.8, height: 3.1, blocksMovement: true }
+  { id: "l-desk-1", type: "l-desk", x: 74, y: 86.5, width: 9.5, height: 7.2, blocksMovement: true },
+  { id: "trophy-shelf-1", type: "trophy-shelf", x: 90, y: 89, width: 3.7, height: 4.6, blocksMovement: true },
+  { id: "meet-table-1775144038804", type: "meet-table", x: 77.5, y: 27, width: 16.3, height: 10, blocksMovement: false },
+  { id: "lounge-sofa-table-1775144074670", type: "lounge-sofa-table", x: 14.5, y: 0, width: 18.5, height: 13.8, blocksMovement: false },
+  { id: "plant-pot-1775144102245", type: "plant-pot", x: 62.5, y: 0, width: 3.8, height: 7.6, blocksMovement: false },
+  { id: "coffee-pot-1775144116362", type: "coffee-pot", x: 29, y: 2, width: 6.8, height: 6.2, blocksMovement: false },
+  { id: "water-purifier-1775144124795", type: "water-purifier", x: 33.5, y: 0, width: 3.9, height: 8.7, blocksMovement: false },
+  { id: "plant-pot-1775144146463", type: "plant-pot", x: 12, y: 29.5, width: 3.8, height: 7.6, blocksMovement: false },
+  { id: "plant-pot-1775144150016", type: "plant-pot", x: 76, y: 58.5, width: 3.8, height: 7.6, blocksMovement: false },
+  { id: "printer-1775144204504", type: "printer", x: 75, y: 42.5, width: 7.6, height: 5.3, blocksMovement: false },
+  { id: "server-rack-1775144251529", type: "server-rack", x: 8.5, y: 30, width: 5.1, height: 7.8, blocksMovement: false },
+  { id: "box-stack-1775144336886", type: "box-stack", x: 79, y: 42.5, width: 5.6, height: 5.4, blocksMovement: false },
+  { id: "bookshelf-pixel-1775144357592", type: "bookshelf-pixel", x: 75.5, y: 0, width: 7.2, height: 8.9, blocksMovement: false },
+  { id: "bookshelf-pixel-1775144362958", type: "bookshelf-pixel", x: 79, y: 0, width: 7.2, height: 8.9, blocksMovement: false },
+  { id: "bookshelf-pixel-1775144366771", type: "bookshelf-pixel", x: 88.5, y: 0, width: 7.2, height: 8.9, blocksMovement: false },
+  { id: "box-stack-1775144394648", type: "box-stack", x: 83, y: 3.5, width: 5.6, height: 5.4, blocksMovement: false },
+  { id: "plant-pot-1775144429714", type: "plant-pot", x: 79, y: 83.5, width: 3.8, height: 7.6, blocksMovement: false }
 ];
 
-const roomObjectStorageKey = "virtual-office-room-objects-v2";
+const roomObjectStorageKey = "virtual-office-room-objects-v3";
 const objectSnapStep = 0.5;
 const motionGridStep = 2;
 const motionObstaclePadding = 1.2;
