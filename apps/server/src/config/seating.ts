@@ -9,11 +9,11 @@ const mainDeskSeatCenters = [19.07, 27.6, 36.13, 44.67, 53.2, 61.73] as const;
 
 const mainDeskRows = [
   { rowKey: "A", y: 32.84, seatCenters: mainDeskSeatCenters },
-  { rowKey: "B", y: 36.94, seatCenters: mainDeskSeatCenters.slice(1) },
+  { rowKey: "B", y: 37.19, seatCenters: mainDeskSeatCenters.slice(1) },
   { rowKey: "C", y: 51.84, seatCenters: mainDeskSeatCenters },
-  { rowKey: "D", y: 55.94, seatCenters: mainDeskSeatCenters },
+  { rowKey: "D", y: 56.19, seatCenters: mainDeskSeatCenters },
   { rowKey: "E", y: 70.84, seatCenters: mainDeskSeatCenters.slice(1) },
-  { rowKey: "F", y: 74.04, seatCenters: mainDeskSeatCenters.slice(1) },
+  { rowKey: "F", y: 74.29, seatCenters: mainDeskSeatCenters.slice(1) },
 ] as const;
 
 function createMainDeskSeatDefinitions(): SeatDefinition[] {
@@ -73,12 +73,12 @@ export const seatAssignmentsBySlackUserId: Record<string, string> = {
 
 export const seatDefinitions: SeatDefinition[] = [
   ...createMainDeskSeatDefinitions(),
-  { key: "R-01", label: "자리1", x: 82.53, y: 64.03 },
-  { key: "R-02", label: "자리2", x: 90.18, y: 64.03 },
+  { key: "R-01", label: "자리1", x: 82.53, y: 64.28 },
+  { key: "R-02", label: "자리2", x: 90.18, y: 64.28 },
   { key: "S-01", label: "자리1", x: 82.53, y: 72.03 },
   { key: "S-02", label: "자리2", x: 90.18, y: 72.03 },
-  { key: "T-01", label: "자리1", x: 82.53, y: 79.03 },
-  { key: "T-02", label: "자리2", x: 90.18, y: 79.03 },
+  { key: "T-01", label: "자리1", x: 82.53, y: 79.28 },
+  { key: "T-02", label: "자리2", x: 90.18, y: 79.28 },
 ];
 
 export const seatDefinitionByKey = Object.fromEntries(
