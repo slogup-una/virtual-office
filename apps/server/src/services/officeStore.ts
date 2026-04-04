@@ -126,6 +126,21 @@ export function getMemberBySlackId(slackUserId: string, workspaceId?: string) {
   );
 }
 
+export function getMemberByDisplayName(displayName: string, workspaceId?: string) {
+  const normalizedDisplayName = displayName.trim().toLowerCase();
+  if (!normalizedDisplayName) {
+    return null;
+  }
+
+  return (
+    [...members.values()].find(
+      (member) =>
+        member.displayName.trim().toLowerCase() === normalizedDisplayName &&
+        (!workspaceId || member.workspaceId === workspaceId)
+    ) ?? null
+  );
+}
+
 export function getWorkspace(workspaceId: string) {
   return (
     workspaces.get(workspaceId) ?? {

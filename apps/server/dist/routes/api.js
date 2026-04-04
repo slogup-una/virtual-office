@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { isSeatAdminSlackUserId } from "../config/admin.js";
 import { isSlackConfigured } from "../config/env.js";
-import { addMessage, assignSeat, clearSeatAssignment, exportSeatAssignments, getMemberById, getMemberBySlackId, getSnapshot, createOrUpdateMemberFromSlack, listMessages, getWorkspace } from "../services/officeStore.js";
+import { addMessage, assignSeat, clearSeatAssignment, exportSeatAssignments, getMemberByDisplayName, getMemberById, getMemberBySlackId, getSnapshot, createOrUpdateMemberFromSlack, listMessages, getWorkspace } from "../services/officeStore.js";
 import { fetchChannelMessages, fetchSlackUserProfile, fetchWorkspaceMembers, postSlackMessage } from "../slack/client.js";
 const router = Router();
 const lastWorkspaceSyncAt = new Map();
@@ -55,13 +55,15 @@ router.get("/messages", async (request, response) => {
         await syncWorkspaceMembersIfNeeded(request.sessionUser.workspaceId);
         const result = await fetchChannelMessages(request.sessionUser.workspaceId, channelId);
         const items = await Promise.all(result.items.map(async (message) => {
-            const member = getMemberBySlackId(message.userId, request.sessionUser.workspaceId) ??
+            const memberBySlackId = getMemberBySlackId(message.userId, request.sessionUser.workspaceId) ??
                 (message.userId !== "unknown"
                     ? createOrUpdateMemberFromSlack(await fetchSlackUserProfile(request.sessionUser.workspaceId, message.userId), request.sessionUser.workspaceId)
                     : null);
+            const member = memberBySlackId ?? getMemberByDisplayName(message.userName, request.sessionUser.workspaceId);
             return {
                 ...message,
                 channelId,
+                userId: member?.id ?? message.userId,
                 userName: member?.displayName ?? message.userName
             };
         }));

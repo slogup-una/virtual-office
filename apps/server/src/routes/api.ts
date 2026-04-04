@@ -8,6 +8,7 @@ import {
   assignSeat,
   clearSeatAssignment,
   exportSeatAssignments,
+  getMemberByDisplayName,
   getMemberById,
   getMemberBySlackId,
   getSnapshot,
@@ -87,7 +88,7 @@ router.get("/messages", async (request, response) => {
     const result = await fetchChannelMessages(request.sessionUser.workspaceId, channelId);
     const items = await Promise.all(
       result.items.map(async (message) => {
-        const member =
+        const memberBySlackId =
           getMemberBySlackId(message.userId, request.sessionUser!.workspaceId) ??
           (message.userId !== "unknown"
             ? createOrUpdateMemberFromSlack(
@@ -95,10 +96,12 @@ router.get("/messages", async (request, response) => {
                 request.sessionUser!.workspaceId
               )
             : null);
+        const member = memberBySlackId ?? getMemberByDisplayName(message.userName, request.sessionUser!.workspaceId);
 
         return {
           ...message,
           channelId,
+          userId: member?.id ?? message.userId,
           userName: member?.displayName ?? message.userName
         };
       })

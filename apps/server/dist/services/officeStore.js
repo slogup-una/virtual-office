@@ -100,6 +100,14 @@ export function getMemberById(userId) {
 export function getMemberBySlackId(slackUserId, workspaceId) {
     return ([...members.values()].find((member) => member.slackUserId === slackUserId && (!workspaceId || member.workspaceId === workspaceId)) ?? null);
 }
+export function getMemberByDisplayName(displayName, workspaceId) {
+    const normalizedDisplayName = displayName.trim().toLowerCase();
+    if (!normalizedDisplayName) {
+        return null;
+    }
+    return ([...members.values()].find((member) => member.displayName.trim().toLowerCase() === normalizedDisplayName &&
+        (!workspaceId || member.workspaceId === workspaceId)) ?? null);
+}
 export function getWorkspace(workspaceId) {
     return (workspaces.get(workspaceId) ?? {
         id: workspaceId,

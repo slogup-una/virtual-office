@@ -120,6 +120,9 @@ export function ChatPanel({
   }
 
   const chatPanelBackgroundAlpha = 0.25 + chatOpacity * 0.7;
+  const orderedMessages = [...(data?.items ?? [])].sort((left, right) =>
+    right.createdAt.localeCompare(left.createdAt)
+  );
 
   return (
     <section
@@ -166,7 +169,7 @@ export function ChatPanel({
         {isLoading ? (
           <p>메시지를 불러오는 중...</p>
         ) : (
-          data?.items.map((message) => {
+          orderedMessages.map((message) => {
             const isCurrentUserMessage = message.userId === currentUserId;
             const resolvedAuthorName =
               message.source === "app" && isCurrentUserMessage && currentUserName
