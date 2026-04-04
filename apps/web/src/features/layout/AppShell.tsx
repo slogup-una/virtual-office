@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import projectSymbol from "../../assets/brand/project-symbol.png";
 import { apiClient, clearStoredSession } from "../../api/client";
 import { useOfficeSnapshot, useUpdateMyPosition } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
@@ -509,8 +510,11 @@ export function AppShell() {
       </div>
       <header className="hud-bar">
         <div className="hud-logo">
-          <div className="hud-logo-text">SAFIENCE X SLOGUP</div>
-          <div className="hud-logo-sub">{snapshot.workspace.name}</div>
+          <img alt="Virtual Office Symbol" className="hud-logo-symbol" src={projectSymbol} />
+          <div className="hud-logo-copy">
+            <div className="hud-logo-text">SAFIENCE X SLOGUP</div>
+            <div className="hud-logo-sub">{snapshot.workspace.name}</div>
+          </div>
         </div>
         <div className="hud-status-row">
           {currentUser ? (

@@ -15,7 +15,11 @@ function notifySessionExpiryListeners() {
   sessionExpiryListeners.forEach((listener) => listener());
 }
 
-function shouldExpireSession(status: number, errorText: string) {
+function shouldExpireSession(status: number, errorText: string, hasStoredSession: boolean) {
+  if (!hasStoredSession) {
+    return false;
+  }
+
   if (status === 401 || status === 403) {
     return true;
   }
@@ -72,6 +76,7 @@ async function request<T>(path: string, init?: RequestInit) {
   }
 
   const sessionId = getStoredSession();
+  const hasStoredSession = Boolean(sessionId);
   const response = await fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
     headers: {
@@ -84,7 +89,7 @@ async function request<T>(path: string, init?: RequestInit) {
 
   if (!response.ok) {
     const error = await response.text();
-    if (shouldExpireSession(response.status, error)) {
+    if (shouldExpireSession(response.status, error, hasStoredSession)) {
       markSessionExpired();
       throw new Error(SESSION_EXPIRED_ERROR);
     }
@@ -104,6 +109,7 @@ async function requestText(path: string, init?: RequestInit) {
   }
 
   const sessionId = getStoredSession();
+  const hasStoredSession = Boolean(sessionId);
   const response = await fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
     headers: {
@@ -115,7 +121,7 @@ async function requestText(path: string, init?: RequestInit) {
 
   if (!response.ok) {
     const error = await response.text();
-    if (shouldExpireSession(response.status, error)) {
+    if (shouldExpireSession(response.status, error, hasStoredSession)) {
       markSessionExpired();
       throw new Error(SESSION_EXPIRED_ERROR);
     }

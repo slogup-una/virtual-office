@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSyncExternalStore } from "react";
 
+import projectSymbol from "../../assets/brand/project-symbol.png";
 import {
   apiClient,
   clearStoredSession,
@@ -43,6 +44,7 @@ export function AuthGate({ children }: AuthGateProps) {
     return (
       <section className="auth-shell">
         <div className="auth-card session-expired-card">
+          <img alt="Virtual Office Symbol" className="auth-symbol" src={projectSymbol} />
           <span className="eyebrow">Session Notice</span>
           <h1>세션이 만료되었습니다.</h1>
           <p>안전을 위해 추가 호출을 멈췄습니다. 홈으로 돌아가 다시 접속해주세요.</p>
@@ -72,6 +74,7 @@ export function AuthGate({ children }: AuthGateProps) {
     return (
       <section className="auth-shell">
         <div className="auth-card">
+          <img alt="Virtual Office Symbol" className="auth-symbol" src={projectSymbol} />
           <span className="eyebrow">Slack Virtual Office</span>
           <h1>팀 상태를 공간으로 보여주는 오피스 허브</h1>
           <p>

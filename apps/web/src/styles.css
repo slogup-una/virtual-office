@@ -49,6 +49,8 @@ body {
   margin: 0;
   overflow: hidden;
   color: #5c4e7a;
+  user-select: none;
+  overscroll-behavior: none;
   background:
     radial-gradient(circle at 10% 10%, rgba(173, 223, 255, 0.22), transparent 22%),
     radial-gradient(circle at 88% 8%, rgba(103, 239, 225, 0.22), transparent 20%),
@@ -63,8 +65,19 @@ input {
   font: inherit;
 }
 
+img,
+a {
+  -webkit-user-drag: none;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
 #root {
   min-height: 100vh;
+  overscroll-behavior: none;
 }
 
 .screen-center,
@@ -87,6 +100,15 @@ input {
 .auth-card {
   max-width: 560px;
   padding: 40px;
+}
+
+.auth-symbol {
+  display: block;
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 8px 18px rgba(116, 170, 214, 0.16));
 }
 
 .session-expired-card {
@@ -333,8 +355,22 @@ input {
 }
 
 .hud-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   padding: 12px 18px;
   min-width: 220px;
+}
+
+.hud-logo-symbol {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.hud-logo-copy {
+  min-width: 0;
 }
 
 .hud-logo-text {
