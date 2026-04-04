@@ -7,6 +7,10 @@ import type { OfficeSnapshot } from "../../types/domain";
 import { useAssignSeat, useClearSeat } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
 import type { AvatarDirection } from "../../stores/uiStore";
+import avatarIdleGif from "../../assets/avatar-gifs/avatar-idle.gif";
+import avatarWalkDownGif from "../../assets/avatar-gifs/avatar-walk-down.gif";
+import avatarWalkLeftGif from "../../assets/avatar-gifs/avatar-walk-left.gif";
+import avatarWalkUpGif from "../../assets/avatar-gifs/avatar-walk-up.gif";
 
 const roomZones = [
   { id: "lounge", label: "휴게공간", x: 0, y: 0, width: 30, height: 22 },
@@ -598,13 +602,32 @@ function renderAvatar(
     isCurrent?: boolean;
     direction?: AvatarDirection;
     isMoving?: boolean;
-    isSeated?: boolean;
+    isDancing?: boolean;
   }
 ) {
+  const direction = override?.direction ?? "down";
+  const visualDirection =
+    !override?.isMoving && !override?.isDancing
+      ? direction === "left"
+        ? "right"
+        : direction === "right"
+          ? "left"
+          : direction
+      : direction;
+  const spriteSource = override?.isDancing
+    ? avatarWalkDownGif
+    : override?.isMoving
+      ? direction === "up"
+        ? avatarWalkUpGif
+        : avatarWalkLeftGif
+      : direction === "up"
+        ? avatarWalkDownGif
+        : avatarIdleGif;
+
   return (
     <div
+      className={`avatar-token ${member.officeStatus} ${override?.isCurrent ? "is-current" : ""} ${override?.isTransitioning ? "is-transitioning" : ""} direction-${visualDirection} ${override?.isMoving ? "is-moving" : ""} ${override?.isDancing ? "is-dancing" : ""} ${!override?.isMoving && !override?.isDancing ? "is-idle" : ""}`}
       key={member.id}
-      className={`avatar-token ${member.officeStatus} ${override?.isCurrent ? "is-current" : ""} ${override?.isTransitioning ? "is-transitioning" : ""} direction-${override?.direction ?? "down"} ${override?.isMoving ? "is-moving" : ""} ${override?.isSeated ? "is-seated" : ""}`}
       style={{
         left: `${override?.x ?? member.x}%`,
         top: `${override?.y ?? member.y}%`,
@@ -613,33 +636,12 @@ function renderAvatar(
       title={`${member.displayName} · ${member.slackStatusText ?? member.officeStatus}`}
     >
       {override?.isCurrent ? <em className="you-badge">YOU</em> : null}
-      {override?.isSeated ? (
-        <div className="avatar-seated-sprite">
-          <div className="avatar-seated-head">
-            <img alt={member.displayName} src={member.avatarUrl} />
-          </div>
-          <span className="avatar-seated-back" />
-          <span className="avatar-seated-body" />
-          <span className="avatar-seated-seat" />
-          <span className="avatar-seated-post" />
-          <span className="avatar-seated-base" />
+      <div className="avatar-gif-shell">
+        <div className="avatar-gif-sprite" style={{ backgroundImage: `url(${spriteSource})` }} />
+        <div className="avatar-face-overlay">
+          <img alt={member.displayName} src={member.avatarUrl} />
         </div>
-      ) : (
-        <div className="avatar-chibi">
-          <div className="avatar-head-shell">
-            <img alt={member.displayName} src={member.avatarUrl} />
-          </div>
-          <div className="avatar-body-shell">
-            <span className="avatar-chair-back" />
-            <span className="avatar-arm avatar-arm-left" />
-            <span className="avatar-arm avatar-arm-right" />
-            <span className="avatar-torso" />
-            <span className="avatar-leg avatar-leg-left" />
-            <span className="avatar-leg avatar-leg-right" />
-            <span className="avatar-seat" />
-          </div>
-        </div>
-      )}
+      </div>
       <span>{member.displayName}</span>
     </div>
   );
@@ -662,7 +664,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const setIsDemoMotionOpen = useUIStore((state) => state.setIsDemoMotionOpen);
   const currentUserDirection = useUIStore((state) => state.currentUserDirection);
   const isCurrentUserMoving = useUIStore((state) => state.isCurrentUserMoving);
-  const isCurrentUserSeated = useUIStore((state) => state.isCurrentUserSeated);
+  const isCurrentUserDancing = useUIStore((state) => state.isCurrentUserDancing);
   const [selectedSeatKey, setSelectedSeatKey] = useState<string | null>(null);
   const [seatSearch, setSeatSearch] = useState("");
   const [motionAvatars, setMotionAvatars] = useState<MotionAvatar[]>([]);
@@ -1304,7 +1306,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 isCurrent: member.id === snapshot.currentUserId,
                 direction: member.id === snapshot.currentUserId ? currentUserDirection : "down",
                 isMoving: member.id === snapshot.currentUserId ? isCurrentUserMoving : false,
-                isSeated: member.id === snapshot.currentUserId ? isCurrentUserSeated : false
+                isDancing: member.id === snapshot.currentUserId ? isCurrentUserDancing : false
               });
             })}
           {motionAvatars.map((member) =>
@@ -1316,7 +1318,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               isCurrent: member.member.id === snapshot.currentUserId,
               direction: member.member.id === snapshot.currentUserId ? currentUserDirection : "down",
               isMoving: true,
-              isSeated: false
+              isDancing: member.member.id === snapshot.currentUserId ? isCurrentUserDancing : false
             })
           )}
         </div>

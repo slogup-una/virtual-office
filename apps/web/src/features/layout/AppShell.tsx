@@ -182,8 +182,7 @@ export function AppShell() {
   const setIsLayoutEditorPanelOpen = useUIStore((state) => state.setIsLayoutEditorPanelOpen);
   const moveCurrentUserPosition = useUIStore((state) => state.moveCurrentUserPosition);
   const setCurrentUserDirection = useUIStore((state) => state.setCurrentUserDirection);
-  const isCurrentUserSeated = useUIStore((state) => state.isCurrentUserSeated);
-  const setIsCurrentUserSeated = useUIStore((state) => state.setIsCurrentUserSeated);
+  const setIsCurrentUserDancing = useUIStore((state) => state.setIsCurrentUserDancing);
   const setIsCurrentUserMoving = useUIStore((state) => state.setIsCurrentUserMoving);
   const isDemoWorkspace = data?.workspace.id === "demo-workspace";
   const visibleMembers = data?.members.filter((member) => !isVirtualOfficeMember(member)) ?? [];
@@ -217,8 +216,8 @@ export function AppShell() {
   }, [setCurrentUserDirection]);
 
   useEffect(() => {
-    setIsCurrentUserSeated(false);
-  }, [setIsCurrentUserSeated]);
+    setIsCurrentUserDancing(false);
+  }, [setIsCurrentUserDancing]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -235,6 +234,13 @@ export function AppShell() {
         return;
       }
 
+      if (event.key === " ") {
+        event.preventDefault();
+        setIsCurrentUserMoving(false);
+        setIsCurrentUserDancing(!useUIStore.getState().isCurrentUserDancing);
+        return;
+      }
+
       let deltaX = 0;
       let deltaY = 0;
       let direction: AvatarDirection | null = null;
@@ -242,7 +248,7 @@ export function AppShell() {
       if (event.key === "ArrowUp") {
         event.preventDefault();
         deltaY = -1.5;
-        direction = "down";
+        direction = "up";
       }
 
       if (event.key === "ArrowDown") {
@@ -260,7 +266,7 @@ export function AppShell() {
       if (event.key === "ArrowRight") {
         event.preventDefault();
         deltaX = 1.5;
-        direction = "down";
+        direction = "right";
       }
 
       if (deltaX === 0 && deltaY === 0) {
@@ -270,6 +276,7 @@ export function AppShell() {
       if (direction) {
         setCurrentUserDirection(direction);
       }
+      setIsCurrentUserDancing(false);
       setIsCurrentUserMoving(true);
 
       const movementBounds = isOutdoorPosition(currentUserPosition.x) ? outdoorMovementBounds : indoorMovementBounds;
@@ -302,8 +309,8 @@ export function AppShell() {
     currentUserPosition,
     moveCurrentUserPosition,
     setCurrentUserDirection,
+    setIsCurrentUserDancing,
     setIsCurrentUserMoving,
-    setIsCurrentUserSeated
   ]);
 
   useEffect(() => {
