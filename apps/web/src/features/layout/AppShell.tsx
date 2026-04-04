@@ -26,6 +26,7 @@ const roomObjectStorageKey = "virtual-office-room-objects-v4";
 const movementObstaclePadding = 1.2;
 const objectHitboxInsetRatio = 0.18;
 const objectHitboxMinInset = 0.35;
+const movementThrottleMs = 90;
 const outdoorBoundaryX = 96;
 const indoorMovementBounds = {
   minX: 4,
@@ -196,6 +197,7 @@ export function AppShell() {
   const initializedSeatKeyRef = useRef<string | undefined>(undefined);
   const previousMembersRef = useRef<Map<string, OfficeMember>>(new Map());
   const noticeTimeoutRef = useRef<number | null>(null);
+  const lastMovementAtRef = useRef(0);
   const lastSentPositionRef = useRef<{
     x: number;
     y: number;
@@ -284,6 +286,12 @@ export function AppShell() {
       if (deltaX === 0 && deltaY === 0) {
         return;
       }
+
+      const now = Date.now();
+      if (now - lastMovementAtRef.current < movementThrottleMs) {
+        return;
+      }
+      lastMovementAtRef.current = now;
 
       if (direction) {
         setCurrentUserDirection(direction);
