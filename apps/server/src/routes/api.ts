@@ -203,7 +203,7 @@ router.post("/messages", async (request, response) => {
   }
 
   if (isSlackConfigured) {
-    await postSlackMessage(request.sessionUser.workspaceId, parsed.data.channelId, parsed.data.text);
+    await postSlackMessage(request.sessionUser.workspaceId, parsed.data.channelId, parsed.data.text, author.displayName);
   }
 
   const item = addMessage({
