@@ -97,6 +97,12 @@ async function resolveChannelId(workspaceId, channelRef) {
     });
     return channel.id;
 }
+function formatSlackMessageWithAuthor(displayName, text) {
+    return `[${displayName}]\n${text}`;
+}
+function escapeSlackMrkdwn(text) {
+    return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
 function parseBracketedAuthorPrefix(text) {
     const matched = text.match(bracketedAuthorPrefixPattern);
     if (!matched) {
@@ -229,7 +235,23 @@ export async function postSlackMessage(workspaceId, channelId, text, author) {
         method: "POST",
         body: JSON.stringify({
             channel: resolvedChannelId,
-            text,
+            text: formatSlackMessageWithAuthor(author.displayName, text),
+            blocks: [
+                {
+                    type: "section",
+                    text: {
+                        type: "mrkdwn",
+                        text: `*${escapeSlackMrkdwn(author.displayName)}*`
+                    }
+                },
+                {
+                    type: "section",
+                    text: {
+                        type: "mrkdwn",
+                        text: escapeSlackMrkdwn(text).replaceAll("\n", "\n")
+                    }
+                }
+            ],
             metadata: {
                 event_type: "virtual_office_message",
                 event_payload: {
