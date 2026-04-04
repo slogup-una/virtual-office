@@ -47,74 +47,7 @@ const wallSegments = [
 
 const decorativeWindows: Array<{ x: number; y: number; width: number; height: number }> = [];
 
-type RoomObjectType =
-  | "standard-desk"
-  | "standing-desk"
-  | "shared-bench"
-  | "chair-standard"
-  | "chair-mint"
-  | "chair-pink"
-  | "chair-executive"
-  | "bean-bag"
-  | "folding-chair"
-  | "sofa-two-seat"
-  | "lounge-sofa-table"
-  | "meeting-table"
-  | "round-coffee-table"
-  | "whiteboard"
-  | "wall-clock"
-  | "sofa"
-  | "coffee-table"
-  | "l-desk"
-  | "water-purifier"
-  | "coffee-pot"
-  | "plant-pot"
-  | "bookshelf-pixel"
-  | "trash-bin"
-  | "street-lamp"
-  | "whiteboard-pixel"
-  | "meet-table"
-  | "monitor-cyan"
-  | "monitor-purple"
-  | "monitor-pink"
-  | "dual-monitor"
-  | "laptop-open"
-  | "tablet"
-  | "printer"
-  | "wall-monitor"
-  | "succulent"
-  | "monstera"
-  | "cactus"
-  | "hanging-plant"
-  | "bonsai"
-  | "mug"
-  | "boba-tea"
-  | "can-drink"
-  | "bottle"
-  | "snack-box"
-  | "donut"
-  | "notice-board"
-  | "file-cabinet"
-  | "trophy-shelf"
-  | "bookshelf"
-  | "box-stack"
-  | "vending-machine"
-  | "foosball-table"
-  | "arcade-cabinet"
-  | "floor-lamp"
-  | "rug-set"
-  | "reception-desk"
-  | "security-gate"
-  | "umbrella-stand"
-  | "mailbox"
-  | "server-rack"
-  | "trolley-cart"
-  | "meeting-room-sign"
-  | "vacant-sign"
-  | "in-meeting-sign"
-  | "dnd-sign"
-  | "neon-open-sign"
-  | "floor-sign";
+type RoomObjectType = string;
 
 interface RoomObjectLibraryItem {
   type: RoomObjectType;
@@ -200,7 +133,96 @@ const objectLibrary: RoomObjectLibraryItem[] = [
   { type: "in-meeting-sign", label: "회의중 표시", width: 5.8, height: 3.6 },
   { type: "dnd-sign", label: "방해금지", width: 5.8, height: 3.6 },
   { type: "neon-open-sign", label: "오픈 네온사인", width: 6.8, height: 3.8 },
-  { type: "floor-sign", label: "층 표지판", width: 4.1, height: 5.8 }
+  { type: "floor-sign", label: "층 표지판", width: 4.1, height: 5.8 },
+  { type: "bookshelf-cabinet-01", label: "Bookshelf Cabinet 01", width: 6.6, height: 8.1 },
+  { type: "coffee-station-counter-01", label: "Coffee Station Counter 01", width: 7.3, height: 8.5 },
+  { type: "drawer-stack-beige-01", label: "Drawer Stack Beige 01", width: 4.5, height: 6.9 },
+  { type: "drawer-stack-brown-01", label: "Drawer Stack Brown 01", width: 5.0, height: 7.3 },
+  { type: "drawer-stack-gray-01", label: "Drawer Stack Gray 01", width: 4.6, height: 7.5 },
+  { type: "filing-cabinet-beige-tall-01", label: "Filing Cabinet Beige Tall 01", width: 6.1, height: 9.4 },
+  { type: "locker-beige-01", label: "Locker Beige 01", width: 4.2, height: 8.1 },
+  { type: "locker-blue-01", label: "Locker Blue 01", width: 5.6, height: 9.9 },
+  { type: "locker-dark-01", label: "Locker Dark 01", width: 3.2, height: 8.5 },
+  { type: "locker-gray-01", label: "Locker Gray 01", width: 3.1, height: 8.5 },
+  { type: "locker-gray-tall-01", label: "Locker Gray Tall 01", width: 5.8, height: 8.8 },
+  { type: "office-printer-copier-01", label: "Office Printer Copier 01", width: 10.2, height: 8.7 },
+  { type: "recycling-bin-01", label: "Recycling Bin 01", width: 4.0, height: 5.7 },
+  { type: "rolling-whiteboard-01", label: "Rolling Whiteboard 01", width: 10.8, height: 9.2 },
+  { type: "server-cabinet-tall-01", label: "Server Cabinet Tall 01", width: 3.2, height: 9.4 },
+  { type: "small-appliance-cabinet-01", label: "Small Appliance Cabinet 01", width: 4.6, height: 8.7 },
+  { type: "water-cooler-01", label: "Water Cooler 01", width: 4.2, height: 9.2 },
+  { type: "executive-triple-monitor-desk-01", label: "Executive Triple Monitor Desk 01", width: 18.0, height: 9.7 },
+  { type: "glass-corner-desk-01", label: "Glass Corner Desk 01", width: 11.5, height: 9.2 },
+  { type: "glass-monitor-desk-01", label: "Glass Monitor Desk 01", width: 11.3, height: 9.9 },
+  { type: "glass-note-desk-01", label: "Glass Note Desk 01", width: 13.3, height: 9.6 },
+  { type: "glass-paper-stool-desk-01", label: "Glass Paper Stool Desk 01", width: 13.3, height: 10.8 },
+  { type: "wooden-corner-laptop-desk-01", label: "Wooden Corner Laptop Desk 01", width: 12.3, height: 9.2 },
+  { type: "wooden-dual-monitor-desk-01", label: "Wooden Dual Monitor Desk 01", width: 11.9, height: 8.9 },
+  { type: "wooden-dual-monitor-desk-02", label: "Wooden Dual Monitor Desk 02", width: 12.2, height: 8.0 },
+  { type: "wooden-headset-desk-01", label: "Wooden Headset Desk 01", width: 14.1, height: 9.6 },
+  { type: "wooden-l-shaped-workstation-01", label: "Wooden L Shaped Workstation 01", width: 12.0, height: 9.2 },
+  { type: "wooden-laptop-books-desk-01", label: "Wooden Laptop Books Desk 01", width: 11.8, height: 9.7 },
+  { type: "wooden-laptop-plant-desk-01", label: "Wooden Laptop Plant Desk 01", width: 11.4, height: 8.8 },
+  { type: "wooden-monitor-mouse-desk-01", label: "Wooden Monitor Mouse Desk 01", width: 11.7, height: 9.4 },
+  { type: "wooden-multi-monitor-desk-01", label: "Wooden Multi Monitor Desk 01", width: 11.8, height: 9.8 },
+  { type: "wooden-pc-books-desk-01", label: "Wooden Pc Books Desk 01", width: 11.3, height: 9.3 },
+  { type: "wooden-single-monitor-desk-01", label: "Wooden Single Monitor Desk 01", width: 12.1, height: 8.1 },
+  { type: "art-poster-abstract-01", label: "Art Poster Abstract 01", width: 3.7, height: 5.7 },
+  { type: "art-poster-city-01", label: "Art Poster City 01", width: 3.6, height: 5.2 },
+  { type: "art-poster-space-01", label: "Art Poster Space 01", width: 3.7, height: 5.2 },
+  { type: "desk-lamp-black-01", label: "Desk Lamp Black 01", width: 3.5, height: 3.6 },
+  { type: "desk-lamp-blue-01", label: "Desk Lamp Blue 01", width: 3.2, height: 3.6 },
+  { type: "desk-lamp-gray-01", label: "Desk Lamp Gray 01", width: 3.5, height: 3.8 },
+  { type: "desk-lamp-green-01", label: "Desk Lamp Green 01", width: 3.3, height: 3.7 },
+  { type: "desk-lamp-red-01", label: "Desk Lamp Red 01", width: 3.2, height: 3.7 },
+  { type: "drawer-box-01", label: "Drawer Box 01", width: 3.3, height: 3.8 },
+  { type: "drawer-box-02", label: "Drawer Box 02", width: 3.5, height: 3.7 },
+  { type: "drawer-box-03", label: "Drawer Box 03", width: 3.5, height: 3.4 },
+  { type: "drawer-box-04", label: "Drawer Box 04", width: 3.6, height: 3.5 },
+  { type: "drawer-box-05", label: "Drawer Box 05", width: 3.2, height: 3.3 },
+  { type: "file-box-01", label: "File Box 01", width: 3.4, height: 2.7 },
+  { type: "file-stack-02", label: "File Stack 02", width: 3.5, height: 3.2 },
+  { type: "frame-square-01", label: "Frame Square 01", width: 3.2, height: 2.8 },
+  { type: "frame-square-02", label: "Frame Square 02", width: 3.2, height: 2.8 },
+  { type: "paper-stack-01", label: "Paper Stack 01", width: 3.7, height: 3.5 },
+  { type: "paper-stack-02", label: "Paper Stack 02", width: 5.5, height: 5.6 },
+  { type: "paper-stack-03", label: "Paper Stack 03", width: 3.2, height: 3.5 },
+  { type: "paper-stack-04", label: "Paper Stack 04", width: 3.4, height: 2.8 },
+  { type: "potted-plant-13", label: "Potted Plant 13", width: 4.1, height: 3.1 },
+  { type: "statue-small-01", label: "Statue Small 01", width: 3.5, height: 2.7 },
+  { type: "statue-small-02", label: "Statue Small 02", width: 3.5, height: 2.8 },
+  { type: "statue-small-03", label: "Statue Small 03", width: 3.5, height: 2.5 },
+  { type: "wall-clock-round-01", label: "Wall Clock Round 01", width: 3.1, height: 3.5 },
+  { type: "wall-clock-round-02", label: "Wall Clock Round 02", width: 2.9, height: 3.2 },
+  { type: "potted-plant-01", label: "Potted Plant 01", width: 3.4, height: 3.7 },
+  { type: "potted-plant-02", label: "Potted Plant 02", width: 3.6, height: 3.7 },
+  { type: "potted-plant-03", label: "Potted Plant 03", width: 3.5, height: 3.4 },
+  { type: "potted-plant-04", label: "Potted Plant 04", width: 3.6, height: 3.7 },
+  { type: "potted-plant-05", label: "Potted Plant 05", width: 3.3, height: 3.8 },
+  { type: "potted-plant-06", label: "Potted Plant 06", width: 2.7, height: 3.7 },
+  { type: "potted-plant-07", label: "Potted Plant 07", width: 3.7, height: 4.1 },
+  { type: "potted-plant-08", label: "Potted Plant 08", width: 3.4, height: 4.1 },
+  { type: "potted-plant-09", label: "Potted Plant 09", width: 3.4, height: 3.6 },
+  { type: "potted-plant-10", label: "Potted Plant 10", width: 3.3, height: 4.1 },
+  { type: "potted-plant-11", label: "Potted Plant 11", width: 3.4, height: 4.1 },
+  { type: "potted-plant-12", label: "Potted Plant 12", width: 3.1, height: 4.2 },
+  { type: "book-stack-left-01", label: "Book Stack Left 01", width: 3.5, height: 2.5 },
+  { type: "book-stack-left-02", label: "Book Stack Left 02", width: 3.7, height: 2.9 },
+  { type: "books-and-plant-left-01", label: "Books And Plant Left 01", width: 6.2, height: 3.5 },
+  { type: "framed-landscape-left-01", label: "Framed Landscape Left 01", width: 3.7, height: 3.8 },
+  { type: "framed-portrait-left-01", label: "Framed Portrait Left 01", width: 2.7, height: 2.6 },
+  { type: "framed-portrait-left-02", label: "Framed Portrait Left 02", width: 2.6, height: 2.4 },
+  { type: "low-shelf-left-01", label: "Low Shelf Left 01", width: 3.8, height: 3.0 },
+  { type: "potted-plant-left-01", label: "Potted Plant Left 01", width: 2.6, height: 2.5 },
+  { type: "potted-plant-left-02", label: "Potted Plant Left 02", width: 2.8, height: 3.4 },
+  { type: "potted-plant-left-03", label: "Potted Plant Left 03", width: 2.7, height: 3.0 },
+  { type: "small-shelf-left-01", label: "Small Shelf Left 01", width: 4.9, height: 3.3 },
+  { type: "meeting-room-projector-01", label: "Meeting Room Projector 01", width: 3.2, height: 2.8 },
+  { type: "meeting-room-screen-01", label: "Meeting Room Screen 01", width: 10.2, height: 6.8 },
+  { type: "meeting-room-table-chairs-01", label: "Meeting Room Table Chairs 01", width: 12.9, height: 9.2 },
+  { type: "qa-room-console-station-01", label: "QA Room Console Station 01", width: 14.9, height: 18.5 },
+  { type: "qa-room-rack-left-01", label: "QA Room Rack Left 01", width: 5.2, height: 5.3 },
+  { type: "qa-room-rack-right-01", label: "QA Room Rack Right 01", width: 11.8, height: 5.5 }
 ];
 
 const objectLabelLookup = Object.fromEntries(objectLibrary.map((item) => [item.type, item.label])) as Record<

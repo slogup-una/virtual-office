@@ -1229,6 +1229,362 @@ input {
   background-image: url("./assets/room-objects/floor-sign.svg");
 }
 
+.object-bookshelf-cabinet-01 {
+  background-image: url("./assets/room-objects/bookshelf_cabinet_01.png");
+}
+
+.object-coffee-station-counter-01 {
+  background-image: url("./assets/room-objects/coffee_station_counter_01.png");
+}
+
+.object-drawer-stack-beige-01 {
+  background-image: url("./assets/room-objects/drawer_stack_beige_01.png");
+}
+
+.object-drawer-stack-brown-01 {
+  background-image: url("./assets/room-objects/drawer_stack_brown_01.png");
+}
+
+.object-drawer-stack-gray-01 {
+  background-image: url("./assets/room-objects/drawer_stack_gray_01.png");
+}
+
+.object-filing-cabinet-beige-tall-01 {
+  background-image: url("./assets/room-objects/filing_cabinet_beige_tall_01.png");
+}
+
+.object-locker-beige-01 {
+  background-image: url("./assets/room-objects/locker_beige_01.png");
+}
+
+.object-locker-blue-01 {
+  background-image: url("./assets/room-objects/locker_blue_01.png");
+}
+
+.object-locker-dark-01 {
+  background-image: url("./assets/room-objects/locker_dark_01.png");
+}
+
+.object-locker-gray-01 {
+  background-image: url("./assets/room-objects/locker_gray_01.png");
+}
+
+.object-locker-gray-tall-01 {
+  background-image: url("./assets/room-objects/locker_gray_tall_01.png");
+}
+
+.object-office-printer-copier-01 {
+  background-image: url("./assets/room-objects/office_printer_copier_01.png");
+}
+
+.object-recycling-bin-01 {
+  background-image: url("./assets/room-objects/recycling_bin_01.png");
+}
+
+.object-rolling-whiteboard-01 {
+  background-image: url("./assets/room-objects/rolling_whiteboard_01.png");
+}
+
+.object-server-cabinet-tall-01 {
+  background-image: url("./assets/room-objects/server_cabinet_tall_01.png");
+}
+
+.object-small-appliance-cabinet-01 {
+  background-image: url("./assets/room-objects/small_appliance_cabinet_01.png");
+}
+
+.object-water-cooler-01 {
+  background-image: url("./assets/room-objects/water_cooler_01.png");
+}
+
+.object-executive-triple-monitor-desk-01 {
+  background-image: url("./assets/room-objects/executive_triple_monitor_desk_01.png");
+}
+
+.object-glass-corner-desk-01 {
+  background-image: url("./assets/room-objects/glass_corner_desk_01.png");
+}
+
+.object-glass-monitor-desk-01 {
+  background-image: url("./assets/room-objects/glass_monitor_desk_01.png");
+}
+
+.object-glass-note-desk-01 {
+  background-image: url("./assets/room-objects/glass_note_desk_01.png");
+}
+
+.object-glass-paper-stool-desk-01 {
+  background-image: url("./assets/room-objects/glass_paper_stool_desk_01.png");
+}
+
+.object-wooden-corner-laptop-desk-01 {
+  background-image: url("./assets/room-objects/wooden_corner_laptop_desk_01.png");
+}
+
+.object-wooden-dual-monitor-desk-01 {
+  background-image: url("./assets/room-objects/wooden_dual_monitor_desk_01.png");
+}
+
+.object-wooden-dual-monitor-desk-02 {
+  background-image: url("./assets/room-objects/wooden_dual_monitor_desk_02.png");
+}
+
+.object-wooden-headset-desk-01 {
+  background-image: url("./assets/room-objects/wooden_headset_desk_01.png");
+}
+
+.object-wooden-l-shaped-workstation-01 {
+  background-image: url("./assets/room-objects/wooden_l_shaped_workstation_01.png");
+}
+
+.object-wooden-laptop-books-desk-01 {
+  background-image: url("./assets/room-objects/wooden_laptop_books_desk_01.png");
+}
+
+.object-wooden-laptop-plant-desk-01 {
+  background-image: url("./assets/room-objects/wooden_laptop_plant_desk_01.png");
+}
+
+.object-wooden-monitor-mouse-desk-01 {
+  background-image: url("./assets/room-objects/wooden_monitor_mouse_desk_01.png");
+}
+
+.object-wooden-multi-monitor-desk-01 {
+  background-image: url("./assets/room-objects/wooden_multi_monitor_desk_01.png");
+}
+
+.object-wooden-pc-books-desk-01 {
+  background-image: url("./assets/room-objects/wooden_pc_books_desk_01.png");
+}
+
+.object-wooden-single-monitor-desk-01 {
+  background-image: url("./assets/room-objects/wooden_single_monitor_desk_01.png");
+}
+
+.object-art-poster-abstract-01 {
+  background-image: url("./assets/room-objects/art_poster_abstract_01.png");
+}
+
+.object-art-poster-city-01 {
+  background-image: url("./assets/room-objects/art_poster_city_01.png");
+}
+
+.object-art-poster-space-01 {
+  background-image: url("./assets/room-objects/art_poster_space_01.png");
+}
+
+.object-desk-lamp-black-01 {
+  background-image: url("./assets/room-objects/desk_lamp_black_01.png");
+}
+
+.object-desk-lamp-blue-01 {
+  background-image: url("./assets/room-objects/desk_lamp_blue_01.png");
+}
+
+.object-desk-lamp-gray-01 {
+  background-image: url("./assets/room-objects/desk_lamp_gray_01.png");
+}
+
+.object-desk-lamp-green-01 {
+  background-image: url("./assets/room-objects/desk_lamp_green_01.png");
+}
+
+.object-desk-lamp-red-01 {
+  background-image: url("./assets/room-objects/desk_lamp_red_01.png");
+}
+
+.object-drawer-box-01 {
+  background-image: url("./assets/room-objects/drawer_box_01.png");
+}
+
+.object-drawer-box-02 {
+  background-image: url("./assets/room-objects/drawer_box_02.png");
+}
+
+.object-drawer-box-03 {
+  background-image: url("./assets/room-objects/drawer_box_03.png");
+}
+
+.object-drawer-box-04 {
+  background-image: url("./assets/room-objects/drawer_box_04.png");
+}
+
+.object-drawer-box-05 {
+  background-image: url("./assets/room-objects/drawer_box_05.png");
+}
+
+.object-file-box-01 {
+  background-image: url("./assets/room-objects/file_box_01.png");
+}
+
+.object-file-stack-02 {
+  background-image: url("./assets/room-objects/file_stack_02.png");
+}
+
+.object-frame-square-01 {
+  background-image: url("./assets/room-objects/frame_square_01.png");
+}
+
+.object-frame-square-02 {
+  background-image: url("./assets/room-objects/frame_square_02.png");
+}
+
+.object-paper-stack-01 {
+  background-image: url("./assets/room-objects/paper_stack_01.png");
+}
+
+.object-paper-stack-02 {
+  background-image: url("./assets/room-objects/paper_stack_02.png");
+}
+
+.object-paper-stack-03 {
+  background-image: url("./assets/room-objects/paper_stack_03.png");
+}
+
+.object-paper-stack-04 {
+  background-image: url("./assets/room-objects/paper_stack_04.png");
+}
+
+.object-potted-plant-13 {
+  background-image: url("./assets/room-objects/potted_plant_13.png");
+}
+
+.object-statue-small-01 {
+  background-image: url("./assets/room-objects/statue_small_01.png");
+}
+
+.object-statue-small-02 {
+  background-image: url("./assets/room-objects/statue_small_02.png");
+}
+
+.object-statue-small-03 {
+  background-image: url("./assets/room-objects/statue_small_03.png");
+}
+
+.object-wall-clock-round-01 {
+  background-image: url("./assets/room-objects/wall_clock_round_01.png");
+}
+
+.object-wall-clock-round-02 {
+  background-image: url("./assets/room-objects/wall_clock_round_02.png");
+}
+
+.object-potted-plant-01 {
+  background-image: url("./assets/room-objects/potted_plant_01.png");
+}
+
+.object-potted-plant-02 {
+  background-image: url("./assets/room-objects/potted_plant_02.png");
+}
+
+.object-potted-plant-03 {
+  background-image: url("./assets/room-objects/potted_plant_03.png");
+}
+
+.object-potted-plant-04 {
+  background-image: url("./assets/room-objects/potted_plant_04.png");
+}
+
+.object-potted-plant-05 {
+  background-image: url("./assets/room-objects/potted_plant_05.png");
+}
+
+.object-potted-plant-06 {
+  background-image: url("./assets/room-objects/potted_plant_06.png");
+}
+
+.object-potted-plant-07 {
+  background-image: url("./assets/room-objects/potted_plant_07.png");
+}
+
+.object-potted-plant-08 {
+  background-image: url("./assets/room-objects/potted_plant_08.png");
+}
+
+.object-potted-plant-09 {
+  background-image: url("./assets/room-objects/potted_plant_09.png");
+}
+
+.object-potted-plant-10 {
+  background-image: url("./assets/room-objects/potted_plant_10.png");
+}
+
+.object-potted-plant-11 {
+  background-image: url("./assets/room-objects/potted_plant_11.png");
+}
+
+.object-potted-plant-12 {
+  background-image: url("./assets/room-objects/potted_plant_12.png");
+}
+
+.object-book-stack-left-01 {
+  background-image: url("./assets/room-objects/book_stack_left_01.png");
+}
+
+.object-book-stack-left-02 {
+  background-image: url("./assets/room-objects/book_stack_left_02.png");
+}
+
+.object-books-and-plant-left-01 {
+  background-image: url("./assets/room-objects/books_and_plant_left_01.png");
+}
+
+.object-framed-landscape-left-01 {
+  background-image: url("./assets/room-objects/framed_landscape_left_01.png");
+}
+
+.object-framed-portrait-left-01 {
+  background-image: url("./assets/room-objects/framed_portrait_left_01.png");
+}
+
+.object-framed-portrait-left-02 {
+  background-image: url("./assets/room-objects/framed_portrait_left_02.png");
+}
+
+.object-low-shelf-left-01 {
+  background-image: url("./assets/room-objects/low_shelf_left_01.png");
+}
+
+.object-potted-plant-left-01 {
+  background-image: url("./assets/room-objects/potted_plant_left_01.png");
+}
+
+.object-potted-plant-left-02 {
+  background-image: url("./assets/room-objects/potted_plant_left_02.png");
+}
+
+.object-potted-plant-left-03 {
+  background-image: url("./assets/room-objects/potted_plant_left_03.png");
+}
+
+.object-small-shelf-left-01 {
+  background-image: url("./assets/room-objects/small_shelf_left_01.png");
+}
+
+.object-meeting-room-projector-01 {
+  background-image: url("./assets/room-objects/meeting_room_projector_01.png");
+}
+
+.object-meeting-room-screen-01 {
+  background-image: url("./assets/room-objects/meeting_room_screen_01.png");
+}
+
+.object-meeting-room-table-chairs-01 {
+  background-image: url("./assets/room-objects/meeting_room_table_chairs_01.png");
+}
+
+.object-qa-room-console-station-01 {
+  background-image: url("./assets/room-objects/qa_room_console_station_01.png");
+}
+
+.object-qa-room-rack-left-01 {
+  background-image: url("./assets/room-objects/qa_room_rack_left_01.png");
+}
+
+.object-qa-room-rack-right-01 {
+  background-image: url("./assets/room-objects/qa_room_rack_right_01.png");
+}
+
 .layout-editor-panel {
   position: fixed;
   left: 18px;
