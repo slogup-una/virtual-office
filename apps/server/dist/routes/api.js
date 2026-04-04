@@ -8,6 +8,7 @@ const router = Router();
 const lastWorkspaceSyncAt = new Map();
 const workspaceSyncIntervalMs = 15 * 1000;
 const bracketedAuthorPrefixPattern = /^\s*\[([^\]\n]+)\]\s*\n?([\s\S]*)$/;
+const slackUserIdPattern = /^[UW][A-Z0-9]+$/;
 function parseBracketedAuthorPrefix(text) {
     const matched = text.match(bracketedAuthorPrefixPattern);
     if (!matched) {
@@ -20,6 +21,9 @@ function parseBracketedAuthorPrefix(text) {
         authorName: matched[1]?.trim() || null,
         body: matched[2] ?? ""
     };
+}
+function isSlackUserId(value) {
+    return slackUserIdPattern.test(value);
 }
 async function syncWorkspaceMembersIfNeeded(workspaceId) {
     if (!isSlackConfigured || workspaceId === "demo-workspace") {
@@ -77,7 +81,7 @@ router.get("/messages", async (request, response) => {
             const memberByOfficeId = getMemberById(message.userId);
             const memberBySlackId = memberByOfficeId ??
                 getMemberBySlackId(message.userId, request.sessionUser.workspaceId) ??
-                (message.userId !== "unknown" && !memberByOfficeId
+                (message.userId !== "unknown" && !memberByOfficeId && isSlackUserId(message.userId)
                     ? createOrUpdateMemberFromSlack(await fetchSlackUserProfile(request.sessionUser.workspaceId, message.userId), request.sessionUser.workspaceId)
                     : null);
             const memberByDisplayName = memberBySlackId ?? getMemberByDisplayName(effectiveUserName, request.sessionUser.workspaceId);

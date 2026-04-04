@@ -13,7 +13,7 @@ const roomZones = [
   { id: "event-hall", label: "다목적 공간", x: 30, y: 0, width: 36, height: 22 },
   { id: "entrance", label: "출구", x: 66, y: 0, width: 10, height: 7 },
   { id: "storage", label: "창고", x: 77, y: 0, width: 17, height: 22 },
-  { id: "meeting-room", label: "회의실 1", x: 77, y: 15, width: 17, height: 25 },
+  { id: "meeting-room", label: "외부 미팅", x: 77, y: 15, width: 17, height: 25 },
   { id: "qa-room", label: "QA ROOM", x: 77, y: 43.9, width: 17, height: 14.6 },
   { id: "meeting-a", label: "Seoul", x: 2, y: 86.7, width: 18, height: 10.3 },
   { id: "meeting-b", label: "Incheon", x: 20.5, y: 86.7, width: 18, height: 10.3 },
