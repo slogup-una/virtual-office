@@ -166,20 +166,29 @@ export function ChatPanel({
         {isLoading ? (
           <p>메시지를 불러오는 중...</p>
         ) : (
-          data?.items.map((message) => (
+          data?.items.map((message) => {
+            const isCurrentUserMessage = message.userId === currentUserId;
+            const resolvedAuthorName =
+              message.source === "app" && isCurrentUserMessage && currentUserName
+                ? currentUserName
+                : message.userName;
+
+            return (
             <article className="message-card" key={message.id}>
-              <strong className="message-author">
-                {message.source === "app" && message.userId === currentUserId && currentUserName
-                  ? currentUserName
-                  : message.userName}
-              </strong>
+              <div className="message-author-row">
+                <strong className="message-author">{resolvedAuthorName}</strong>
+                {isCurrentUserMessage ? (
+                  <span className="message-author-badge">나</span>
+                ) : null}
+              </div>
               <p className="message-text">{message.text}</p>
               <div className="message-meta">
                 <small>{message.source === "slack" ? "Slack Events / Web API" : "App Demo Store"}</small>
                 <span>{new Date(message.createdAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
             </article>
-          ))
+            );
+          })
         )}
       </div>
       <form className="composer" onSubmit={(event) => void handleSubmit(event)}>

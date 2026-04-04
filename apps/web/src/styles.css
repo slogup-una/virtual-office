@@ -2440,14 +2440,39 @@ input {
   align-items: center;
 }
 
+.message-author-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .message-author {
   display: block;
-  color: #5c4e7a;
+  color: #2a5576;
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.message-author-badge {
+  flex-shrink: 0;
+  padding: 3px 6px 2px;
+  border: 2px solid #5f97be;
+  background: linear-gradient(180deg, #eef8ff 0%, #ccecff 100%);
+  box-shadow:
+    0 2px 0 #7eb4d9,
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  color: #2a5576;
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  line-height: 1;
 }
 
 .message-text {
   white-space: break-spaces;
   line-height: 1.55;
+  color: #26333f;
 }
 
 .draggable-header {
