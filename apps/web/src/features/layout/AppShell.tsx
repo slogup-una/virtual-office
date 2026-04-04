@@ -22,7 +22,7 @@ const starSeed = Array.from({ length: 90 }).map((_, index) => ({
 
 const skylineHeights = [88, 130, 112, 164, 96, 142, 104, 176, 118, 154, 94, 136];
 const officeNoticeEventName = "office-notice";
-const roomObjectStorageKey = "virtual-office-room-objects-v4";
+const roomObjectStorageKey = "virtual-office-room-objects-v5";
 const movementObstaclePadding = 1.2;
 const objectHitboxInsetRatio = 0.18;
 const objectHitboxMinInset = 0.35;
@@ -61,10 +61,7 @@ const deskBarrierSegments = [
 ] as const;
 
 const defaultObstacleObjects = [
-  { id: "whiteboard-1", x: 88.9, y: 16.7, width: 4.1, height: 5.3 },
-  { id: "wall-clock-1", x: 78.2, y: 16.4, width: 2.8, height: 4.1 },
-  { id: "l-desk-1", x: 74, y: 86.5, width: 9.5, height: 7.2 },
-  { id: "trophy-shelf-1", x: 90, y: 89, width: 3.7, height: 4.6 }
+  { id: "trophy-shelf-1", x: 91, y: 86, width: 3.7, height: 4.6 }
 ] as const;
 
 const defaultObstacleObjectIds = new Set<string>(defaultObstacleObjects.map((object) => object.id));
