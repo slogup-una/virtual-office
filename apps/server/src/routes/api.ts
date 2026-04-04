@@ -21,6 +21,22 @@ import { fetchChannelMessages, fetchSlackUserProfile, fetchWorkspaceMembers, pos
 const router = Router();
 const lastWorkspaceSyncAt = new Map<string, number>();
 const workspaceSyncIntervalMs = 15 * 1000;
+const bracketedAuthorPrefixPattern = /^\s*\[([^\]\n]+)\]\s*\n?([\s\S]*)$/;
+
+function parseBracketedAuthorPrefix(text: string) {
+  const matched = text.match(bracketedAuthorPrefixPattern);
+  if (!matched) {
+    return {
+      authorName: null,
+      body: text
+    };
+  }
+
+  return {
+    authorName: matched[1]?.trim() || null,
+    body: matched[2] ?? ""
+  };
+}
 
 async function syncWorkspaceMembersIfNeeded(workspaceId: string) {
   if (!isSlackConfigured || workspaceId === "demo-workspace") {
@@ -88,6 +104,13 @@ router.get("/messages", async (request, response) => {
     const result = await fetchChannelMessages(request.sessionUser.workspaceId, channelId);
     const items = await Promise.all(
       result.items.map(async (message) => {
+        const prefixedAuthor = parseBracketedAuthorPrefix(message.text);
+        const effectiveUserName =
+          message.userName === "virtual-office" && prefixedAuthor.authorName
+            ? prefixedAuthor.authorName
+            : message.userName;
+        const effectiveText =
+          message.userName === "virtual-office" && prefixedAuthor.authorName ? prefixedAuthor.body : message.text;
         const memberByOfficeId = getMemberById(message.userId);
         const memberBySlackId =
           memberByOfficeId ??
@@ -99,14 +122,15 @@ router.get("/messages", async (request, response) => {
               )
             : null);
         const memberByDisplayName =
-          memberBySlackId ?? getMemberByDisplayName(message.userName, request.sessionUser!.workspaceId);
+          memberBySlackId ?? getMemberByDisplayName(effectiveUserName, request.sessionUser!.workspaceId);
         const member = memberByDisplayName;
 
         return {
           ...message,
           channelId,
           userId: member?.id ?? message.userId,
-          userName: member?.displayName ?? message.userName
+          userName: member?.displayName ?? effectiveUserName,
+          text: effectiveText
         };
       })
     );

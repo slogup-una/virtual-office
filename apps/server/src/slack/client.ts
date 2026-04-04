@@ -7,7 +7,7 @@ const slackApiBase = "https://slack.com/api";
 const refreshLeewayMs = 60 * 1000;
 const channelIdCache = new Map<string, { id: string; cachedAt: number }>();
 const channelCacheTtlMs = 5 * 60 * 1000;
-const bracketedAuthorPrefixPattern = /^\[([^\]\n]+)\]\s*\n?([\s\S]*)$/;
+const bracketedAuthorPrefixPattern = /^\s*\[([^\]\n]+)\]\s*\n?([\s\S]*)$/;
 
 interface SlackWorkspaceToken {
   accessToken: string;

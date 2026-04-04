@@ -7,6 +7,20 @@ import { fetchChannelMessages, fetchSlackUserProfile, fetchWorkspaceMembers, pos
 const router = Router();
 const lastWorkspaceSyncAt = new Map();
 const workspaceSyncIntervalMs = 15 * 1000;
+const bracketedAuthorPrefixPattern = /^\s*\[([^\]\n]+)\]\s*\n?([\s\S]*)$/;
+function parseBracketedAuthorPrefix(text) {
+    const matched = text.match(bracketedAuthorPrefixPattern);
+    if (!matched) {
+        return {
+            authorName: null,
+            body: text
+        };
+    }
+    return {
+        authorName: matched[1]?.trim() || null,
+        body: matched[2] ?? ""
+    };
+}
 async function syncWorkspaceMembersIfNeeded(workspaceId) {
     if (!isSlackConfigured || workspaceId === "demo-workspace") {
         return;
@@ -55,19 +69,25 @@ router.get("/messages", async (request, response) => {
         await syncWorkspaceMembersIfNeeded(request.sessionUser.workspaceId);
         const result = await fetchChannelMessages(request.sessionUser.workspaceId, channelId);
         const items = await Promise.all(result.items.map(async (message) => {
+            const prefixedAuthor = parseBracketedAuthorPrefix(message.text);
+            const effectiveUserName = message.userName === "virtual-office" && prefixedAuthor.authorName
+                ? prefixedAuthor.authorName
+                : message.userName;
+            const effectiveText = message.userName === "virtual-office" && prefixedAuthor.authorName ? prefixedAuthor.body : message.text;
             const memberByOfficeId = getMemberById(message.userId);
             const memberBySlackId = memberByOfficeId ??
                 getMemberBySlackId(message.userId, request.sessionUser.workspaceId) ??
                 (message.userId !== "unknown" && !memberByOfficeId
                     ? createOrUpdateMemberFromSlack(await fetchSlackUserProfile(request.sessionUser.workspaceId, message.userId), request.sessionUser.workspaceId)
                     : null);
-            const memberByDisplayName = memberBySlackId ?? getMemberByDisplayName(message.userName, request.sessionUser.workspaceId);
+            const memberByDisplayName = memberBySlackId ?? getMemberByDisplayName(effectiveUserName, request.sessionUser.workspaceId);
             const member = memberByDisplayName;
             return {
                 ...message,
                 channelId,
                 userId: member?.id ?? message.userId,
-                userName: member?.displayName ?? message.userName
+                userName: member?.displayName ?? effectiveUserName,
+                text: effectiveText
             };
         }));
         response.json({ items });
