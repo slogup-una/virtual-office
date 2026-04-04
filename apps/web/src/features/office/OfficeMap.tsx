@@ -711,6 +711,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
       member.slackUserId.toLowerCase().includes(normalizedSeatSearch)
     );
   });
+  const seatAssignmentMap = new Map(snapshot.seats.map((seat) => [seat.key, seat]));
+  const memberBySlackId = new Map(snapshot.members.map((member) => [member.slackUserId, member]));
   const handleSeatClick = (seatKey: string) => {
     if (!canManageSeats) {
       return;
@@ -1278,7 +1280,13 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               ))}
               {Array.from({ length: band.seats }).map((_, index) => {
                 const seatKey = `${band.rowKey}-${String(index + 1).padStart(2, "0")}`;
-                const isAssigned = Boolean(snapshot.seats.find((seat) => seat.key === seatKey)?.assignedSlackUserId);
+                const assignedSlackUserId = seatAssignmentMap.get(seatKey)?.assignedSlackUserId;
+                const assignedMember = assignedSlackUserId ? memberBySlackId.get(assignedSlackUserId) ?? null : null;
+                const hasVacationBadge = Boolean(
+                  assignedMember &&
+                    (assignedMember.slackStatusText?.includes("시차") || assignedMember.slackStatusText?.includes("연차"))
+                );
+                const isAssigned = Boolean(assignedSlackUserId);
                 return (
                   <button
                     className={`seat-chip ${isAssigned ? "is-assigned" : ""}`}
@@ -1291,6 +1299,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                       <strong>{seatKey}</strong>
                       <small>{`자리${index + 1}`}</small>
                     </span>
+                    {hasVacationBadge ? <span className="seat-vacation-badge">휴가중 🌴</span> : null}
                   </button>
                 );
               })}
@@ -1304,7 +1313,13 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
             >
               {Array.from({ length: band.seats }).map((_, index) => {
                 const seatKey = `${band.rowKey}-${String(index + 1).padStart(2, "0")}`;
-                const isAssigned = Boolean(snapshot.seats.find((seat) => seat.key === seatKey)?.assignedSlackUserId);
+                const assignedSlackUserId = seatAssignmentMap.get(seatKey)?.assignedSlackUserId;
+                const assignedMember = assignedSlackUserId ? memberBySlackId.get(assignedSlackUserId) ?? null : null;
+                const hasVacationBadge = Boolean(
+                  assignedMember &&
+                    (assignedMember.slackStatusText?.includes("시차") || assignedMember.slackStatusText?.includes("연차"))
+                );
+                const isAssigned = Boolean(assignedSlackUserId);
                 return (
                   <button
                     className={`seat-chip ${isAssigned ? "is-assigned" : ""}`}
@@ -1317,6 +1332,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                       <strong>{seatKey}</strong>
                       <small>{`자리${index + 1}`}</small>
                     </span>
+                    {hasVacationBadge ? <span className="seat-vacation-badge">휴가중 🌴</span> : null}
                   </button>
                 );
               })}

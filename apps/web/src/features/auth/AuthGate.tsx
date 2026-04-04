@@ -9,6 +9,12 @@ interface AuthGateProps {
 }
 
 export function AuthGate({ children }: AuthGateProps) {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const hashSessionId = hash.get("session");
+  if (hashSessionId) {
+    storeSession(hashSessionId);
+  }
+
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["session"],
     queryFn: apiClient.getSession,
@@ -16,16 +22,13 @@ export function AuthGate({ children }: AuthGateProps) {
   });
 
   useEffect(() => {
-    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    const sessionId = hash.get("session");
-    if (!sessionId) {
+    if (!hashSessionId) {
       return;
     }
 
-    storeSession(sessionId);
     window.history.replaceState(null, "", window.location.pathname);
     void refetch();
-  }, [refetch]);
+  }, [hashSessionId, refetch]);
 
   if (isLoading) {
     return <div className="screen-center">세션 확인 중...</div>;

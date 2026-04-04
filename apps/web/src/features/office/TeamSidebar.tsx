@@ -13,6 +13,16 @@ const statusLabel = {
   offline: "오프라인"
 } as const;
 
+const statusPriority = {
+  active: 0,
+  dnd: 1,
+  meeting: 2,
+  field: 3,
+  lunch: 4,
+  away: 5,
+  offline: 6
+} as const;
+
 export function TeamSidebar({ snapshot }: { snapshot: OfficeSnapshot }) {
   const statusOffset = useUIStore((state) => state.statusOffset);
   const isStatusPanelOpen = useUIStore((state) => state.isStatusPanelOpen);
@@ -61,6 +71,19 @@ export function TeamSidebar({ snapshot }: { snapshot: OfficeSnapshot }) {
     return null;
   }
 
+  const orderedMembers = [...snapshot.members].sort((left, right) => {
+    const priorityDiff = statusPriority[left.officeStatus] - statusPriority[right.officeStatus];
+    if (priorityDiff !== 0) {
+      return priorityDiff;
+    }
+
+    if (left.isOnline !== right.isOnline) {
+      return left.isOnline ? -1 : 1;
+    }
+
+    return left.displayName.localeCompare(right.displayName, "ko");
+  });
+
   return (
     <aside
       className="floating-panel status-panel"
@@ -84,7 +107,7 @@ export function TeamSidebar({ snapshot }: { snapshot: OfficeSnapshot }) {
         </div>
       </div>
       <div className="member-list compact-list">
-        {snapshot.members.map((member) => (
+        {orderedMembers.map((member) => (
           <article
             className={`member-card compact-card status-presence-card ${member.officeStatus} ${member.id === snapshot.currentUserId ? "is-current" : ""}`}
             key={member.id}

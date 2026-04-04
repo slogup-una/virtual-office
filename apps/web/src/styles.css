@@ -1920,6 +1920,23 @@ input {
   transform-origin: center top;
 }
 
+.seat-vacation-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 2px 6px;
+  border: 2px solid #7bc4ef;
+  background: linear-gradient(180deg, #fffef4 0%, #f7ffd9 100%);
+  box-shadow: 0 3px 0 rgba(105, 174, 213, 0.18);
+  font-family: "Press Start 2P", monospace;
+  font-size: 5px;
+  line-height: 1.4;
+  color: #3b7faa;
+  white-space: nowrap;
+}
+
 .seat-spacer {
   width: 100%;
   height: 100%;

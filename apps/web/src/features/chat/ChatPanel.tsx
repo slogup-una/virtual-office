@@ -15,12 +15,10 @@ export function ChatPanel({
 }) {
   const selectedChannelId = useUIStore((state) => state.selectedChannelId);
   const messageDraft = useUIStore((state) => state.messageDraft);
-  const chatOpacity = useUIStore((state) => state.chatOpacity);
   const chatOffset = useUIStore((state) => state.chatOffset);
   const isChatPanelOpen = useUIStore((state) => state.isChatPanelOpen);
   const chatSize = useUIStore((state) => state.chatSize);
   const setMessageDraft = useUIStore((state) => state.setMessageDraft);
-  const setChatOpacity = useUIStore((state) => state.setChatOpacity);
   const setChatOffset = useUIStore((state) => state.setChatOffset);
   const setIsChatPanelOpen = useUIStore((state) => state.setIsChatPanelOpen);
   const setChatSize = useUIStore((state) => state.setChatSize);
@@ -119,7 +117,6 @@ export function ChatPanel({
     return null;
   }
 
-  const chatPanelBackgroundAlpha = 0.25 + chatOpacity * 0.7;
   const orderedMessages = [...(data?.items ?? [])].sort((left, right) =>
     right.createdAt.localeCompare(left.createdAt)
   );
@@ -129,7 +126,7 @@ export function ChatPanel({
       ref={panelRef}
       className="floating-panel chat-panel"
       style={{
-        backgroundColor: `rgba(255, 252, 255, ${chatPanelBackgroundAlpha.toFixed(2)})`,
+        backgroundColor: "rgba(255, 252, 255, 0.85)",
         transform: `translate(${chatOffset.x}px, ${chatOffset.y}px)`,
         width: `${chatSize.width}px`,
         height: `${chatSize.height}px`
@@ -153,18 +150,6 @@ export function ChatPanel({
           </button>
         </div>
       </div>
-      <label className="opacity-control">
-        <span>투명도</span>
-        <input
-          max="1"
-          min="0.35"
-          onChange={(event) => setChatOpacity(Number(event.target.value))}
-          step="0.05"
-          type="range"
-          value={chatOpacity}
-        />
-        <strong>{Math.round(chatOpacity * 100)}%</strong>
-      </label>
       <div className="message-list popup-message-list">
         {isLoading ? (
           <p>메시지를 불러오는 중...</p>
