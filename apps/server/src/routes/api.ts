@@ -14,7 +14,8 @@ import {
   getSnapshot,
   createOrUpdateMemberFromSlack,
   listMessages,
-  getWorkspace
+  getWorkspace,
+  updateMemberPosition
 } from "../services/officeStore.js";
 import { fetchChannelMessages, fetchSlackUserProfile, fetchWorkspaceMembers, postSlackMessage } from "../slack/client.js";
 
@@ -87,6 +88,33 @@ router.get("/office", (request, response) => {
         )
       );
     });
+});
+
+router.put("/me/position", (request, response) => {
+  const payloadSchema = z.object({
+    x: z.number().min(0).max(100),
+    y: z.number().min(0).max(100)
+  });
+
+  const parsed = payloadSchema.safeParse(request.body);
+  if (!parsed.success || !request.sessionUser) {
+    response.status(400).json({ message: "Invalid payload" });
+    return;
+  }
+
+  const member = updateMemberPosition(
+    request.sessionUser.id,
+    request.sessionUser.workspaceId,
+    parsed.data.x,
+    parsed.data.y
+  );
+
+  if (!member) {
+    response.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  response.json({ ok: true, member });
 });
 
 router.get("/messages", async (request, response) => {

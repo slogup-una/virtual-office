@@ -63,6 +63,11 @@ export const apiClient = {
   demoLogin: () => request<{ sessionId: string }>("/auth/demo-login", { method: "POST" }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
   getOffice: () => request<OfficeSnapshot>("/api/office"),
+  updateMyPosition: (payload: { x: number; y: number }) =>
+    request<{ ok: true }>("/api/me/position", {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    }),
   getMessages: (channelId: string) =>
     request<{ items: OfficeMessage[] }>(`/api/messages?channelId=${encodeURIComponent(channelId)}`),
   sendMessage: (payload: { channelId: string; text: string }) =>

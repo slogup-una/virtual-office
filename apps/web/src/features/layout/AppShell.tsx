@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { apiClient, clearStoredSession } from "../../api/client";
-import { useOfficeSnapshot } from "../../hooks/useOfficeData";
+import { useOfficeSnapshot, useUpdateMyPosition } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
 import type { AvatarDirection } from "../../stores/uiStore";
 import type { OfficeMember } from "../../types/domain";
@@ -188,10 +188,13 @@ export function AppShell() {
   const visibleMembers = data?.members.filter((member) => !isVirtualOfficeMember(member)) ?? [];
   const currentUser = visibleMembers.find((member) => member.id === data?.currentUserId) ?? null;
   const canManageSeats = isDemoWorkspace || (data?.canManageSeats ?? false);
+  const updateMyPosition = useUpdateMyPosition();
   const initializedUserIdRef = useRef<string | null>(null);
   const initializedSeatKeyRef = useRef<string | undefined>(undefined);
   const previousMembersRef = useRef<Map<string, OfficeMember>>(new Map());
   const noticeTimeoutRef = useRef<number | null>(null);
+  const lastSentPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const positionSyncTimeoutRef = useRef<number | null>(null);
   const [now, setNow] = useState(() => new Date());
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
@@ -312,6 +315,34 @@ export function AppShell() {
     setIsCurrentUserDancing,
     setIsCurrentUserMoving,
   ]);
+
+  useEffect(() => {
+    if (!currentUser || !currentUserPosition) {
+      return;
+    }
+
+    const lastSentPosition = lastSentPositionRef.current;
+    if (lastSentPosition && lastSentPosition.x === currentUserPosition.x && lastSentPosition.y === currentUserPosition.y) {
+      return;
+    }
+
+    if (positionSyncTimeoutRef.current) {
+      window.clearTimeout(positionSyncTimeoutRef.current);
+    }
+
+    positionSyncTimeoutRef.current = window.setTimeout(() => {
+      lastSentPositionRef.current = { x: currentUserPosition.x, y: currentUserPosition.y };
+      updateMyPosition.mutate({ x: currentUserPosition.x, y: currentUserPosition.y });
+      positionSyncTimeoutRef.current = null;
+    }, 120);
+
+    return () => {
+      if (positionSyncTimeoutRef.current) {
+        window.clearTimeout(positionSyncTimeoutRef.current);
+        positionSyncTimeoutRef.current = null;
+      }
+    };
+  }, [currentUser, currentUserPosition, updateMyPosition]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);

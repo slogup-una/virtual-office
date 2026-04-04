@@ -417,11 +417,19 @@ function getMeetingRoomPosition(member: SnapshotMember) {
 function getPreferredMemberPosition(
   member: SnapshotMember,
   outdoorPositionMap: Map<string, { x: number; y: number }>,
-  isDemoWorkspace: boolean
+  isDemoWorkspace: boolean,
+  currentUserId?: string
 ) {
   const pinnedPosition = getPinnedMemberPosition(member, isDemoWorkspace);
   if (pinnedPosition) {
     return pinnedPosition;
+  }
+
+  if (isDemoWorkspace && member.id === currentUserId) {
+    return {
+      x: member.x,
+      y: member.y
+    };
   }
 
   if (member.isOnline && member.officeStatus === "meeting") {
@@ -851,7 +859,12 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   };
 
   const triggerDepartureMotion = (member: SnapshotMember) => {
-    const preferredPosition = getPreferredMemberPosition(member, outdoorPositionMap, isDemoWorkspace);
+    const preferredPosition = getPreferredMemberPosition(
+      member,
+      outdoorPositionMap,
+      isDemoWorkspace,
+      snapshot.currentUserId
+    );
     runMotion({
       member,
       startX: preferredPosition.x,
@@ -863,7 +876,12 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   };
 
   const triggerArrivalMotion = (member: SnapshotMember) => {
-    const preferredPosition = getPreferredMemberPosition(member, outdoorPositionMap, isDemoWorkspace);
+    const preferredPosition = getPreferredMemberPosition(
+      member,
+      outdoorPositionMap,
+      isDemoWorkspace,
+      snapshot.currentUserId
+    );
     runMotion({
       member,
       startX: entrancePosition.x,
@@ -909,8 +927,18 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
       const wasUnavailable =
         previousMember.officeStatus === "away" || previousMember.officeStatus === "offline";
       const isUnavailable = member.officeStatus === "away" || member.officeStatus === "offline";
-      const previousPosition = getPreferredMemberPosition(previousMember, previousOutdoorPositionMap, isDemoWorkspace);
-      const nextPosition = getPreferredMemberPosition(member, outdoorPositionMap, isDemoWorkspace);
+      const previousPosition = getPreferredMemberPosition(
+        previousMember,
+        previousOutdoorPositionMap,
+        isDemoWorkspace,
+        snapshot.currentUserId
+      );
+      const nextPosition = getPreferredMemberPosition(
+        member,
+        outdoorPositionMap,
+        isDemoWorkspace,
+        snapshot.currentUserId
+      );
 
       if (!wasUnavailable && isUnavailable) {
         triggerDepartureMotion(previousMember);
@@ -1299,7 +1327,12 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
           {snapshot.members
             .filter((member) => member.officeStatus !== "away" && !transitioningMemberIds.has(member.id))
             .map((member) => {
-              const preferredPosition = getPreferredMemberPosition(member, outdoorPositionMap, isDemoWorkspace);
+              const preferredPosition = getPreferredMemberPosition(
+                member,
+                outdoorPositionMap,
+                isDemoWorkspace,
+                snapshot.currentUserId
+              );
               return renderAvatar(member, {
                 x: preferredPosition.x,
                 y: preferredPosition.y,

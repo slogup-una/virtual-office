@@ -31,6 +31,8 @@ const positionByZone = {
 const members = new Map();
 const messages = [];
 const seatAssignmentsByWorkspace = new Map();
+const demoNicknamePrefixes = ["Blue", "Sunny", "Pixel", "Mint", "Cloud", "Coral", "Mellow", "Lucky"];
+const demoNicknameSuffixes = ["Otter", "Panda", "Fox", "Koala", "Seal", "Bunny", "Bear", "Cat"];
 const seedMembers = [
     {
         id: "u-1",
@@ -115,11 +117,33 @@ export function getWorkspace(workspaceId) {
         defaultChannelId: env.SLACK_DEFAULT_CHANNEL
     });
 }
+export function createDemoMember() {
+    const displayName = createDemoDisplayName();
+    const member = {
+        id: nanoid(),
+        workspaceId: "demo-workspace",
+        slackUserId: `U_DEMO_${nanoid(8).toUpperCase()}`,
+        displayName,
+        email: undefined,
+        avatarUrl: `https://api.dicebear.com/9.x/shapes/svg?seed=${encodeURIComponent(displayName)}`,
+        officeStatus: "active",
+        slackStatusEmoji: ":computer:",
+        slackStatusText: "집중 근무",
+        seatKey: undefined,
+        zoneId: "lounge",
+        x: 45,
+        y: 10,
+        isOnline: true
+    };
+    members.set(member.id, member);
+    return member;
+}
 export function createOrUpdateMemberFromSlack(profile, workspaceId) {
     const existing = getMemberBySlackId(profile.id, workspaceId);
     const officeStatus = mapSlackProfileToStatus(profile, existing?.officeStatus);
     const seatKey = resolveSeatKeyForSlackUserId(workspaceId, profile.id) ?? existing?.seatKey;
     const placement = resolvePlacement(officeStatus, seatKey);
+    const shouldResetPosition = !existing || existing.officeStatus !== officeStatus || existing.seatKey !== seatKey;
     const member = {
         id: existing?.id ?? nanoid(),
         workspaceId,
@@ -132,8 +156,8 @@ export function createOrUpdateMemberFromSlack(profile, workspaceId) {
         slackStatusEmoji: profile.statusEmoji,
         seatKey,
         zoneId: placement.zoneId,
-        x: placement.x,
-        y: placement.y,
+        x: shouldResetPosition ? placement.x : (existing?.x ?? placement.x),
+        y: shouldResetPosition ? placement.y : (existing?.y ?? placement.y),
         isOnline: resolveSlackOnlineState(profile.presence, existing?.isOnline)
     };
     members.set(member.id, member);
@@ -156,6 +180,19 @@ export function updateMemberPresence(slackUserId, presence, workspaceId) {
     };
     members.set(updated.id, updated);
     return updated;
+}
+export function updateMemberPosition(memberId, workspaceId, x, y) {
+    const member = getMemberById(memberId);
+    if (!member || member.workspaceId !== workspaceId) {
+        return null;
+    }
+    const updatedMember = {
+        ...member,
+        x,
+        y
+    };
+    members.set(updatedMember.id, updatedMember);
+    return updatedMember;
 }
 export function addMessage(message) {
     const created = {
@@ -326,4 +363,10 @@ function updateMemberSeat(member, seatKey) {
     };
     members.set(updatedMember.id, updatedMember);
     return updatedMember;
+}
+function createDemoDisplayName() {
+    const prefix = demoNicknamePrefixes[Math.floor(Math.random() * demoNicknamePrefixes.length)];
+    const suffix = demoNicknameSuffixes[Math.floor(Math.random() * demoNicknameSuffixes.length)];
+    const serial = String(Math.floor(1000 + Math.random() * 9000));
+    return `${prefix}${suffix}${serial}`;
 }

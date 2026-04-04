@@ -6,7 +6,7 @@ export function useOfficeSnapshot() {
   return useQuery({
     queryKey: ["office"],
     queryFn: apiClient.getOffice,
-    refetchInterval: 5000,
+    refetchInterval: 1000,
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true
   });
@@ -54,5 +54,11 @@ export function useClearSeat() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["office"] });
     }
+  });
+}
+
+export function useUpdateMyPosition() {
+  return useMutation({
+    mutationFn: ({ x, y }: { x: number; y: number }) => apiClient.updateMyPosition({ x, y })
   });
 }

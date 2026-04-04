@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { env, isSlackConfigured } from "../config/env.js";
-import { createOrUpdateMemberFromSlack, getMemberById, upsertWorkspace } from "../services/officeStore.js";
+import { createDemoMember, createOrUpdateMemberFromSlack, getMemberById, upsertWorkspace } from "../services/officeStore.js";
 import { createSession, destroySession } from "../services/sessionStore.js";
 import {
   exchangeCodeForToken,
@@ -80,11 +80,7 @@ router.get("/slack/callback", async (request, response) => {
 });
 
 router.post("/demo-login", (_request, response) => {
-  const member = getMemberById("u-1");
-  if (!member) {
-    response.status(500).json({ message: "Demo user not found" });
-    return;
-  }
+  const member = createDemoMember();
 
   const sessionId = createSession({
     id: member.id,
