@@ -88,15 +88,19 @@ router.get("/messages", async (request, response) => {
     const result = await fetchChannelMessages(request.sessionUser.workspaceId, channelId);
     const items = await Promise.all(
       result.items.map(async (message) => {
+        const memberByOfficeId = getMemberById(message.userId);
         const memberBySlackId =
+          memberByOfficeId ??
           getMemberBySlackId(message.userId, request.sessionUser!.workspaceId) ??
-          (message.userId !== "unknown"
+          (message.userId !== "unknown" && !memberByOfficeId
             ? createOrUpdateMemberFromSlack(
                 await fetchSlackUserProfile(request.sessionUser!.workspaceId, message.userId),
                 request.sessionUser!.workspaceId
               )
             : null);
-        const member = memberBySlackId ?? getMemberByDisplayName(message.userName, request.sessionUser!.workspaceId);
+        const memberByDisplayName =
+          memberBySlackId ?? getMemberByDisplayName(message.userName, request.sessionUser!.workspaceId);
+        const member = memberByDisplayName;
 
         return {
           ...message,
@@ -206,7 +210,11 @@ router.post("/messages", async (request, response) => {
   }
 
   if (isSlackConfigured) {
-    await postSlackMessage(request.sessionUser.workspaceId, parsed.data.channelId, parsed.data.text, author.displayName);
+    await postSlackMessage(request.sessionUser.workspaceId, parsed.data.channelId, parsed.data.text, {
+      officeUserId: author.id,
+      slackUserId: author.slackUserId,
+      displayName: author.displayName
+    });
   }
 
   const item = addMessage({

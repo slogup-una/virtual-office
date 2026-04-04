@@ -7,7 +7,6 @@ const slackApiBase = "https://slack.com/api";
 const refreshLeewayMs = 60 * 1000;
 const channelIdCache = new Map<string, { id: string; cachedAt: number }>();
 const channelCacheTtlMs = 5 * 60 * 1000;
-const slackMessageAuthorPattern = /^\[([^\]\n]+)\]\n([\s\S]*)$/;
 
 interface SlackWorkspaceToken {
   accessToken: string;
@@ -143,25 +142,6 @@ async function resolveChannelId(workspaceId: string, channelRef: string) {
   });
 
   return channel.id;
-}
-
-function formatSlackBotMessage(authorName: string, text: string) {
-  return `[${authorName}]\n${text}`;
-}
-
-function parseSlackBotMessage(text: string) {
-  const matched = text.match(slackMessageAuthorPattern);
-  if (!matched) {
-    return {
-      authorName: null,
-      body: text
-    };
-  }
-
-  return {
-    authorName: matched[1]?.trim() || null,
-    body: matched[2] ?? ""
-  };
 }
 
 export async function exchangeCodeForToken(code: string) {
@@ -310,8 +290,19 @@ export async function fetchChannelMessages(workspaceId: string, channelRef: stri
       user?: string;
       subtype?: string;
       username?: string;
+      metadata?: {
+        event_type?: string;
+        event_payload?: {
+          office_user_id?: string;
+          slack_user_id?: string;
+          display_name?: string;
+        };
+      };
     }>;
-  }>(`/conversations.history?channel=${encodeURIComponent(channelId)}&limit=40`, workspaceId);
+  }>(
+    `/conversations.history?channel=${encodeURIComponent(channelId)}&limit=40&include_all_metadata=true`,
+    workspaceId
+  );
 
   const items = data.messages
     .filter(
@@ -322,15 +313,20 @@ export async function fetchChannelMessages(workspaceId: string, channelRef: stri
     )
     .map((message) => {
       const seconds = Number(message.ts.split(".")[0] ?? "0");
-      const parsed = parseSlackBotMessage(message.text ?? "");
+      const metadataPayload = message.metadata?.event_type === "virtual_office_message"
+        ? message.metadata.event_payload
+        : undefined;
       const isBotMessage = message.subtype === "bot_message";
 
       return {
         id: message.ts,
         channelId,
-        userId: !isBotMessage && message.user ? message.user : "unknown",
-        userName: parsed.authorName ?? message.username ?? message.user ?? "Slack User",
-        text: parsed.body,
+        userId:
+          metadataPayload?.office_user_id ??
+          metadataPayload?.slack_user_id ??
+          (!isBotMessage && message.user ? message.user : "unknown"),
+        userName: metadataPayload?.display_name ?? message.username ?? message.user ?? "Slack User",
+        text: message.text ?? "",
         source: "slack",
         createdAt: new Date(seconds * 1000).toISOString()
       } satisfies OfficeMessage;
@@ -343,14 +339,27 @@ export async function fetchChannelMessages(workspaceId: string, channelRef: stri
   };
 }
 
-export async function postSlackMessage(workspaceId: string, channelId: string, text: string, authorName: string) {
+export async function postSlackMessage(
+  workspaceId: string,
+  channelId: string,
+  text: string,
+  author: { officeUserId: string; slackUserId: string; displayName: string }
+) {
   const resolvedChannelId = await resolveChannelId(workspaceId, channelId);
 
   return slackFetch<{ ts: string; channel: string }>("/chat.postMessage", workspaceId, {
     method: "POST",
     body: JSON.stringify({
       channel: resolvedChannelId,
-      text: formatSlackBotMessage(authorName, text)
+      text,
+      metadata: {
+        event_type: "virtual_office_message",
+        event_payload: {
+          office_user_id: author.officeUserId,
+          slack_user_id: author.slackUserId,
+          display_name: author.displayName
+        }
+      }
     })
   });
 }
