@@ -4,6 +4,7 @@ const slackApiBase = "https://slack.com/api";
 const refreshLeewayMs = 60 * 1000;
 const channelIdCache = new Map();
 const channelCacheTtlMs = 5 * 60 * 1000;
+const bracketedAuthorPrefixPattern = /^\[([^\]\n]+)\]\s*\n?([\s\S]*)$/;
 const workspaceTokens = new Map();
 function getFallbackWorkspaceToken() {
     return env.SLACK_BOT_TOKEN
@@ -96,6 +97,19 @@ async function resolveChannelId(workspaceId, channelRef) {
     });
     return channel.id;
 }
+function parseBracketedAuthorPrefix(text) {
+    const matched = text.match(bracketedAuthorPrefixPattern);
+    if (!matched) {
+        return {
+            authorName: null,
+            body: text
+        };
+    }
+    return {
+        authorName: matched[1]?.trim() || null,
+        body: matched[2] ?? ""
+    };
+}
 export async function exchangeCodeForToken(code) {
     const params = new URLSearchParams({
         code,
@@ -181,18 +195,24 @@ export async function fetchChannelMessages(workspaceId, channelRef) {
         (!message.subtype || message.subtype === "bot_message"))
         .map((message) => {
         const seconds = Number(message.ts.split(".")[0] ?? "0");
+        const prefixedAuthor = parseBracketedAuthorPrefix(message.text ?? "");
         const metadataPayload = message.metadata?.event_type === "virtual_office_message"
             ? message.metadata.event_payload
             : undefined;
         const isBotMessage = message.subtype === "bot_message";
+        const hasBracketedAuthorPrefix = Boolean(prefixedAuthor.authorName);
         return {
             id: message.ts,
             channelId,
             userId: metadataPayload?.office_user_id ??
                 metadataPayload?.slack_user_id ??
                 (!isBotMessage && message.user ? message.user : "unknown"),
-            userName: metadataPayload?.display_name ?? message.username ?? message.user ?? "Slack User",
-            text: message.text ?? "",
+            userName: metadataPayload?.display_name ??
+                prefixedAuthor.authorName ??
+                message.username ??
+                message.user ??
+                "Slack User",
+            text: hasBracketedAuthorPrefix ? prefixedAuthor.body : message.text ?? "",
             source: "slack",
             createdAt: new Date(seconds * 1000).toISOString()
         };
