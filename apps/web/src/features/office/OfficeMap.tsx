@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type { ChangeEvent } from "react";
 
 import { apiClient } from "../../api/client";
-import type { OfficeSnapshot } from "../../types/domain";
+import type { OfficeMessage, OfficeSnapshot } from "../../types/domain";
 import { useAssignSeat, useClearSeat } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
 import type { AvatarDirection } from "../../stores/uiStore";
@@ -641,6 +641,46 @@ function snap(value: number) {
   return Math.round(value / objectSnapStep) * objectSnapStep;
 }
 
+function getActiveSpeechBubbles(messages: OfficeMessage[], now: number) {
+  const messagesByUser = new Map<string, OfficeMessage[]>();
+
+  [...messages]
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+    .forEach((message) => {
+      const bucket = messagesByUser.get(message.userId) ?? [];
+      bucket.push(message);
+      messagesByUser.set(message.userId, bucket);
+    });
+
+  const activeBubbles = new Map<string, string[]>();
+
+  messagesByUser.forEach((userMessages, userId) => {
+    const latestMessage = userMessages[userMessages.length - 1];
+    const latestTimestamp = new Date(latestMessage.createdAt).getTime();
+    if (!Number.isFinite(latestTimestamp) || now - latestTimestamp > 10_000) {
+      return;
+    }
+
+    const burst: string[] = [latestMessage.text];
+    let previousTimestamp = latestTimestamp;
+
+    for (let index = userMessages.length - 2; index >= 0; index -= 1) {
+      const candidate = userMessages[index];
+      const candidateTimestamp = new Date(candidate.createdAt).getTime();
+      if (!Number.isFinite(candidateTimestamp) || previousTimestamp - candidateTimestamp > 10_000) {
+        break;
+      }
+
+      burst.unshift(candidate.text);
+      previousTimestamp = candidateTimestamp;
+    }
+
+    activeBubbles.set(userId, burst);
+  });
+
+  return activeBubbles;
+}
+
 function renderAvatar(
   member: SnapshotMember,
   override?: {
@@ -652,6 +692,7 @@ function renderAvatar(
     direction?: AvatarDirection;
     isMoving?: boolean;
     isDancing?: boolean;
+    speechLines?: string[];
   }
 ) {
   const direction = override?.direction ?? "down";
@@ -685,6 +726,15 @@ function renderAvatar(
       title={`${member.displayName} · ${member.slackStatusText ?? member.officeStatus}`}
     >
       {override?.isCurrent ? <em className="you-badge">YOU</em> : null}
+      {override?.speechLines?.length ? (
+        <div className="avatar-speech-bubble">
+          {override.speechLines.map((line, index) => (
+            <p className="avatar-speech-line" key={`${member.id}-speech-${index}`}>
+              {line}
+            </p>
+          ))}
+        </div>
+      ) : null}
       <div className="avatar-gif-shell">
         <div className="avatar-gif-sprite" style={{ backgroundImage: `url(${spriteSource})` }} />
         <div className="avatar-face-overlay">
@@ -732,6 +782,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const objectBackupInputRef = useRef<HTMLInputElement | null>(null);
   const currentUser = snapshot.members.find((member) => member.id === snapshot.currentUserId) ?? null;
   const isDemoWorkspace = snapshot.workspace.id === "demo-workspace";
+  const [messageBubbleNow, setMessageBubbleNow] = useState(() => Date.now());
 
   const selectedSeat = snapshot.seats.find((seat) => seat.key === selectedSeatKey) ?? null;
   const selectedSeatMember = selectedSeat?.assignedSlackUserId
@@ -754,6 +805,10 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   });
   const seatAssignmentMap = new Map(snapshot.seats.map((seat) => [seat.key, seat]));
   const memberBySlackId = new Map(snapshot.members.map((member) => [member.slackUserId, member]));
+  const activeSpeechBubbles = useMemo(
+    () => getActiveSpeechBubbles(snapshot.messages, messageBubbleNow),
+    [messageBubbleNow, snapshot.messages]
+  );
   const handleSeatClick = (seatKey: string) => {
     if (!canManageSeats) {
       return;
@@ -1012,6 +1067,16 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     },
     []
   );
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setMessageBubbleNow(Date.now());
+    }, 500);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isLayoutEditMode) {
@@ -1396,7 +1461,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 isCurrent: member.id === snapshot.currentUserId,
                 direction: member.id === snapshot.currentUserId ? currentUserDirection : (member.direction ?? "down"),
                 isMoving: member.id === snapshot.currentUserId ? isCurrentUserMoving : (member.isMoving ?? false),
-                isDancing: member.id === snapshot.currentUserId ? isCurrentUserDancing : (member.isDancing ?? false)
+                isDancing: member.id === snapshot.currentUserId ? isCurrentUserDancing : (member.isDancing ?? false),
+                speechLines: activeSpeechBubbles.get(member.id)
               });
             })}
           {motionAvatars.map((member) =>
@@ -1408,7 +1474,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
               isCurrent: member.member.id === snapshot.currentUserId,
               direction: member.member.id === snapshot.currentUserId ? currentUserDirection : "down",
               isMoving: true,
-              isDancing: member.member.id === snapshot.currentUserId ? isCurrentUserDancing : false
+              isDancing: member.member.id === snapshot.currentUserId ? isCurrentUserDancing : false,
+              speechLines: activeSpeechBubbles.get(member.member.id)
             })
           )}
         </div>

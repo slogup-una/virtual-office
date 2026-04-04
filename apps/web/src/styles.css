@@ -2017,6 +2017,47 @@ textarea {
   pointer-events: none;
 }
 
+.avatar-speech-bubble {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  display: grid;
+  gap: 4px;
+  width: max-content;
+  max-width: 180px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 3px solid #8ecded;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.72) inset,
+    0 8px 18px rgba(116, 170, 214, 0.16);
+}
+
+.avatar-speech-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 16px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border-right: 3px solid #8ecded;
+  border-bottom: 3px solid #8ecded;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.avatar-speech-line {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.45;
+  color: #35537c;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .avatar-gif-shell {
   position: relative;
   width: 48px;
