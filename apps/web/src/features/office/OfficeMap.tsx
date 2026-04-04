@@ -425,7 +425,7 @@ function getPreferredMemberPosition(
     return pinnedPosition;
   }
 
-  if (isDemoWorkspace && member.id === currentUserId) {
+  if (isDemoWorkspace) {
     return {
       x: member.x,
       y: member.y
@@ -1337,9 +1337,9 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 x: preferredPosition.x,
                 y: preferredPosition.y,
                 isCurrent: member.id === snapshot.currentUserId,
-                direction: member.id === snapshot.currentUserId ? currentUserDirection : "down",
-                isMoving: member.id === snapshot.currentUserId ? isCurrentUserMoving : false,
-                isDancing: member.id === snapshot.currentUserId ? isCurrentUserDancing : false
+                direction: member.id === snapshot.currentUserId ? currentUserDirection : (member.direction ?? "down"),
+                isMoving: member.id === snapshot.currentUserId ? isCurrentUserMoving : (member.isMoving ?? false),
+                isDancing: member.id === snapshot.currentUserId ? isCurrentUserDancing : (member.isDancing ?? false)
               });
             })}
           {motionAvatars.map((member) =>

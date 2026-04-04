@@ -39,6 +39,9 @@ export interface OfficeMember {
   zoneId: OfficeZoneId;
   x: number;
   y: number;
+  direction?: "up" | "down" | "left" | "right";
+  isMoving?: boolean;
+  isDancing?: boolean;
   isOnline: boolean;
 }
 

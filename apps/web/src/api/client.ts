@@ -63,7 +63,13 @@ export const apiClient = {
   demoLogin: () => request<{ sessionId: string }>("/auth/demo-login", { method: "POST" }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
   getOffice: () => request<OfficeSnapshot>("/api/office"),
-  updateMyPosition: (payload: { x: number; y: number }) =>
+  updateMyPosition: (payload: {
+    x: number;
+    y: number;
+    direction?: "up" | "down" | "left" | "right";
+    isMoving?: boolean;
+    isDancing?: boolean;
+  }) =>
     request<{ ok: true }>("/api/me/position", {
       method: "PUT",
       body: JSON.stringify(payload)

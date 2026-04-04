@@ -48,6 +48,9 @@ const seedMembers = [
         zoneId: "main-office",
         x: 8.33,
         y: 32.8,
+        direction: "down",
+        isMoving: false,
+        isDancing: false,
         isOnline: true
     },
     {
@@ -64,6 +67,9 @@ const seedMembers = [
         zoneId: "meeting-room",
         x: 66,
         y: 22,
+        direction: "down",
+        isMoving: false,
+        isDancing: false,
         isOnline: true
     },
     {
@@ -80,6 +86,9 @@ const seedMembers = [
         zoneId: "cafeteria",
         x: 78,
         y: 64,
+        direction: "down",
+        isMoving: false,
+        isDancing: false,
         isOnline: true
     }
 ];
@@ -133,6 +142,9 @@ export function createDemoMember() {
         zoneId: "lounge",
         x: 45,
         y: 10,
+        direction: "down",
+        isMoving: false,
+        isDancing: false,
         isOnline: true
     };
     members.set(member.id, member);
@@ -158,6 +170,9 @@ export function createOrUpdateMemberFromSlack(profile, workspaceId) {
         zoneId: placement.zoneId,
         x: shouldResetPosition ? placement.x : (existing?.x ?? placement.x),
         y: shouldResetPosition ? placement.y : (existing?.y ?? placement.y),
+        direction: existing?.direction ?? "down",
+        isMoving: existing?.isMoving ?? false,
+        isDancing: existing?.isDancing ?? false,
         isOnline: resolveSlackOnlineState(profile.presence, existing?.isOnline)
     };
     members.set(member.id, member);
@@ -176,12 +191,15 @@ export function updateMemberPresence(slackUserId, presence, workspaceId) {
         zoneId: placement.zoneId,
         x: placement.x,
         y: placement.y,
+        direction: member.direction ?? "down",
+        isMoving: false,
+        isDancing: false,
         isOnline: presence === "active"
     };
     members.set(updated.id, updated);
     return updated;
 }
-export function updateMemberPosition(memberId, workspaceId, x, y) {
+export function updateMemberPosition(memberId, workspaceId, x, y, direction, isMoving, isDancing) {
     const member = getMemberById(memberId);
     if (!member || member.workspaceId !== workspaceId) {
         return null;
@@ -189,7 +207,10 @@ export function updateMemberPosition(memberId, workspaceId, x, y) {
     const updatedMember = {
         ...member,
         x,
-        y
+        y,
+        direction: direction ?? member.direction ?? "down",
+        isMoving: isMoving ?? member.isMoving ?? false,
+        isDancing: isDancing ?? member.isDancing ?? false
     };
     members.set(updatedMember.id, updatedMember);
     return updatedMember;
@@ -359,7 +380,10 @@ function updateMemberSeat(member, seatKey) {
         seatKey,
         zoneId: placement.zoneId,
         x: placement.x,
-        y: placement.y
+        y: placement.y,
+        direction: member.direction ?? "down",
+        isMoving: false,
+        isDancing: false
     };
     members.set(updatedMember.id, updatedMember);
     return updatedMember;

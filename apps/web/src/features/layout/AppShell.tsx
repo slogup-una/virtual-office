@@ -176,6 +176,9 @@ export function AppShell() {
   const isStatusPanelOpen = useUIStore((state) => state.isStatusPanelOpen);
   const isLayoutEditorPanelOpen = useUIStore((state) => state.isLayoutEditorPanelOpen);
   const currentUserPosition = useUIStore((state) => state.currentUserPosition);
+  const currentUserDirection = useUIStore((state) => state.currentUserDirection);
+  const isCurrentUserDancing = useUIStore((state) => state.isCurrentUserDancing);
+  const isCurrentUserMoving = useUIStore((state) => state.isCurrentUserMoving);
   const setCurrentUserPosition = useUIStore((state) => state.setCurrentUserPosition);
   const setIsChatPanelOpen = useUIStore((state) => state.setIsChatPanelOpen);
   const setIsStatusPanelOpen = useUIStore((state) => state.setIsStatusPanelOpen);
@@ -193,7 +196,13 @@ export function AppShell() {
   const initializedSeatKeyRef = useRef<string | undefined>(undefined);
   const previousMembersRef = useRef<Map<string, OfficeMember>>(new Map());
   const noticeTimeoutRef = useRef<number | null>(null);
-  const lastSentPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const lastSentPositionRef = useRef<{
+    x: number;
+    y: number;
+    direction: AvatarDirection;
+    isMoving: boolean;
+    isDancing: boolean;
+  } | null>(null);
   const positionSyncTimeoutRef = useRef<number | null>(null);
   const [now, setNow] = useState(() => new Date());
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
@@ -322,7 +331,14 @@ export function AppShell() {
     }
 
     const lastSentPosition = lastSentPositionRef.current;
-    if (lastSentPosition && lastSentPosition.x === currentUserPosition.x && lastSentPosition.y === currentUserPosition.y) {
+    if (
+      lastSentPosition &&
+      lastSentPosition.x === currentUserPosition.x &&
+      lastSentPosition.y === currentUserPosition.y &&
+      lastSentPosition.direction === currentUserDirection &&
+      lastSentPosition.isMoving === isCurrentUserMoving &&
+      lastSentPosition.isDancing === isCurrentUserDancing
+    ) {
       return;
     }
 
@@ -331,8 +347,20 @@ export function AppShell() {
     }
 
     positionSyncTimeoutRef.current = window.setTimeout(() => {
-      lastSentPositionRef.current = { x: currentUserPosition.x, y: currentUserPosition.y };
-      updateMyPosition.mutate({ x: currentUserPosition.x, y: currentUserPosition.y });
+      lastSentPositionRef.current = {
+        x: currentUserPosition.x,
+        y: currentUserPosition.y,
+        direction: currentUserDirection,
+        isMoving: isCurrentUserMoving,
+        isDancing: isCurrentUserDancing
+      };
+      updateMyPosition.mutate({
+        x: currentUserPosition.x,
+        y: currentUserPosition.y,
+        direction: currentUserDirection,
+        isMoving: isCurrentUserMoving,
+        isDancing: isCurrentUserDancing
+      });
       positionSyncTimeoutRef.current = null;
     }, 120);
 
@@ -342,7 +370,7 @@ export function AppShell() {
         positionSyncTimeoutRef.current = null;
       }
     };
-  }, [currentUser, currentUserPosition, updateMyPosition]);
+  }, [currentUser, currentUserDirection, currentUserPosition, isCurrentUserDancing, isCurrentUserMoving, updateMyPosition]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);

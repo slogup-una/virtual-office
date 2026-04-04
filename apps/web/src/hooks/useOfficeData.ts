@@ -59,6 +59,18 @@ export function useClearSeat() {
 
 export function useUpdateMyPosition() {
   return useMutation({
-    mutationFn: ({ x, y }: { x: number; y: number }) => apiClient.updateMyPosition({ x, y })
+    mutationFn: ({
+      x,
+      y,
+      direction,
+      isMoving,
+      isDancing
+    }: {
+      x: number;
+      y: number;
+      direction?: "up" | "down" | "left" | "right";
+      isMoving?: boolean;
+      isDancing?: boolean;
+    }) => apiClient.updateMyPosition({ x, y, direction, isMoving, isDancing })
   });
 }

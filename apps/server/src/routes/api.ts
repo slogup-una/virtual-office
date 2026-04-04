@@ -93,7 +93,10 @@ router.get("/office", (request, response) => {
 router.put("/me/position", (request, response) => {
   const payloadSchema = z.object({
     x: z.number().min(0).max(100),
-    y: z.number().min(0).max(100)
+    y: z.number().min(0).max(100),
+    direction: z.enum(["up", "down", "left", "right"]).optional(),
+    isMoving: z.boolean().optional(),
+    isDancing: z.boolean().optional()
   });
 
   const parsed = payloadSchema.safeParse(request.body);
@@ -106,7 +109,10 @@ router.put("/me/position", (request, response) => {
     request.sessionUser.id,
     request.sessionUser.workspaceId,
     parsed.data.x,
-    parsed.data.y
+    parsed.data.y,
+    parsed.data.direction,
+    parsed.data.isMoving,
+    parsed.data.isDancing
   );
 
   if (!member) {

@@ -61,14 +61,17 @@ router.get("/office", (request, response) => {
 router.put("/me/position", (request, response) => {
     const payloadSchema = z.object({
         x: z.number().min(0).max(100),
-        y: z.number().min(0).max(100)
+        y: z.number().min(0).max(100),
+        direction: z.enum(["up", "down", "left", "right"]).optional(),
+        isMoving: z.boolean().optional(),
+        isDancing: z.boolean().optional()
     });
     const parsed = payloadSchema.safeParse(request.body);
     if (!parsed.success || !request.sessionUser) {
         response.status(400).json({ message: "Invalid payload" });
         return;
     }
-    const member = updateMemberPosition(request.sessionUser.id, request.sessionUser.workspaceId, parsed.data.x, parsed.data.y);
+    const member = updateMemberPosition(request.sessionUser.id, request.sessionUser.workspaceId, parsed.data.x, parsed.data.y, parsed.data.direction, parsed.data.isMoving, parsed.data.isDancing);
     if (!member) {
         response.status(404).json({ message: "User not found" });
         return;
