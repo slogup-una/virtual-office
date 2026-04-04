@@ -1,14 +1,23 @@
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSyncExternalStore } from "react";
 
-import { apiClient, storeSession } from "../../api/client";
+import {
+  apiClient,
+  clearStoredSession,
+  hasExpiredSession,
+  resetSessionExpiryState,
+  storeSession,
+  subscribeToSessionExpiry
+} from "../../api/client";
 
 interface AuthGateProps {
   children: ReactNode;
 }
 
 export function AuthGate({ children }: AuthGateProps) {
+  const isSessionExpired = useSyncExternalStore(subscribeToSessionExpiry, hasExpiredSession, hasExpiredSession);
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
   const hashSessionId = hash.get("session");
   if (hashSessionId) {
@@ -29,6 +38,31 @@ export function AuthGate({ children }: AuthGateProps) {
     window.history.replaceState(null, "", window.location.pathname);
     void refetch();
   }, [hashSessionId, refetch]);
+
+  if (isSessionExpired) {
+    return (
+      <section className="auth-shell">
+        <div className="auth-card session-expired-card">
+          <span className="eyebrow">Session Notice</span>
+          <h1>세션이 만료되었습니다.</h1>
+          <p>안전을 위해 추가 호출을 멈췄습니다. 홈으로 돌아가 다시 접속해주세요.</p>
+          <div className="auth-actions">
+            <button
+              className="primary-button"
+              onClick={() => {
+                clearStoredSession();
+                resetSessionExpiryState();
+                window.location.assign("/");
+              }}
+              type="button"
+            >
+              홈으로 돌아가기
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (isLoading) {
     return <div className="screen-center">세션 확인 중...</div>;

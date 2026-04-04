@@ -89,6 +89,10 @@ input {
   padding: 40px;
 }
 
+.session-expired-card {
+  max-width: 460px;
+}
+
 .auth-card h1,
 .floating-header h2 {
   margin: 10px 0 0;

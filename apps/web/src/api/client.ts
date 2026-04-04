@@ -2,12 +2,63 @@ import type { OfficeMessage, OfficeSnapshot } from "../types/domain";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
 const SESSION_STORAGE_KEY = "virtual-office-session";
+const SESSION_EXPIRED_ERROR = "SESSION_EXPIRED";
+
+let sessionExpired = false;
+const sessionExpiryListeners = new Set<() => void>();
 
 function getStoredSession() {
   return window.localStorage.getItem(SESSION_STORAGE_KEY);
 }
 
+function notifySessionExpiryListeners() {
+  sessionExpiryListeners.forEach((listener) => listener());
+}
+
+function shouldExpireSession(status: number, errorText: string) {
+  if (status === 401 || status === 403) {
+    return true;
+  }
+
+  if (status >= 500) {
+    return /unauthorized|session|auth/i.test(errorText);
+  }
+
+  return false;
+}
+
+export function hasExpiredSession() {
+  return sessionExpired;
+}
+
+export function subscribeToSessionExpiry(listener: () => void) {
+  sessionExpiryListeners.add(listener);
+  return () => {
+    sessionExpiryListeners.delete(listener);
+  };
+}
+
+export function resetSessionExpiryState() {
+  if (!sessionExpired) {
+    return;
+  }
+
+  sessionExpired = false;
+  notifySessionExpiryListeners();
+}
+
+function markSessionExpired() {
+  if (sessionExpired) {
+    return;
+  }
+
+  sessionExpired = true;
+  clearStoredSession();
+  notifySessionExpiryListeners();
+}
+
 export function storeSession(sessionId: string) {
+  resetSessionExpiryState();
   window.localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
 }
 
@@ -16,6 +67,10 @@ export function clearStoredSession() {
 }
 
 async function request<T>(path: string, init?: RequestInit) {
+  if (sessionExpired) {
+    throw new Error(SESSION_EXPIRED_ERROR);
+  }
+
   const sessionId = getStoredSession();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
@@ -29,6 +84,10 @@ async function request<T>(path: string, init?: RequestInit) {
 
   if (!response.ok) {
     const error = await response.text();
+    if (shouldExpireSession(response.status, error)) {
+      markSessionExpired();
+      throw new Error(SESSION_EXPIRED_ERROR);
+    }
     throw new Error(error || `${response.status}`);
   }
 
@@ -40,6 +99,10 @@ async function request<T>(path: string, init?: RequestInit) {
 }
 
 async function requestText(path: string, init?: RequestInit) {
+  if (sessionExpired) {
+    throw new Error(SESSION_EXPIRED_ERROR);
+  }
+
   const sessionId = getStoredSession();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
@@ -52,6 +115,10 @@ async function requestText(path: string, init?: RequestInit) {
 
   if (!response.ok) {
     const error = await response.text();
+    if (shouldExpireSession(response.status, error)) {
+      markSessionExpired();
+      throw new Error(SESSION_EXPIRED_ERROR);
+    }
     throw new Error(error || `${response.status}`);
   }
 
