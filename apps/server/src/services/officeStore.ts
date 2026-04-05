@@ -289,13 +289,15 @@ export function listMessages(channelId = "general") {
 }
 
 export function getSnapshot(currentUserId: string, workspaceId: string, canManageSeats = false): OfficeSnapshot {
+  const workspace = getWorkspace(workspaceId);
+
   return {
-    workspace: getWorkspace(workspaceId),
+    workspace,
     currentUserId,
     canManageSeats,
     members: listMembers().filter((member) => member.workspaceId === workspaceId),
     seats: listSeats(workspaceId),
-    messages: listMessages()
+    messages: listMessages(workspace.defaultChannelId)
   };
 }
 

@@ -641,15 +641,32 @@ function snap(value: number) {
   return Math.round(value / objectSnapStep) * objectSnapStep;
 }
 
-function getActiveSpeechBubbles(messages: OfficeMessage[], now: number) {
+function getActiveSpeechBubbles(messages: OfficeMessage[], members: SnapshotMember[], now: number) {
+  const memberById = new Map(members.map((member) => [member.id, member]));
+  const memberBySlackUserId = new Map(members.map((member) => [member.slackUserId, member]));
+  const memberByDisplayName = new Map(members.map((member) => [member.displayName.trim().toLowerCase(), member]));
   const messagesByUser = new Map<string, OfficeMessage[]>();
+
+  const resolveMessageMember = (message: OfficeMessage) => {
+    return (
+      memberById.get(message.userId) ??
+      memberBySlackUserId.get(message.userId) ??
+      memberByDisplayName.get(message.userName.trim().toLowerCase()) ??
+      null
+    );
+  };
 
   [...messages]
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
     .forEach((message) => {
-      const bucket = messagesByUser.get(message.userId) ?? [];
+      const resolvedMember = resolveMessageMember(message);
+      if (!resolvedMember) {
+        return;
+      }
+
+      const bucket = messagesByUser.get(resolvedMember.id) ?? [];
       bucket.push(message);
-      messagesByUser.set(message.userId, bucket);
+      messagesByUser.set(resolvedMember.id, bucket);
     });
 
   const activeBubbles = new Map<string, string[]>();
@@ -806,8 +823,8 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const seatAssignmentMap = new Map(snapshot.seats.map((seat) => [seat.key, seat]));
   const memberBySlackId = new Map(snapshot.members.map((member) => [member.slackUserId, member]));
   const activeSpeechBubbles = useMemo(
-    () => getActiveSpeechBubbles(snapshot.messages, messageBubbleNow),
-    [messageBubbleNow, snapshot.messages]
+    () => getActiveSpeechBubbles(snapshot.messages, snapshot.members, messageBubbleNow),
+    [messageBubbleNow, snapshot.members, snapshot.messages]
   );
   const handleSeatClick = (seatKey: string) => {
     if (!canManageSeats) {

@@ -230,13 +230,14 @@ export function listMessages(channelId = "general") {
         .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }
 export function getSnapshot(currentUserId, workspaceId, canManageSeats = false) {
+    const workspace = getWorkspace(workspaceId);
     return {
-        workspace: getWorkspace(workspaceId),
+        workspace,
         currentUserId,
         canManageSeats,
         members: listMembers().filter((member) => member.workspaceId === workspaceId),
         seats: listSeats(workspaceId),
-        messages: listMessages()
+        messages: listMessages(workspace.defaultChannelId)
     };
 }
 export function listSeats(workspaceId) {
