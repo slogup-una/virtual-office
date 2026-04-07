@@ -8,6 +8,7 @@ import { useAssignSeat, useClearSeat } from "../../hooks/useOfficeData";
 import { useUIStore } from "../../stores/uiStore";
 import type { AvatarDirection } from "../../stores/uiStore";
 import avatarIdleGif from "../../assets/avatar-gifs/avatar-idle.gif";
+import avatarSpacePosePng from "../../assets/avatar-gifs/avatar-space-pose.png";
 import avatarWalkDownGif from "../../assets/avatar-gifs/avatar-walk-down.gif";
 import avatarWalkLeftGif from "../../assets/avatar-gifs/avatar-walk-left.gif";
 import avatarWalkUpGif from "../../assets/avatar-gifs/avatar-walk-up.gif";
@@ -722,7 +723,7 @@ function renderAvatar(
           : direction
       : direction;
   const spriteSource = override?.isDancing
-    ? avatarWalkDownGif
+    ? avatarSpacePosePng
     : override?.isMoving
       ? direction === "up"
         ? avatarWalkUpGif
@@ -778,9 +779,11 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const setDemoMotionOffset = useUIStore((state) => state.setDemoMotionOffset);
   const setSeatAssignmentOffset = useUIStore((state) => state.setSeatAssignmentOffset);
   const setIsDemoMotionOpen = useUIStore((state) => state.setIsDemoMotionOpen);
+  const currentUserPosition = useUIStore((state) => state.currentUserPosition);
   const currentUserDirection = useUIStore((state) => state.currentUserDirection);
   const isCurrentUserMoving = useUIStore((state) => state.isCurrentUserMoving);
   const isCurrentUserDancing = useUIStore((state) => state.isCurrentUserDancing);
+  const hasCurrentUserMoved = useUIStore((state) => state.hasCurrentUserMoved);
   const [selectedSeatKey, setSelectedSeatKey] = useState<string | null>(null);
   const [seatSearch, setSeatSearch] = useState("");
   const [motionAvatars, setMotionAvatars] = useState<MotionAvatar[]>([]);
@@ -1472,13 +1475,21 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 isDemoWorkspace,
                 snapshot.currentUserId
               );
+              const shouldUseInitialSeatPose =
+                member.id === snapshot.currentUserId &&
+                Boolean(member.seatKey) &&
+                !hasCurrentUserMoved &&
+                !isCurrentUserMoving;
               return renderAvatar(member, {
                 x: preferredPosition.x,
                 y: preferredPosition.y,
                 isCurrent: member.id === snapshot.currentUserId,
                 direction: member.id === snapshot.currentUserId ? currentUserDirection : (member.direction ?? "down"),
                 isMoving: member.id === snapshot.currentUserId ? isCurrentUserMoving : (member.isMoving ?? false),
-                isDancing: member.id === snapshot.currentUserId ? isCurrentUserDancing : (member.isDancing ?? false),
+                isDancing:
+                  member.id === snapshot.currentUserId
+                    ? isCurrentUserDancing || shouldUseInitialSeatPose
+                    : (member.isDancing ?? false),
                 speechLines: activeSpeechBubbles.get(member.id)
               });
             })}

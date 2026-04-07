@@ -178,6 +178,7 @@ export function AppShell() {
   const currentUserDirection = useUIStore((state) => state.currentUserDirection);
   const isCurrentUserDancing = useUIStore((state) => state.isCurrentUserDancing);
   const isCurrentUserMoving = useUIStore((state) => state.isCurrentUserMoving);
+  const setHasCurrentUserMoved = useUIStore((state) => state.setHasCurrentUserMoved);
   const setCurrentUserPosition = useUIStore((state) => state.setCurrentUserPosition);
   const setIsChatPanelOpen = useUIStore((state) => state.setIsChatPanelOpen);
   const setIsStatusPanelOpen = useUIStore((state) => state.setIsStatusPanelOpen);
@@ -220,16 +221,20 @@ export function AppShell() {
       initializedUserIdRef.current = currentUser.id;
       initializedSeatKeyRef.current = currentUser.seatKey;
       setCurrentUserPosition({ x: currentUser.x, y: currentUser.y });
+      setIsCurrentUserDancing(Boolean(currentUser.seatKey));
+      setHasCurrentUserMoved(false);
     }
-  }, [currentUser, currentUserPosition, setCurrentUserPosition]);
+  }, [currentUser, currentUserPosition, setCurrentUserPosition, setHasCurrentUserMoved, setIsCurrentUserDancing]);
 
   useEffect(() => {
     setCurrentUserDirection("down");
   }, [setCurrentUserDirection]);
 
   useEffect(() => {
-    setIsCurrentUserDancing(false);
-  }, [setIsCurrentUserDancing]);
+    if (!currentUser?.seatKey) {
+      setIsCurrentUserDancing(false);
+    }
+  }, [currentUser?.seatKey, setIsCurrentUserDancing]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -294,6 +299,7 @@ export function AppShell() {
       if (direction) {
         setCurrentUserDirection(direction);
       }
+      setHasCurrentUserMoved(true);
       setIsCurrentUserDancing(false);
       setIsCurrentUserMoving(true);
 
@@ -327,6 +333,7 @@ export function AppShell() {
     currentUserPosition,
     moveCurrentUserPosition,
     setCurrentUserDirection,
+    setHasCurrentUserMoved,
     setIsCurrentUserDancing,
     setIsCurrentUserMoving,
   ]);

@@ -29,6 +29,7 @@ interface UIState {
   currentUserDirection: AvatarDirection;
   isCurrentUserDancing: boolean;
   isCurrentUserMoving: boolean;
+  hasCurrentUserMoved: boolean;
   setSelectedChannelId: (channelId: string) => void;
   setSelectedZoneId: (zoneId: string | null) => void;
   setMessageDraft: (draft: string) => void;
@@ -48,6 +49,7 @@ interface UIState {
   setCurrentUserDirection: (direction: AvatarDirection) => void;
   setIsCurrentUserDancing: (isDancing: boolean) => void;
   setIsCurrentUserMoving: (isMoving: boolean) => void;
+  setHasCurrentUserMoved: (hasMoved: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -69,6 +71,7 @@ export const useUIStore = create<UIState>((set) => ({
   currentUserDirection: "down",
   isCurrentUserDancing: false,
   isCurrentUserMoving: false,
+  hasCurrentUserMoved: false,
   setSelectedChannelId: (selectedChannelId) => set({ selectedChannelId }),
   setSelectedZoneId: (selectedZoneId) => set({ selectedZoneId }),
   setMessageDraft: (messageDraft) => set({ messageDraft }),
@@ -87,6 +90,7 @@ export const useUIStore = create<UIState>((set) => ({
   setCurrentUserDirection: (currentUserDirection) => set({ currentUserDirection }),
   setIsCurrentUserDancing: (isCurrentUserDancing) => set({ isCurrentUserDancing }),
   setIsCurrentUserMoving: (isCurrentUserMoving) => set({ isCurrentUserMoving }),
+  setHasCurrentUserMoved: (hasCurrentUserMoved) => set({ hasCurrentUserMoved }),
   moveCurrentUserPosition: (delta) =>
     set((state) => {
       if (!state.currentUserPosition) {
