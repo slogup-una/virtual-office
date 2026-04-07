@@ -2082,11 +2082,9 @@ textarea {
   height: 29px;
   overflow: hidden;
   border-radius: 50%;
-  border: 2px solid rgba(146, 223, 255, 0.95);
-  box-shadow:
-    0 0 0 2px rgba(78, 140, 196, 0.35),
-    0 2px 5px rgba(29, 65, 105, 0.25);
-  background: rgba(255, 255, 255, 0.78);
+  border: none;
+  box-shadow: none;
+  background: transparent;
 }
 
 .avatar-token img,
@@ -2149,20 +2147,25 @@ textarea {
 
 .avatar-token.is-dancing .avatar-face-overlay {
   left: 12px;
-  top: 19px;
+  top: 29px;
+}
+
+.avatar-token.is-dancing .avatar-gif-shell {
+  width: 62px;
+  height: 94px;
 }
 
 .avatar-token.active .avatar-gif-shell,
 .avatar-token.lunch .avatar-gif-shell,
 .member-card.active .member-avatar {
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+  box-shadow: none;
 }
 
 .avatar-token.meeting .avatar-gif-shell,
 .avatar-token.dnd .avatar-gif-shell,
 .member-card.meeting .member-avatar,
 .member-card.dnd .member-avatar {
-  box-shadow: 0 0 10px rgba(176, 110, 255, 0.25);
+  box-shadow: none;
 }
 
 .avatar-token.away .avatar-gif-shell,
@@ -2174,7 +2177,7 @@ textarea {
 
 .avatar-token.field .avatar-gif-shell,
 .member-card.field .member-avatar {
-  box-shadow: 0 0 10px rgba(91, 163, 255, 0.2);
+  box-shadow: none;
 }
 
 .avatar-token span {
@@ -2211,9 +2214,7 @@ textarea {
 }
 
 .avatar-token.is-current .avatar-gif-shell {
-  box-shadow:
-    0 0 0 4px rgba(77, 255, 238, 0.08),
-    0 0 14px rgba(77, 255, 238, 0.25);
+  box-shadow: none;
 }
 
 .floating-panel,
