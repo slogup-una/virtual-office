@@ -791,6 +791,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
   const [isLayoutEditMode, setIsLayoutEditMode] = useState(false);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
   const [draggingObjectId, setDraggingObjectId] = useState<string | null>(null);
+  const [movedMemberIds, setMovedMemberIds] = useState<Set<string>>(() => new Set());
   const previousMembersRef = useRef<Map<string, SnapshotMember>>(new Map());
   const timeoutIdsRef = useRef<Map<string, number>>(new Map());
   const layoutPanelDragRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
@@ -1039,7 +1040,30 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
     snapshot.members.forEach((member) => {
       const previousMember = previousMembers.get(member.id);
       if (!previousMember) {
+        if (member.isMoving) {
+          setMovedMemberIds((current) => {
+            const next = new Set(current);
+            next.add(member.id);
+            return next;
+          });
+        }
         return;
+      }
+
+      if (
+        member.isMoving ||
+        Math.abs(previousMember.x - member.x) > 0.05 ||
+        Math.abs(previousMember.y - member.y) > 0.05
+      ) {
+        setMovedMemberIds((current) => {
+          if (current.has(member.id)) {
+            return current;
+          }
+
+          const next = new Set(current);
+          next.add(member.id);
+          return next;
+        });
       }
 
       const wasUnavailable =
@@ -1476,10 +1500,12 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 snapshot.currentUserId
               );
               const shouldUseInitialSeatPose =
-                member.id === snapshot.currentUserId &&
-                Boolean(member.seatKey) &&
-                !hasCurrentUserMoved &&
-                !isCurrentUserMoving;
+                !movedMemberIds.has(member.id) &&
+                !(
+                  member.id === snapshot.currentUserId
+                    ? hasCurrentUserMoved || isCurrentUserMoving
+                    : (member.isMoving ?? false)
+                );
               return renderAvatar(member, {
                 x: preferredPosition.x,
                 y: preferredPosition.y,
@@ -1489,7 +1515,7 @@ export function OfficeMap({ snapshot }: { snapshot: OfficeSnapshot }) {
                 isDancing:
                   member.id === snapshot.currentUserId
                     ? isCurrentUserDancing || shouldUseInitialSeatPose
-                    : (member.isDancing ?? false),
+                    : (member.isDancing ?? false) || shouldUseInitialSeatPose,
                 speechLines: activeSpeechBubbles.get(member.id)
               });
             })}
